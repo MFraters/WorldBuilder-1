@@ -8,7 +8,7 @@
 "surface objects":
 {
   "continental plate":{"name":"First continental plate","coordinates":[[-1e3,500e3],[500e3,500e3],[500e3,1000e3],[-1e3,1000e3]],
-    "temperature model":{"name":"constant", "depth":250e3, "temperature":150},
+    "temperature model":{"constant":{"depth":250e3, "temperature":150}},
     "composition model":{"name":"none"}},
      
   "continental Plate":{"name":"Second continental plate", "coordinates":[[2000e3,2000e3],[1000e3,2000e3],[1000e3,1000e3],[2000e3,1000e3]],

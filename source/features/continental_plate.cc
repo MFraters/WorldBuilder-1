@@ -204,6 +204,14 @@ namespace WorldBuilder
       return composition;
     }
 
+    bool
+    ContinentalPlate::get_mesh(std::vector<std::array<double,3>> &vertices,
+                               std::vector<uint32_t> &indices) const
+    {
+
+      return true;
+    }
+
     WB_REGISTER_FEATURE(ContinentalPlate, continental plate)
 
   }

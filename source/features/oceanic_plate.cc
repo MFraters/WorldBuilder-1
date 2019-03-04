@@ -17,6 +17,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <earcut/earcut.h>
+
 #include <world_builder/features/oceanic_plate.h>
 #include <world_builder/features/oceanic_plate_models/temperature/interface.h>
 #include <world_builder/features/oceanic_plate_models/composition/interface.h>
@@ -181,6 +183,46 @@ namespace WorldBuilder
 
       return composition;
     }
+
+
+    bool
+    OceanicPlate::get_mesh(std::vector<std::array<double,3>> &vertices,
+                           std::vector<uint32_t> &indices) const
+    {
+      // for now we need the coordinates in the form of a std::vector<std::vector<std::array<Coord, 2>>>
+      // to make the triangulation. In the future we may add Point to the implementation.
+      using Coord = double;
+      using N = uint32_t;
+      using Point = std::array<Coord, 2>;
+      std::vector<std::vector<Point>> polygon;
+
+      polygon.push_back(std::vector<Point>({{coordinates[0][0],coordinates[0][1]}}));
+      vertices.push_back({coordinates[0][0],coordinates[0][1],0});
+
+      for(unsigned int i = 1; i < coordinates.size(); ++i)
+      {
+        polygon[0].push_back({coordinates[i][0],coordinates[i][1]});
+        vertices.push_back({coordinates[i][0],coordinates[i][1],0});
+      }
+
+      std::vector<N> indices_earcut = mapbox::earcut<N>(polygon);
+
+      std::cout << "vertices (size = " << vertices.size() << ", size polygon[] = " << polygon[0].size() << "):" << std::endl;
+      for(unsigned int i = 0; i < vertices.size(); ++i)
+      {
+        std::cout << "(" << vertices[i][0] << ", " << vertices[i][1] << ")" << std::endl;
+        std::cout << "[" << polygon[0][i][0] << ", " << polygon[0][i][1] << "]" << std::endl;
+      }
+
+      std::cout << "indices (size = " << indices_earcut.size() << "):" << std::endl;
+      for(unsigned int i = 0; i < indices_earcut.size(); i++)
+      {
+        std::cout  << indices_earcut[i] << ", " << std::endl;
+      }
+
+      return true;
+    }
+
 
     /**
      * Register plugin

@@ -82,6 +82,10 @@ namespace WorldBuilder
        */
       double composition(const std::array<double, 3> &point, const double depth, const unsigned int composition_number) const;
 
+      /**
+       * Returns the mesh vertices and indices of a feature.
+       */
+      bool get_feature_mesh(std::vector<std::array<double,3>> &vertices, std::vector<uint32_t> &indices, unsigned int feature_number);
 
 
       /**

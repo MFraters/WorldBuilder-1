@@ -175,6 +175,17 @@ namespace WorldBuilder
       return composition;
     }
 
+
+
+    bool
+    MantleLayer::get_mesh(std::vector<std::array<double,3>> &vertices,
+                          std::vector<uint32_t> &indices) const
+    {
+
+      return true;
+    }
+
+
     WB_REGISTER_FEATURE(MantleLayer, mantle layer)
 
   }

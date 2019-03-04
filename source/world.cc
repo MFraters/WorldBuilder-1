@@ -429,5 +429,12 @@ namespace WorldBuilder
     return composition;
   }
 
+  bool
+  World::get_feature_mesh(std::vector<std::array<double,3>> &vertices, std::vector<uint32_t> &indices, unsigned int feature_number)
+  {
+    parameters.features[feature_number]->get_mesh(vertices, indices);
+    return true;
+  }
+
 }
 

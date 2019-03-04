@@ -93,6 +93,10 @@ namespace WorldBuilder
                            const unsigned int composition_number,
                            double value) const;
 
+        virtual
+        bool get_mesh(std::vector<std::array<double,3>> &vertices,
+                      std::vector<uint32_t> &indices) const;
+
 
 
       private:

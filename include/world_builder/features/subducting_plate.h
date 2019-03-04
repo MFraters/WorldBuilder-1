@@ -94,7 +94,9 @@ namespace WorldBuilder
                            const unsigned int composition_number,
                            double composition_value) const;
 
-
+        virtual
+        bool get_mesh(std::vector<std::array<double,3>> &vertices,
+                      std::vector<uint32_t> &indices) const;
 
       private:
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > default_temperature_models;
@@ -143,6 +145,10 @@ namespace WorldBuilder
          */
         Point<2> reference_point;
 
+        /**
+         * A vector of a vector of doubles containing for every coordinate
+         * a list of segements lengths.
+         */
         std::vector<std::vector<double> > slab_segment_lengths;
         std::vector<std::vector<Point<2> > > slab_segment_thickness;
         std::vector<std::vector<Point<2> > > slab_segment_top_truncation;

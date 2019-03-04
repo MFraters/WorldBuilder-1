@@ -104,6 +104,13 @@ namespace WorldBuilder
                            const unsigned int composition_number,
                            double value) const = 0;
 
+        /**
+         * Returns the mesh for a specific feature.
+         */
+        virtual
+        bool get_mesh(std::vector<std::array<double,3>> &vertices,
+                      std::vector<uint32_t> &indices) const = 0;
+
 
         /**
          * A function to register a new type. This is part of the automatic

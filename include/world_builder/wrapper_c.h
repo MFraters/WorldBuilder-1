@@ -53,6 +53,11 @@ extern "C" {
   void composition_3d(void *ptr_ptr_world, double x, double y, double z, double depth, unsigned int composition_number, double *composition);
 
   /**
+   * todo.
+   */
+  void get_feature_mesh(void *ptr_ptr_world, std::vector<std::array<double,3>> *vertices, std::vector<uint32_t> *indices, unsigned int feature_number);
+
+  /**
    * The destructor for the world builder class. Call this function when done with the
    * world builder.
    */

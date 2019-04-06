@@ -191,34 +191,112 @@ namespace WorldBuilder
     {
       // for now we need the coordinates in the form of a std::vector<std::vector<std::array<Coord, 2>>>
       // to make the triangulation. In the future we may add Point to the implementation.
-      using Coord = double;
-      using N = uint32_t;
-      using Point = std::array<Coord, 2>;
+      //using Coord = double;
+      //using N = uint32_t;
+      using Point = std::array<double, 2>;
       std::vector<std::vector<Point>> polygon;
 
       polygon.push_back(std::vector<Point>({{coordinates[0][0],coordinates[0][1]}}));
-      vertices.push_back({coordinates[0][0],coordinates[0][1],0});
+      //vertices.push_back({coordinates[0][0],coordinates[0][1],0});
 
-      for(unsigned int i = 1; i < coordinates.size(); ++i)
-      {
-        polygon[0].push_back({coordinates[i][0],coordinates[i][1]});
-        vertices.push_back({coordinates[i][0],coordinates[i][1],0});
-      }
+      for (unsigned int i = 1; i < coordinates.size(); ++i)
+        {
+          polygon[0].push_back({coordinates[i][0],coordinates[i][1]});
+          //vertices.push_back({coordinates[i][0],coordinates[i][1],0});
+        }
 
-      std::vector<N> indices_earcut = mapbox::earcut<N>(polygon);
+      std::vector<uint32_t> indices_earcut = mapbox::earcut<uint32_t>(polygon);
 
       std::cout << "vertices (size = " << vertices.size() << ", size polygon[] = " << polygon[0].size() << "):" << std::endl;
-      for(unsigned int i = 0; i < vertices.size(); ++i)
-      {
-        std::cout << "(" << vertices[i][0] << ", " << vertices[i][1] << ")" << std::endl;
-        std::cout << "[" << polygon[0][i][0] << ", " << polygon[0][i][1] << "]" << std::endl;
-      }
+      for (unsigned int i = 0; i < vertices.size(); ++i)
+        {
+          //std::cout << "(" << vertices[i][0] << ", " << vertices[i][1] << ")" << std::endl;
+          std::cout << "[" << polygon[0][i][0] << ", " << polygon[0][i][1] << "]" << std::endl;
+        }
 
       std::cout << "indices (size = " << indices_earcut.size() << "):" << std::endl;
-      for(unsigned int i = 0; i < indices_earcut.size(); i++)
-      {
-        std::cout  << indices_earcut[i] << ", " << std::endl;
-      }
+      for (unsigned int i = 0; i < indices_earcut.size(); i++)
+        {
+          std::cout  << indices_earcut[i] << ", " << std::endl;
+        }
+
+      // add the third dimension and normal for top and bottom
+      vertices.resize(polygon[0].size()*2);
+      for (unsigned int i = 0; i < polygon[0].size(); ++i)
+        {
+          // position
+          vertices[i][0] = polygon[0][i][0];
+          vertices[i][1] = polygon[0][i][1];
+          vertices[i][2] = min_depth;
+          // normal
+          vertices[i][3] = 0; 
+          vertices[i][4] = 0; 
+          vertices[i][5] = 1; 
+        }
+
+      for (unsigned int i = 0; i < polygon[0].size(); ++i)
+        {
+          // position
+          vertices[polygon[0].size() + i][0] = polygon[0][i][0];
+          vertices[polygon[0].size() + i][1] = polygon[0][i][1];
+          vertices[polygon[0].size() + i][2] = max_depth;
+          // normal
+          vertices[polygon[0].size() + i][3] = 0; 
+          vertices[polygon[0].size() + i][4] = 0; 
+          vertices[polygon[0].size() + i][5] = -1; 
+        }
+
+      // indices for the top part
+      indices.resize(0);
+      for (unsigned int i = 0; i < indices_earcut.size(); ++i)
+        {
+          indices.push_back(indices_earcut[i]);
+          //std::cout << "1: i = " << i << std::endl;
+        }
+
+      // indices for the bottom part
+      for (unsigned int i = 0; i < indices_earcut.size(); ++i)
+        {
+          indices.push_back(indices_earcut[i] + polygon[0].size());
+          //std::cout << "2: i = " << i << std::endl;
+        }
+
+      // now connect the top and bottom. We can use the fact that the
+      // first top index is exactly above the first bottom index, etc.
+      // for example: 1 -> 15, 2 -> 16, so we want to make two triangles
+      // (counter clockwise): 1,15,16 and 1,16,2.
+      // In general is this (i = 0): i, i + indices_earcut.size(),
+      // i + indices_earcut.size()+1 and i, indices_earcut.size()+1, i+1;
+      // The next ones are then 2, 16, 17 and 2, 17, 3 with i = 2;
+      for (unsigned int i = 0; i < polygon[0].size(); i++)
+        {
+          // triangle 1
+          indices.push_back(i);
+          indices.push_back(i + polygon[0].size());
+          indices.push_back(i + polygon[0].size() + 1);
+
+
+          // triangle 2
+          indices.push_back(i+1);
+          indices.push_back(i + polygon[0].size() + 1);
+          indices.push_back(i + 1);
+        }
+
+      std::cout << "vertices (size = " << vertices.size() << ", size polygon[] = " << polygon[0].size() << "):" << std::endl;
+      for (unsigned int i = 0; i < vertices.size(); ++i)
+        {
+          std::cout << "(" << vertices[i][0] << ", " << vertices[i][1] << ", " << vertices[i][2] << ")" << std::endl;
+          //std::cout << "[" << polygon[0][i][0] << ", " << polygon[0][i][1] << "]" << std::endl;
+        }
+
+      std::cout << "indices (size = " << indices.size() << "):" << std::endl;
+      for (unsigned int i = 0; i < indices.size(); i++)
+        {
+          std::cout  << indices[i] << ", ";
+          if ((i+1)%3 == 0)
+                std::cout << std::endl;
+        }
+        std::cout << std::endl;
 
       return true;
     }

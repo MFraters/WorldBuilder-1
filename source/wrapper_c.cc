@@ -96,6 +96,16 @@ extern "C" {
   }
 
   /**
+   * todo
+   */
+  void get_feature_mesh(void *ptr_ptr_world, std::vector<std::array<double,3>> *vertices, std::vector<uint32_t> *indices, unsigned int feature_number)
+  {
+    WorldBuilder::World *a = reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world);
+    a->get_feature_mesh(*vertices, *indices, feature_number);
+  }
+
+
+  /**
    * The destructor for the world builder class. Call this function when done with the
    * world builder.
    */

@@ -136,10 +136,10 @@ int main(int argc, char **argv)
 
     }
 
-    std::vector<std::array<double,3>> vertices;
-    std::vector<uint32_t> indices;
-    unsigned int feature_number = 0;
-    world->get_feature_mesh(vertices, indices, feature_number);
+  std::vector<std::array<double,3>> vertices;
+  std::vector<uint32_t> indices;
+  unsigned int feature_number = 0;
+  world->get_feature_mesh(vertices, indices, feature_number);
 
   switch (dim)
     {

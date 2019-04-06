@@ -582,27 +582,27 @@ namespace WorldBuilder
       // clear vectors
       vertices.clear();
       indices.clear();
-      
+
       unsigned int vertices_size = 0;
       // get each section
-      for(unsigned int i = 0; i < coordinates.size()-1; ++i)
-      {
-        // make for every coordinate pair a mesh
-        // reserve the correct amount of vertices and indices
-        // todo
-
-        // first the top
-        // loop over the segments
-        for(unsigned int j = 0; j < slab_segment_lengths[i].size()-1; ++j)
+      for (unsigned int i = 0; i < coordinates.size()-1; ++i)
         {
-          const std::array<double,3> current_section_top_segment_coord = {coordinates[i][0], coordinates[i][1], 0};
-          const std::array<double,3> next_section_top_segment_coord = {coordinates[i+1][0], coordinates[i+1][1], 0};
+          // make for every coordinate pair a mesh
+          // reserve the correct amount of vertices and indices
+          // todo
 
-          const std::array<double,3> current_section_bottom_segment_coord = {coordinates[i][0], coordinates[i][1], 0};
-          const std::array<double,3> next_section_bottom_segment_coord = {coordinates[i+1][0], coordinates[i+1][1], 0};
-          //vertices.push_back()
+          // first the top
+          // loop over the segments
+          for (unsigned int j = 0; j < slab_segment_lengths[i].size()-1; ++j)
+            {
+              const std::array<double,3> current_section_top_segment_coord = {coordinates[i][0], coordinates[i][1], 0};
+              const std::array<double,3> next_section_top_segment_coord = {coordinates[i+1][0], coordinates[i+1][1], 0};
+
+              const std::array<double,3> current_section_bottom_segment_coord = {coordinates[i][0], coordinates[i][1], 0};
+              const std::array<double,3> next_section_bottom_segment_coord = {coordinates[i+1][0], coordinates[i+1][1], 0};
+              //vertices.push_back()
+            }
         }
-      }
 
       return true;
     }

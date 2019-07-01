@@ -442,8 +442,12 @@ namespace WorldBuilder
                                       const double start_radius,
                                       const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
                                       const bool only_positive,
+                                      interpolation x_spline,
+                                      interpolation y_spline,
                                       std::vector<double> global_x_list)
     {
+      if (check_point[0]==282000 && check_point[1] > 125332 && check_point[1] < 125334 && check_point[2] < 290000 && check_point[2] > 260000)
+        std::cout << "flag 1: check_point[2] = " << check_point[2] << std::endl;
       // TODO: Assert that point_list, plane_segment_angles and plane_segment_lenghts have the same size.
       /*WBAssert(point_list.size() == plane_segment_lengths.size(),
                "Internal error: The size of point_list (" << point_list.size()
@@ -503,7 +507,9 @@ namespace WorldBuilder
                     "angle_at_begin_segment_with_surface are implemented");
 
       // loop over all the planes to find out which one is closest to the point.
-
+      double min_distance_check_point_surface_2d_line = INFINITY;
+      unsigned int i_section_min_distance = 0;
+      Point<2> closest_point_on_line_2d(0,0,natural_coordinate_system);
       for (unsigned int i_section=0; i_section < point_list.size()-1; ++i_section)
         {
           const unsigned int current_section = i_section;
@@ -512,11 +518,11 @@ namespace WorldBuilder
           const unsigned int original_current_section = (unsigned int)std::floor(global_x_list[i_section]);
           const unsigned int original_next_section = original_current_section + 1;
           // see on what side the line P1P2 reference point is. This is based on the determinant
-          const double reference_on_side_of_line = (point_list[next_section][0] - point_list[current_section][0])
-                                                   * (reference_point[1] - point_list[current_section][1])
-                                                   - (point_list[next_section][1] - point_list[current_section][1])
-                                                   * (reference_point[0] - point_list[current_section][0])
-                                                   < 0 ? 1 : -1;
+          //const double reference_on_side_of_line = (point_list[next_section][0] - point_list[current_section][0])
+          //                                         * (reference_point[1] - point_list[current_section][1])
+          //                                         - (point_list[next_section][1] - point_list[current_section][1])
+          //                                         * (reference_point[0] - point_list[current_section][0])
+          //                                         < 0 ? 1 : -1;
 
 
 
@@ -531,29 +537,183 @@ namespace WorldBuilder
           // Compute the closest point on the line P1 to P2 from the check
           // point at the surface. We do this in natural coordinates on
           // purpose, because in spherical coordinates it is more accurate.
-          Point<2> closest_point_on_line_2d = P1 + ((P1PC * P1P2) / (P1P2 * P1P2)) * P1P2;
+          Point<2> closest_point_on_line_2d_temp = P1 + ((P1PC * P1P2) / (P1P2 * P1P2)) * P1P2;
 
 
           // compute what fraction of the distance between P1 and P2 the
           // closest point lies.
-          const Point<2> P1CPL = closest_point_on_line_2d - P1;
+          Point<2> P1CPL = closest_point_on_line_2d_temp - P1;
 
           // This determines where the check point is between the coordinates
           // in the coordinate list.
-          const double fraction_CPL_P1P2_strict = (P1CPL * P1P2 <= 0 ? -1.0 : 1.0)
-                                                  * (1 - (P1P2.norm() - P1CPL.norm()) / P1P2.norm());
+          double fraction_CPL_P1P2_strict = (P1CPL * P1P2 <= 0 ? -1.0 : 1.0)
+                                            * (1 - (P1P2.norm() - P1CPL.norm()) / P1P2.norm());
 
-          // If the point on the line does not lay between point P1 and P2
-          // then ignore it. Otherwise continue.
-          if (fraction_CPL_P1P2_strict >= 0 && fraction_CPL_P1P2_strict <= 1.0)
+          if (fraction_CPL_P1P2_strict < 0)
+            closest_point_on_line_2d = P1;
+          if (fraction_CPL_P1P2_strict > 0)
+            closest_point_on_line_2d = P2;
+
+          P1CPL = closest_point_on_line_2d_temp - P1;
+
+          if (P1CPL.norm() < min_distance_check_point_surface_2d_line)
             {
+              min_distance_check_point_surface_2d_line = P1CPL.norm();
+              i_section_min_distance = i_section;
+              closest_point_on_line_2d = closest_point_on_line_2d_temp;
+            }
+        }
+
+      /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+        std::cout << "flag 2b: min_distance_check_point_surface_2d_line = " << min_distance_check_point_surface_2d_line << ", i_section_min_distance = " << i_section_min_distance
+                  << ", closest_point_on_line_2d = " << closest_point_on_line_2d[0] << ":" << closest_point_on_line_2d[1]
+                  << ", global_x_list[i_section_min_distance] =" << global_x_list[i_section_min_distance] << std::endl;*/
+      {
+        // we now have an initial guess for our Newton method to find out what the
+        // actual closest point is to the spline.
+
+        double solution = global_x_list[i_section_min_distance];
+
+        //        if(check_point_surface_2d[0] < 0)
+        //std::cout << std::endl << "initial guessclosted point on line = " << x_spline(solution) << ":" << y_spline(solution) << std::endl;
+
+        //       if(check_point_surface_2d[0] < 0)
+
+        //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+        //  std::cout << "initial solution = " << solution << ", solution,check_point_surface_2d = " << check_point_surface_2d[0] << ":" << check_point_surface_2d[1] << std::endl;
+        // compute initial residual
+        double residual_x = x_spline.residual_closest_point(solution,check_point_surface_2d[0]);
+        double residual_y = y_spline.residual_closest_point(solution,check_point_surface_2d[1]);
+        double inital_residual = fabs(residual_x+residual_y);
+        double residual = inital_residual;
+
+        // copmute a newton update
+        for (unsigned int i =0; i < 25; i++)
+          {
+            //std::cout << "x = ";
+            std::pair<double,double> x_spline_update = x_spline.newton_update(solution,check_point_surface_2d[0]);
+
+            //std::cout << "y = ";
+            std::pair<double,double> y_spline_update = y_spline.newton_update(solution,check_point_surface_2d[1]);
+            double temp_solution = solution;
+            temp_solution = solution - (x_spline_update.first + y_spline_update.first)/(x_spline_update.second + y_spline_update.second);
+            // compute residual
+            residual_x = x_spline.residual_closest_point(temp_solution,check_point_surface_2d[0]);
+            residual_y = y_spline.residual_closest_point(temp_solution,check_point_surface_2d[1]);
+            double temp_residual = fabs(residual_x+residual_y);
+            double relative_residual = temp_residual/inital_residual;
+
+            //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+            //  std::cout << i << ": solution = " << solution << ", inital_residual = " << inital_residual << ", temp_residual = " << temp_residual << ", relative_residual = " << relative_residual << ", residual_x = " << residual_x << ", residual_y = " << residual_y << ", x_spline_update.first = " << x_spline_update.first << ", update = " << (x_spline_update.first + y_spline_update.first)/(x_spline_update.second + y_spline_update.second) << std::endl;
+
+            double factor = 1;
+            for (unsigned int i_line_search = 0; i_line_search < 50; i_line_search++)
+              {
+                factor *= 2./3.;
+                if (temp_residual > residual)
+                  {
+                    temp_solution = solution - factor*(x_spline_update.first + y_spline_update.first)/(x_spline_update.second + y_spline_update.second);
+                    residual_x = x_spline.residual_closest_point(temp_solution,check_point_surface_2d[0]);
+                    residual_y = y_spline.residual_closest_point(temp_solution,check_point_surface_2d[1]);
+                    temp_residual = fabs(residual_x+residual_y);
+                    relative_residual = temp_residual/inital_residual;
+
+            //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+            //        std::cout << i << ": line search solution " << i_line_search << " = " << solution << ", inital_residual = " << inital_residual << ", temp_residual = " << temp_residual << ", relative_residual = " << relative_residual << ", residual_x = " << residual_x << ", residual_y = " << residual_y << ", x_spline_update.first = " << x_spline_update.first << ", udpate = " << (x_spline_update.first + y_spline_update.first)/(x_spline_update.second + y_spline_update.second) << std::endl;
+
+                  }
+                else
+                  {
+                    break;
+                  }
+
+              }
+            solution = temp_solution;
+            residual = temp_residual;
+            if(residual/inital_residual < 1e-7)
+            break;
+          }
+        double dx = x_spline.derivative(solution);
+        double dy = y_spline.derivative(solution);
+
+//      if(check_point[0]==282000 && check_point[1] > 125332 && check_point[1] < 125334 && check_point[2] < 290000 && check_point[2] > 260000)
+        //    std::cout  << ", solution,check_point_surface_2d = " << check_point_surface_2d[0] << ":" << check_point_surface_2d[1]  << ", closted point on line guess = " << x_spline(global_x_list[i_section_min_distance]) << ":" << y_spline(global_x_list[i_section_min_distance]) << ", solution guess = " << global_x_list[i_section_min_distance] <<  ", closted point on line found = " << x_spline(solution) << ":" << y_spline(solution) << ", solution = " << solution << std::endl;
+
+        //if(check_point_surface_2d[0] > 0)
+        //std::cout  << ", solution,check_point_surface_2d = " << check_point_surface_2d[0] << ":" << check_point_surface_2d[1]  << ", closted point on line guess = " << x_spline(global_x_list[i_section_min_distance]) << ":" << y_spline(global_x_list[i_section_min_distance]) << ", solution guess = " << global_x_list[i_section_min_distance] <<  ", closted point on line found = " << x_spline(solution) << ":" << y_spline(solution) << ", solution = " << solution << std::endl;
+
+        Point<2> closest_point_on_spline_2d(x_spline(solution),y_spline(solution),natural_coordinate_system);
+
+        /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+          std::cout << "flag 3a: solution = " << solution << ", residual = " << residual
+                    << ", closest_point_on_spline_2d = " << closest_point_on_spline_2d[0] << ":" << closest_point_on_spline_2d[1]
+                    << ", global_x_list[point_list.size()] = " << global_x_list[point_list.size()]<< ", global_x_list[0] = " << global_x_list[0]
+                    << ", global_x_list[point_list.size()-1] = " << global_x_list[point_list.size()-1]<< std::endl;
+
+
+        if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+          std::cout << "flag 3b: solution = " << solution << ", residual = " << residual
+                    << ", closest_point_on_spline_2d = " << closest_point_on_spline_2d[0] << ":" << closest_point_on_spline_2d[1]
+                    << ", global_x_list[point_list.size()] = " << global_x_list[point_list.size()]<< ", global_x_list[0] = " << global_x_list[0]
+                    << ", global_x_list[point_list.size()-1] = " << global_x_list[point_list.size()-1]<< std::endl;*/
+
+        if (solution > 1e-15 && solution < global_x_list[point_list.size()-1] && i_section_min_distance - (solution - global_x_list[i_section_min_distance]) > 0)
+          {
+            // we need to compute the section which we are in. This might have changed in the Newton iteration.
+            //
+            const double diff = solution - global_x_list[i_section_min_distance];
+            const unsigned int current_section = (unsigned int) floor(i_section_min_distance-diff);
+            WBAssert((current_section >= 0 && current_section <= point_list.size()-1), "current_section wrong: " << current_section << ", because of solution, which is " << solution 
+            << ", i_section_min_distance = " << i_section_min_distance << ", or diff = " << diff);
+            const unsigned int i_section = current_section;
+            const unsigned int next_section = current_section+1;
+            // translate to orignal coordinates current and next section
+            const unsigned int original_current_section = (unsigned int)std::floor(solution);
+            const unsigned int original_next_section = original_current_section + 1;
+            //std::cout << "original_current_section = " << original_current_section << ", original_next_section = " << original_next_section << ", solution = " << solution << std::endl;
+            // see on what side the line P1P2 reference point is. This is based on the determinant
+            //const double reference_on_side_of_line = (point_list[next_section][0] - point_list[current_section][0])
+            //                                         * (reference_point[1] - point_list[current_section][1])
+            //                                         - (point_list[next_section][1] - point_list[current_section][1])
+            //                                         * (reference_point[0] - point_list[current_section][0])
+            //                                         < 0 ? 1 : -1;
+
+//std::cout << "point_list.size() = " << point_list.size() << ", current_section = " << current_section << std::endl;
+            const Point<2> P1(point_list[current_section]);
+
+            const Point<2> P2(point_list[next_section]);
+
+            const Point<2> P1P2 = P2 - P1;
+            const Point<2> P1PC = check_point_surface_2d - P1;
+
+
+            // compute what fraction of the distance between P1 and P2 the
+            // closest point lies.
+            Point<2> P1CPL = closest_point_on_spline_2d - P1;
+
+            double fraction_CPL_P1P2_strict = solution-floor(solution);
+
+            /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+              std::cout << "flag 4a: diff = " << diff << ", current_section = " << current_section
+                        << ", original_current_section = " << original_current_section << ", fraction_CPL_P1P2_strict = " << fraction_CPL_P1P2_strict << std::endl;
+
+            if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+              std::cout << "flag 4b:diff = " << diff << ", current_section = " << current_section
+                        << ", original_current_section = " << original_current_section << ", fraction_CPL_P1P2_strict = " << fraction_CPL_P1P2_strict << std::endl;*/
+
+            // If the point on the line does not lay between point P1 and P2
+            // then ignore it. Otherwise continue.
+            //if ((i_section != 0 || i_section != point_list.size()-1) || fraction_CPL_P1P2_strict >= 0 && fraction_CPL_P1P2_strict <= 1.0)
+            //if (fraction_CPL_P1P2_strict >= 0 && fraction_CPL_P1P2_strict <= 1.0)
+            {
+              //fraction_CPL_P1P2_strict= std::min(std::max(fraction_CPL_P1P2_strict,1.0),0.0);
               // now figure out where the point is in relation with the user
               // defined coordinates
-              const double fraction_CPL_P1P2 = global_x_list[i_section] - (int)global_x_list[i_section]
-                                               + (global_x_list[i_section+1]-global_x_list[i_section]) * fraction_CPL_P1P2_strict;
+              const double fraction_CPL_P1P2 = fraction_CPL_P1P2_strict;//global_x_list[i_section] - (int)global_x_list[i_section]
+              //+ (global_x_list[i_section+1]-global_x_list[i_section]) * fraction_CPL_P1P2_strict;
 
-              const Point<2> unit_normal_to_plane_spherical = P1P2 / P1P2.norm();
-              const Point<2> closest_point_on_line_plus_normal_to_plane_spherical = closest_point_on_line_2d + 1e-8 * (closest_point_on_line_2d.norm() > 1.0 ? closest_point_on_line_2d.norm() : 1.0) * unit_normal_to_plane_spherical;
+              const Point<2> unit_normal_to_plane_spherical = Point<2>(-dy,dx,natural_coordinate_system)/Point<2>(-dy,dx,natural_coordinate_system).norm();// P1P2 / P1P2.norm();
+              const Point<2> closest_point_on_line_plus_normal_to_plane_spherical = closest_point_on_spline_2d + 1e-8 * (closest_point_on_spline_2d.norm() > 1.0 ? closest_point_on_spline_2d.norm() : 1.0) * unit_normal_to_plane_spherical;
 
               WBAssert(closest_point_on_line_plus_normal_to_plane_spherical.norm() != 0.0,
                        "Internal error: The norm of variable 'closest_point_on_line_plus_normal_to_plane_spherical' "
@@ -562,9 +722,9 @@ namespace WorldBuilder
               // We now need 3d points from this point on, so make them.
               // The order of a Cartesian coordinate is x,y,z and the order of
               // a spherical coordinate it radius, long, lat (in rad).
-              const Point<3> closest_point_on_line_surface(bool_cartesian ? closest_point_on_line_2d[0] : start_radius,
-                                                           bool_cartesian ? closest_point_on_line_2d[1] : closest_point_on_line_2d[0],
-                                                           bool_cartesian ? start_radius : closest_point_on_line_2d[1],
+              const Point<3> closest_point_on_line_surface(bool_cartesian ? closest_point_on_spline_2d[0] : start_radius,
+                                                           bool_cartesian ? closest_point_on_spline_2d[1] : closest_point_on_spline_2d[0],
+                                                           bool_cartesian ? start_radius : closest_point_on_spline_2d[1],
                                                            natural_coordinate_system);
 
               Point<3> closest_point_on_line_bottom = closest_point_on_line_surface;
@@ -596,405 +756,541 @@ namespace WorldBuilder
                   total_average_angle = plane_segment_angles[original_current_section][0][0]
                                         + fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][0][0]
                                                                - plane_segment_angles[original_current_section][0][0]);
-                  break;
+                  //break;
                 }
-
-              Point<3> normal_to_plane = closest_point_on_line_plus_normal_to_plane_cartesian - closest_point_on_line_cartesian;
-              normal_to_plane = normal_to_plane / normal_to_plane.norm();
-
-              // The y-axis is from the bottom/center to the closest_point_on_line,
-              // the x-axis is 90 degrees rotated from that, so we rotate around
-              // the line P1P2.
-              // Todo: Assert that the norm of the axis are not equal to zero.
-              Point<3> y_axis = closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian;
-
-              WBAssert(y_axis.norm() != 0,
-                       "Internal error: The y_axis.norm() is zero. Y_axis is " << y_axis[0] << ":" << y_axis[1] << ":" << y_axis[2]
-                       << ". closest_point_on_line_cartesian = " << closest_point_on_line_cartesian[0] << ":" << closest_point_on_line_cartesian[1] << ":" << closest_point_on_line_cartesian[2]
-                       << ", closest_point_on_line_bottom_cartesian = " << closest_point_on_line_bottom_cartesian[0] << ":" << closest_point_on_line_bottom_cartesian[1] << ":" << closest_point_on_line_bottom_cartesian[2]);
-
-              WBAssert(!std::isnan(y_axis[0]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[0]);
-              WBAssert(!std::isnan(y_axis[1]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[1]);
-              WBAssert(!std::isnan(y_axis[2]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[2]);
-
-
-              y_axis = y_axis / y_axis.norm();
-
-
-              WBAssert(!std::isnan(y_axis[0]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[0]);
-              WBAssert(!std::isnan(y_axis[1]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[1]);
-              WBAssert(!std::isnan(y_axis[2]),
-                       "Internal error: The y_axis variable is not a number: " << y_axis[2]);
-
-
-              // shorthand notation for computing the x_axis
-              double vx = y_axis[0];
-              double vy = y_axis[1];
-              double vz = y_axis[2];
-              double ux = normal_to_plane[0];
-              double uy = normal_to_plane[1];
-              double uz = normal_to_plane[2];
-
-              Point<3> x_axis(ux*ux*vx + ux*uy*vy - uz*vy + uy*uz*vz + uy*vz,
-                              uy*ux*vx + uz*vx + uy*uy*vy + uy*uz*vz - ux*vz,
-                              uz*ux*vx - uy*vx + uz*uy*vy + ux*vy + uz*uz*vz,
-                              cartesian);
-
-              WBAssert(!std::isnan(x_axis[0]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[0]);
-              WBAssert(!std::isnan(x_axis[1]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[1]);
-              WBAssert(!std::isnan(x_axis[2]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[2]);
-
-              x_axis = x_axis *(reference_on_side_of_line / x_axis.norm());
-
-
-              WBAssert(!std::isnan(x_axis[0]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[0]);
-              WBAssert(!std::isnan(x_axis[1]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[1]);
-              WBAssert(!std::isnan(x_axis[2]),
-                       "Internal error: The x_axis variable is not a number: " << x_axis[2]);
-
-              Point<2> check_point_2d(x_axis * (check_point_cartesian - closest_point_on_line_bottom_cartesian),
-                                      y_axis * (check_point_cartesian - closest_point_on_line_bottom_cartesian),
-                                      cartesian);
-
-
-              Point<2> begin_segment(x_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
-                                     y_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
-                                     cartesian);
-
-
-              WBAssert(!std::isnan(check_point_2d[0]),
-                       "Internal error: The check_point_2d variable is not a number: " << check_point_2d[0]);
-              WBAssert(!std::isnan(check_point_2d[1]),
-                       "Internal error: The check_point_2d variable is not a number: " << check_point_2d[1]);
-
-
-              WBAssert(!std::isnan(begin_segment[0]),
-                       "Internal error: The begin_segment variable is not a number: " << begin_segment[0]);
-              WBAssert(!std::isnan(begin_segment[1]),
-                       "Internal error: The begin_segment variable is not a number: " << begin_segment[1]);
-
-              Point<2> end_segment = begin_segment;
-
-
-              double total_length = 0.0;
-              double add_angle = 0.0;
-              double average_angle = 0.0;
-              for (unsigned int i_segment = 0; i_segment < plane_segment_lengths[original_current_section].size(); i_segment++)
+              else
                 {
-                  const unsigned int current_segment = i_segment;
-
-                  // compute the angle between the the previous begin and end if
-                  // the depth method is angle_at_begin_segment_with_surface.
-                  if (i_segment != 0 && depth_method == DepthMethod::angle_at_begin_segment_with_surface)
-                    {
-                      const double add_angle_inner = (begin_segment * end_segment) / (begin_segment.norm() * end_segment.norm());
-
-                      WBAssert(!std::isnan(add_angle_inner),
-                               "Internal error: The add_angle_inner variable is not a number: " << add_angle_inner
-                               << ". Variables: begin_segment = " << begin_segment[0] << ":" << begin_segment[1]
-                               << ", end_segment = " << end_segment[0] << ":" << end_segment[1]
-                               << ", begin_segment * end_segment / (begin_segment.norm() * end_segment.norm()) = "
-                               << std::setprecision(32) << begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())
-                               << ".");
-
-                      // there could be round of error problems here is the inner part is close to one
-                      WBAssert(add_angle_inner >= 0 && add_angle_inner <= 1,
-                               "Internal error: The variable add_angle_inner is smaller than zero or larger then one,"
-                               "which causes the std::acos to return nan. If it is only a little bit larger then one, "
-                               "this is probably caused by that begin and end segment are the same and round off error. "
-                               "The value of add_angle_inner = " << add_angle_inner);
-
-                      add_angle += std::acos(add_angle_inner);
-
-                      WBAssert(!std::isnan(add_angle),
-                               "Internal error: The add_angle variable is not a number: " << add_angle
-                               << ". Variables: begin_segment = " << begin_segment[0] << ":" << begin_segment[1]
-                               << ", end_segment = " << end_segment[0] << ":" << end_segment[1]
-                               << ", begin_segment * end_segment / (begin_segment.norm() * end_segment.norm()) = "
-                               << std::setprecision(32) << begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())
-                               << ", std::acos(begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())) = "
-                               << std::acos(begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())));
-                    }
 
 
+                  /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5a: unit_normal_to_plane_spherical = " << unit_normal_to_plane_spherical[0] << ":" << unit_normal_to_plane_spherical[1]
+                              << ", CPL_surface = " << closest_point_on_line_surface[0] << ":" << closest_point_on_line_surface[1]
+                              << ", CPL_cartesian = " << closest_point_on_line_cartesian[0] << ":" << closest_point_on_line_cartesian[1]
+                              << ", CPL_plus_normal_to_plane_cartesian = " << closest_point_on_line_plus_normal_to_plane_cartesian[0] << ":" << closest_point_on_line_plus_normal_to_plane_cartesian[1]  << std::endl << std::endl;
 
 
-                  begin_segment = end_segment;
+                  if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5b: unit_normal_to_plane_spherical = " << unit_normal_to_plane_spherical[0] << ":" << unit_normal_to_plane_spherical[1]
+                              << ", CPL_surface = " << closest_point_on_line_surface[0] << ":" << closest_point_on_line_surface[1]
+                              << ", CPL_cartesian = " << closest_point_on_line_cartesian[0] << ":" << closest_point_on_line_cartesian[1]
+                              << ", CPL_plus_normal_to_plane_cartesian = " << closest_point_on_line_plus_normal_to_plane_cartesian[0] << ":" << closest_point_on_line_plus_normal_to_plane_cartesian[1]  << std::endl << std::endl;
+*/
+
+
+                  Point<3> normal_to_plane  = closest_point_on_line_plus_normal_to_plane_cartesian - closest_point_on_line_cartesian;
+                  /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.0a: normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1]
+                              << ", dx = " << dx
+                              << ", dy = " << dy << std::endl;
+
+
+                  if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.0b: normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1]
+                              << ", dx = " << dx
+                              << ", dy = " << dy << std::endl;*/
+                  normal_to_plane = normal_to_plane / normal_to_plane.norm();
+
+
+                  /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.01a: normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1]
+                              << ", dx = " << dx
+                              << ", dy = " << dy << std::endl;
+
+
+                  if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.01b: normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1]
+                              << ", dx = " << dx
+                              << ", dy = " << dy << std::endl;*/
+
+
+                  // The y-axis is from the bottom/center to the closest_point_on_line,
+                  // the x-axis is 90 degrees rotated from that, so we rotate around
+                  // the line P1P2.
+                  // Todo: Assert that the norm of the axis are not equal to zero.
+                  Point<3> y_axis = closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian;
+
+                  WBAssert(y_axis.norm() != 0,
+                           "Internal error: The y_axis.norm() is zero. Y_axis is " << y_axis[0] << ":" << y_axis[1] << ":" << y_axis[2]
+                           << ". closest_point_on_line_cartesian = " << closest_point_on_line_cartesian[0] << ":" << closest_point_on_line_cartesian[1] << ":" << closest_point_on_line_cartesian[2]
+                           << ", closest_point_on_line_bottom_cartesian = " << closest_point_on_line_bottom_cartesian[0] << ":" << closest_point_on_line_bottom_cartesian[1] << ":" << closest_point_on_line_bottom_cartesian[2]);
+
+                  WBAssert(!std::isnan(y_axis[0]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[0]);
+                  WBAssert(!std::isnan(y_axis[1]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[1]);
+                  WBAssert(!std::isnan(y_axis[2]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[2]);
+
+
+                  y_axis = y_axis / y_axis.norm();
+
+
+                  WBAssert(!std::isnan(y_axis[0]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[0]);
+                  WBAssert(!std::isnan(y_axis[1]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[1]);
+                  WBAssert(!std::isnan(y_axis[2]),
+                           "Internal error: The y_axis variable is not a number: " << y_axis[2]);
+
+
+                  // shorthand notation for computing the x_axis
+                  double vx = y_axis[0];
+                  double vy = y_axis[1];
+                  double vz = y_axis[2];
+                  double ux = normal_to_plane[0];
+                  double uy = normal_to_plane[1];
+                  double uz = normal_to_plane[2];
+
+                  /* Point<3> x_axis(ux*ux*vx + ux*uy*vy - uz*vy + uy*uz*vz + uy*vz,
+                                   uy*ux*vx + uz*vx + uy*uy*vy + uy*uz*vz - ux*vz,
+                                   uz*ux*vx - uy*vx + uz*uy*vy + ux*vy + uz*uz*vz,
+                                   cartesian);*/
+
+                  Point<3> x_axis(-dy,
+                                  dx,
+                                  0,
+                                  cartesian);
+
+
+                  WBAssert(!std::isnan(x_axis[0]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[0]);
+                  WBAssert(!std::isnan(x_axis[1]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[1]);
+                  WBAssert(!std::isnan(x_axis[2]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[2]);
+
+
+                  /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.1a: x_axis = " << x_axis[0] << ":" << x_axis[1] << ":" << x_axis[2]
+                              << ", y_axis = " << y_axis[0] << ":" << y_axis[1] << ":" << y_axis[2]
+                              << ", normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1] << ":" << normal_to_plane[2] << std::endl;
+
+                  if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                    std::cout << "flag 5.1b: x_axis = " << x_axis[0] << ":" << x_axis[1] << ":" << x_axis[2]
+                              << ", y_axis = " << y_axis[0] << ":" << y_axis[1] << ":" << y_axis[2]
+                              << ", normal_to_plane = " << normal_to_plane[0] << ":" << normal_to_plane[1] << ":" << normal_to_plane[2] << std::endl;*/
+
+                  // check wheter point is between line P1P2 and spline
+                  bool between_spline_and_curve = (closest_point_on_line_2d - check_point_surface_2d).norm() < (closest_point_on_line_2d - closest_point_on_spline_2d).norm() ? true : false;
+
+                  // now check what side the reference point is compared to line P1P2
+                  const double reference_on_side_of_line = (point_list[next_section][0] - point_list[current_section][0])
+                                                           * (reference_point[1] - point_list[current_section][1])
+                                                           - (point_list[next_section][1] - point_list[current_section][1])
+                                                           * (reference_point[0] - point_list[current_section][0])
+                                                           < 0 ? -1 : 1;
+                  // in the case that the check point is between the spline and the curve, we need to know what side
+                  // of the line the curve is.
+                  //const double spline_on_side_of_line = 1;
+                  const double spline_on_side_of_line = (point_list[next_section][0] - point_list[current_section][0])
+                                                        * (closest_point_on_spline_2d[1] - point_list[current_section][1])
+                                                        - (point_list[next_section][1] - point_list[current_section][1])
+                                                        * (closest_point_on_spline_2d[0] - point_list[current_section][0])
+                                                        < 0 ? 1 : 1;
+
+                  // if the check point is not between the spline and the line, use the solutoin from reference_on_side_of_line.
+                  // if the closest_point_on_spline_2d is between the spline and the line, and the spline is on the same side as the reference,
+                  // flip, otherwise keep it.
+                  //const double reference_on_side_of_curve = (check_point_surface_2d - closest_point_on_line_2d).norm() > (check_point_surface_2d - closest_point_on_spline_2d).norm() ? -1 : 1;
+                  const double reference_on_side_of_curve = between_spline_and_curve ? reference_on_side_of_line*spline_on_side_of_line : reference_on_side_of_line;
+                  x_axis = x_axis *(reference_on_side_of_curve / x_axis.norm());
+
+                  //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                  //  std::cout << "flag 5.2a: reference_on_side_of_line = " << reference_on_side_of_line << ", spline_on_side_of_line = " << spline_on_side_of_line
+                  //            << ", between_spline_and_curve = " << between_spline_and_curve << ", reference_on_side_of_curve = " << reference_on_side_of_curve << std::endl;
+
+                  //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                  //  std::cout << "flag 5.2b: reference_on_side_of_line = " << reference_on_side_of_line << ", spline_on_side_of_line = " << spline_on_side_of_line
+                  //            << ", between_spline_and_curve = " << between_spline_and_curve << ", reference_on_side_of_curve = " << reference_on_side_of_curve << std::endl;
+
+
+                  WBAssert(!std::isnan(x_axis[0]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[0]);
+                  WBAssert(!std::isnan(x_axis[1]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[1]);
+                  WBAssert(!std::isnan(x_axis[2]),
+                           "Internal error: The x_axis variable is not a number: " << x_axis[2]);
+
+                  Point<2> check_point_2d(x_axis * (check_point_cartesian - closest_point_on_line_bottom_cartesian),
+                                          y_axis * (check_point_cartesian - closest_point_on_line_bottom_cartesian),
+                                          cartesian);
+
+
+                  Point<2> begin_segment(x_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
+                                         y_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
+                                         cartesian);
+
+
+                  WBAssert(!std::isnan(check_point_2d[0]),
+                           "Internal error: The check_point_2d variable is not a number: " << check_point_2d[0]);
+                  WBAssert(!std::isnan(check_point_2d[1]),
+                           "Internal error: The check_point_2d variable is not a number: " << check_point_2d[1]);
+
 
                   WBAssert(!std::isnan(begin_segment[0]),
                            "Internal error: The begin_segment variable is not a number: " << begin_segment[0]);
                   WBAssert(!std::isnan(begin_segment[1]),
                            "Internal error: The begin_segment variable is not a number: " << begin_segment[1]);
 
-
-                  // This interpolates different properties between P1 and P2 (the
-                  // points of the plane at the surface)
-                  const double degree_90_to_rad = 0.5 * const_pi;
-
-                  WBAssert(plane_segment_angles.size() > original_next_section,
-                           "Error: original_next_section = " << original_next_section
-                           << ", and plane_segment_angles.size() = " << plane_segment_angles.size());
+                  Point<2> end_segment = begin_segment;
 
 
-                  WBAssert(plane_segment_angles[original_next_section].size() > current_segment,
-                           "Error: current_segment = "  << current_segment
-                           << ", and current_segment.size() = " << plane_segment_angles[original_next_section].size());
-
-                  /*std::cout << "plane_segment_angles = " << plane_segment_angles[original_current_section][current_segment][1] << std::endl;
-                  std::cout << "fraction_CPL_P1P2 = " << fraction_CPL_P1P2 << std::endl;
-                  std::cout << "original_next_section = " << original_next_section << std::endl;
-                  std::cout << "plane_segment_angles.size() = " << plane_segment_angles.size() << std::endl;
-                  std::cout << "current_segment = " << current_segment << std::endl;
-                  std::cout << "plane_segment_angles[original_next_section].size() = " << plane_segment_angles[original_next_section].size() << std::endl;
-                  std::cout << "add_angle = " << add_angle << std::endl;
-                  */
-
-                  const double interpolated_angle_top    = plane_segment_angles[original_current_section][current_segment][0]
-                                                           + fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][current_segment][0]
-                                                                                  - plane_segment_angles[original_current_section][current_segment][0])
-                                                           + add_angle;
-
-                  const double interpolated_angle_bottom = plane_segment_angles[original_current_section][current_segment][1]
-                                                           + fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][current_segment][1]
-                                                                                  - plane_segment_angles[original_current_section][current_segment][1])
-                                                           + add_angle;
-
-
-                  double interpolated_segment_length     = plane_segment_lengths[original_current_section][current_segment]
-                                                           + fraction_CPL_P1P2 * (plane_segment_lengths[original_next_section][current_segment]
-                                                                                  - plane_segment_lengths[original_current_section][current_segment]);
-                  WBAssert(!std::isnan(interpolated_angle_top),
-                           "Internal error: The interpolated_angle_top variable is not a number: " << interpolated_angle_top);
-
-                  // We want to know where the end point of this segment is (and
-                  // the start of the next segment). There are two cases which we
-                  // will deal with separately. The first one is if the angle is
-                  // constant. The second one is if the angle changes.
-                  const double difference_in_angle_along_segment = interpolated_angle_top - interpolated_angle_bottom;
-
-                  if (std::fabs(difference_in_angle_along_segment) < 1e-8)
+                  double total_length = 0.0;
+                  double add_angle = 0.0;
+                  double average_angle = 0.0;
+                  for (unsigned int i_segment = 0; i_segment < plane_segment_lengths[original_current_section].size(); i_segment++)
                     {
-                      // The angle is constant. It is easy find find the end of
-                      // this segment and the distance.
-                      if (interpolated_segment_length != 0)
+                      const unsigned int current_segment = i_segment;
+
+                      // compute the angle between the the previous begin and end if
+                      // the depth method is angle_at_begin_segment_with_surface.
+                      if (i_segment != 0 && depth_method == DepthMethod::angle_at_begin_segment_with_surface)
                         {
-                          end_segment[0] += interpolated_segment_length * std::sin(degree_90_to_rad - interpolated_angle_top);
-                          end_segment[1] -= interpolated_segment_length * std::cos(degree_90_to_rad - interpolated_angle_top);
+                          const double add_angle_inner = (begin_segment * end_segment) / (begin_segment.norm() * end_segment.norm());
 
-                          Point<2> begin_end_segment = end_segment - begin_segment;
-                          Point<2> normal_2d_plane(-begin_end_segment[0],begin_end_segment[1], cartesian);
-                          WBAssert(normal_2d_plane.norm() != 0, "Internal Error: normal_2d_plane.norm() is zero, which should not happen. "
-                                   << "Extra info: begin_end_segment[0] = " << begin_end_segment[0]
-                                   << ", begin_end_segment[1] = " << begin_end_segment[1]
-                                   << ", end_segment: [" << end_segment[0] << "," << end_segment[1] << "]"
-                                   << ", begin_segment: [" << begin_segment[0] << "," << begin_segment[1] << "]"
-                                  );
-                          normal_2d_plane /= normal_2d_plane.norm();
+                          WBAssert(!std::isnan(add_angle_inner),
+                                   "Internal error: The add_angle_inner variable is not a number: " << add_angle_inner
+                                   << ". Variables: begin_segment = " << begin_segment[0] << ":" << begin_segment[1]
+                                   << ", end_segment = " << end_segment[0] << ":" << end_segment[1]
+                                   << ", begin_segment * end_segment / (begin_segment.norm() * end_segment.norm()) = "
+                                   << std::setprecision(32) << begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())
+                                   << ".");
 
-                          // Now find the distance of a point to this line.
-                          // Based on http://geomalgorithms.com/a02-_lines.html.
-                          const Point<2> BSP_ESP = end_segment - begin_segment;
-                          const Point<2> BSP_CP = check_point_2d - begin_segment;
+                          // there could be round of error problems here is the inner part is close to one
+                          WBAssert(add_angle_inner >= 0 && add_angle_inner <= 1,
+                                   "Internal error: The variable add_angle_inner is smaller than zero or larger then one,"
+                                   "which causes the std::acos to return nan. If it is only a little bit larger then one, "
+                                   "this is probably caused by that begin and end segment are the same and round off error. "
+                                   "The value of add_angle_inner = " << add_angle_inner);
 
-                          const double c1 = BSP_ESP * BSP_CP;
-                          const double c2 = BSP_ESP * BSP_ESP;
+                          add_angle += std::acos(add_angle_inner);
 
-                          if (c1 < 0 || c2 < c1)
-                            {
-                              new_distance = INFINITY;
-                              new_along_plane_distance = INFINITY;
-                            }
-                          else
-                            {
-                              const Point<2> Pb = begin_segment + (c1/c2) * BSP_ESP;
-                              const double side_of_line =  (begin_segment[0] - end_segment[0]) * (check_point_2d[1] - begin_segment[1])
-                                                           - (begin_segment[1] - end_segment[1]) * (check_point_2d[0] - begin_segment[0])
-                                                           < 0 ? -1.0 : 1.0;
-
-                              new_distance = side_of_line * (check_point_2d - Pb).norm();
-                              new_along_plane_distance = (begin_segment - Pb).norm();
-                            }
-
+                          WBAssert(!std::isnan(add_angle),
+                                   "Internal error: The add_angle variable is not a number: " << add_angle
+                                   << ". Variables: begin_segment = " << begin_segment[0] << ":" << begin_segment[1]
+                                   << ", end_segment = " << end_segment[0] << ":" << end_segment[1]
+                                   << ", begin_segment * end_segment / (begin_segment.norm() * end_segment.norm()) = "
+                                   << std::setprecision(32) << begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())
+                                   << ", std::acos(begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())) = "
+                                   << std::acos(begin_segment * end_segment / (begin_segment.norm() * end_segment.norm())));
                         }
-                    }
-                  else
-                    {
-                      // The angle is not constant. This means that we need to
-                      // define a circle. First find the center of the circle.
-                      const double radius_angle_circle = std::fabs(interpolated_segment_length/difference_in_angle_along_segment);
 
-                      WBAssert(!std::isnan(radius_angle_circle),
-                               "Internal error: The radius_angle_circle variable is not a number: " << radius_angle_circle
-                               << ". interpolated_segment_length = " << interpolated_segment_length
-                               << ", difference_in_angle_along_segment = " << difference_in_angle_along_segment);
 
-                      const double cos_angle_top = std::cos(interpolated_angle_top);
 
-                      WBAssert(!std::isnan(cos_angle_top),
-                               "Internal error: The radius_angle_circle variable is not a number: " << cos_angle_top
-                               << ". interpolated_angle_top = " << interpolated_angle_top);
 
-                      Point<2> center_circle(cartesian);
-                      if (std::fabs(interpolated_angle_top - 0.5 * const_pi) < 1e-8)
+                      begin_segment = end_segment;
+
+                      WBAssert(!std::isnan(begin_segment[0]),
+                               "Internal error: The begin_segment variable is not a number: " << begin_segment[0]);
+                      WBAssert(!std::isnan(begin_segment[1]),
+                               "Internal error: The begin_segment variable is not a number: " << begin_segment[1]);
+
+
+                      // This interpolates different properties between P1 and P2 (the
+                      // points of the plane at the surface)
+                      const double degree_90_to_rad = 0.5 * const_pi;
+
+                      WBAssert(plane_segment_angles.size() > original_next_section,
+                               "Error: original_next_section = " << original_next_section
+                               << ", and plane_segment_angles.size() = " << plane_segment_angles.size());
+
+
+                      WBAssert(plane_segment_angles[original_next_section].size() > current_segment,
+                               "Error: current_segment = "  << current_segment
+                               << ", and current_segment.size() = " << plane_segment_angles[original_next_section].size());
+
+                      /*std::cout << "plane_segment_angles = " << plane_segment_angles[original_current_section][current_segment][1] << std::endl;
+                      std::cout << "fraction_CPL_P1P2 = " << fraction_CPL_P1P2 << std::endl;
+                      std::cout << "original_next_section = " << original_next_section << std::endl;
+                      std::cout << "plane_segment_angles.size() = " << plane_segment_angles.size() << std::endl;
+                      std::cout << "current_segment = " << current_segment << std::endl;
+                      std::cout << "plane_segment_angles[original_next_section].size() = " << plane_segment_angles[original_next_section].size() << std::endl;
+                      std::cout << "add_angle = " << add_angle << std::endl;
+                      */
+
+                      const double interpolated_angle_top    = plane_segment_angles[original_current_section][current_segment][0]
+                                                               + fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][current_segment][0]
+                                                                                      - plane_segment_angles[original_current_section][current_segment][0])
+                                                               + add_angle;
+
+                      const double interpolated_angle_bottom = plane_segment_angles[original_current_section][current_segment][1]
+                                                               + fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][current_segment][1]
+                                                                                      - plane_segment_angles[original_current_section][current_segment][1])
+                                                               + add_angle;
+
+
+                      double interpolated_segment_length     = plane_segment_lengths[original_current_section][current_segment]
+                                                               + fraction_CPL_P1P2 * (plane_segment_lengths[original_next_section][current_segment]
+                                                                                      - plane_segment_lengths[original_current_section][current_segment]);
+                      WBAssert(!std::isnan(interpolated_angle_top),
+                               "Internal error: The interpolated_angle_top variable is not a number: " << interpolated_angle_top);
+
+                      // We want to know where the end point of this segment is (and
+                      // the start of the next segment). There are two cases which we
+                      // will deal with separately. The first one is if the angle is
+                      // constant. The second one is if the angle changes.
+                      const double difference_in_angle_along_segment = interpolated_angle_top - interpolated_angle_bottom;
+
+                      if (std::fabs(difference_in_angle_along_segment) < 1e-8)
                         {
-                          // if interpolated_angle_top is 90 degrees, the tan function
-                          // is undefined (1/0). What we really want in this case is
-                          // set the center to the correct location which is x = the x
-                          //begin point + radius and y = the y begin point.
-                          center_circle[0] = difference_in_angle_along_segment > 0 ? begin_segment[0] + radius_angle_circle : begin_segment[0] - radius_angle_circle;
-                          center_circle[1] = begin_segment[1];
-                        }
-                      else if (std::fabs(interpolated_angle_top - 1.5 * const_pi) < 1e-8)
-                        {
-                          // if interpolated_angle_top is 270 degrees, the tan function
-                          // is undefined (-1/0). What we really want in this case is
-                          // set the center to the correct location which is x = the x
-                          //begin point - radius and y = the y begin point.
-                          center_circle[0] = difference_in_angle_along_segment > 0 ? begin_segment[0] - radius_angle_circle : begin_segment[0] + radius_angle_circle;
-                          center_circle[1] = begin_segment[1];
+                          // The angle is constant. It is easy find find the end of
+                          // this segment and the distance.
+                          if (interpolated_segment_length != 0)
+                            {
+                              end_segment[0] += interpolated_segment_length * std::sin(degree_90_to_rad - interpolated_angle_top);
+                              end_segment[1] -= interpolated_segment_length * std::cos(degree_90_to_rad - interpolated_angle_top);
+
+                              Point<2> begin_end_segment = end_segment - begin_segment;
+                              Point<2> normal_2d_plane(-begin_end_segment[0],begin_end_segment[1], cartesian);
+                              WBAssert(normal_2d_plane.norm() != 0, "Internal Error: normal_2d_plane.norm() is zero, which should not happen. "
+                                       << "Extra info: begin_end_segment[0] = " << begin_end_segment[0]
+                                       << ", begin_end_segment[1] = " << begin_end_segment[1]
+                                       << ", end_segment: [" << end_segment[0] << "," << end_segment[1] << "]"
+                                       << ", begin_segment: [" << begin_segment[0] << "," << begin_segment[1] << "]"
+                                      );
+                              normal_2d_plane /= normal_2d_plane.norm();
+
+                              // Now find the distance of a point to this line.
+                              // Based on http://geomalgorithms.com/a02-_lines.html.
+                              const Point<2> BSP_ESP = end_segment - begin_segment;
+                              const Point<2> BSP_CP = check_point_2d - begin_segment;
+
+                              const double c1 = BSP_ESP * BSP_CP;
+                              const double c2 = BSP_ESP * BSP_ESP;
+
+                              if (c1 < 0 || c2 < c1)
+                                {
+                                  new_distance = INFINITY;
+                                  new_along_plane_distance = INFINITY;
+                                }
+                              else
+                                {
+                                  const Point<2> Pb = begin_segment + (c1/c2) * BSP_ESP;
+                                  const double side_of_line =  (begin_segment[0] - end_segment[0]) * (check_point_2d[1] - begin_segment[1])
+                                                               - (begin_segment[1] - end_segment[1]) * (check_point_2d[0] - begin_segment[0])
+                                                               < 0 ? -1.0 : 1.0;
+
+                                  new_distance = side_of_line * (check_point_2d - Pb).norm();
+                                  new_along_plane_distance = (begin_segment - Pb).norm();
+                                }
+
+                            }
                         }
                       else
                         {
-                          double tan_angle_top = std::tan(interpolated_angle_top);
+                          // The angle is not constant. This means that we need to
+                          // define a circle. First find the center of the circle.
+                          const double radius_angle_circle = std::fabs(interpolated_segment_length/difference_in_angle_along_segment);
 
-                          WBAssert(!std::isnan(tan_angle_top),
-                                   "Internal error: The tan_angle_top variable is not a number: " << tan_angle_top);
-                          const double center_circle_y = difference_in_angle_along_segment < 0 ?
-                                                         begin_segment[1] - radius_angle_circle * cos_angle_top
-                                                         : begin_segment[1] + radius_angle_circle * cos_angle_top;
+                          WBAssert(!std::isnan(radius_angle_circle),
+                                   "Internal error: The radius_angle_circle variable is not a number: " << radius_angle_circle
+                                   << ". interpolated_segment_length = " << interpolated_segment_length
+                                   << ", difference_in_angle_along_segment = " << difference_in_angle_along_segment);
 
-                          WBAssert(!std::isnan(center_circle_y),
-                                   "Internal error: The center_circle_y variable is not a number: " << center_circle_y
-                                   << ". begin_segment[1] = " << begin_segment[1]
-                                   << ", radius_angle_circle = " << radius_angle_circle
-                                   << ", cos_angle_top = " << cos_angle_top);
+                          const double cos_angle_top = std::cos(interpolated_angle_top);
 
-                          // to prevent round off errors becomming dominant, we check
-                          // whether center_circle_y - begin_segment[1] should be zero.
-                          // TODO: improve this to some kind of relative difference.
-                          const double CCYBS = center_circle_y - begin_segment[1];
+                          WBAssert(!std::isnan(cos_angle_top),
+                                   "Internal error: The radius_angle_circle variable is not a number: " << cos_angle_top
+                                   << ". interpolated_angle_top = " << interpolated_angle_top);
 
-                          WBAssert(!std::isnan(CCYBS),
-                                   "Internal error: The CCYBS variable is not a number: " << CCYBS);
+                          Point<2> center_circle(cartesian);
+                          if (std::fabs(interpolated_angle_top - 0.5 * const_pi) < 1e-8)
+                            {
+                              // if interpolated_angle_top is 90 degrees, the tan function
+                              // is undefined (1/0). What we really want in this case is
+                              // set the center to the correct location which is x = the x
+                              //begin point + radius and y = the y begin point.
+                              center_circle[0] = difference_in_angle_along_segment > 0 ? begin_segment[0] + radius_angle_circle : begin_segment[0] - radius_angle_circle;
+                              center_circle[1] = begin_segment[1];
+                            }
+                          else if (std::fabs(interpolated_angle_top - 1.5 * const_pi) < 1e-8)
+                            {
+                              // if interpolated_angle_top is 270 degrees, the tan function
+                              // is undefined (-1/0). What we really want in this case is
+                              // set the center to the correct location which is x = the x
+                              //begin point - radius and y = the y begin point.
+                              center_circle[0] = difference_in_angle_along_segment > 0 ? begin_segment[0] - radius_angle_circle : begin_segment[0] + radius_angle_circle;
+                              center_circle[1] = begin_segment[1];
+                            }
+                          else
+                            {
+                              double tan_angle_top = std::tan(interpolated_angle_top);
+
+                              WBAssert(!std::isnan(tan_angle_top),
+                                       "Internal error: The tan_angle_top variable is not a number: " << tan_angle_top);
+                              const double center_circle_y = difference_in_angle_along_segment < 0 ?
+                                                             begin_segment[1] - radius_angle_circle * cos_angle_top
+                                                             : begin_segment[1] + radius_angle_circle * cos_angle_top;
+
+                              WBAssert(!std::isnan(center_circle_y),
+                                       "Internal error: The center_circle_y variable is not a number: " << center_circle_y
+                                       << ". begin_segment[1] = " << begin_segment[1]
+                                       << ", radius_angle_circle = " << radius_angle_circle
+                                       << ", cos_angle_top = " << cos_angle_top);
+
+                              // to prevent round off errors becomming dominant, we check
+                              // whether center_circle_y - begin_segment[1] should be zero.
+                              // TODO: improve this to some kind of relative difference.
+                              const double CCYBS = center_circle_y - begin_segment[1];
+
+                              WBAssert(!std::isnan(CCYBS),
+                                       "Internal error: The CCYBS variable is not a number: " << CCYBS);
 
 
 
-                          center_circle[0] = begin_segment[0] + tan_angle_top * (CCYBS);
-                          center_circle[1] = center_circle_y;
+                              center_circle[0] = begin_segment[0] + tan_angle_top * (CCYBS);
+                              center_circle[1] = center_circle_y;
+                            }
+
+                          WBAssert(!std::isnan(center_circle[0]) || !std::isnan(center_circle[1]),
+                                   "Internal error: The center variable contains not a number: " << center_circle[0] << ":" << center_circle[0]);
+                          WBAssert(std::fabs((begin_segment-center_circle).norm() - std::fabs(radius_angle_circle))
+                                   < 1e-8 * std::fabs((begin_segment-center_circle).norm() + std::fabs(radius_angle_circle)),
+                                   "Internal error: The center of the circle is not a radius away from the begin point. " << std::endl
+                                   << "The center is located at " << center_circle[0] << ":" << center_circle[1] << std::endl
+                                   << "The begin point is located at " << begin_segment[0] << ":" << begin_segment[1] << std::endl
+                                   << "The computed radius is " << std::fabs((begin_segment-center_circle).norm())
+                                   << ", and it should be " << radius_angle_circle << ".");
+
+
+                          // Now compute the location of the end of the segment by
+                          // rotating P1 around the center_circle
+                          Point<2> BSPC = begin_segment - center_circle;
+                          const double sin_angle_diff = sin(difference_in_angle_along_segment);
+                          const double cos_angle_diff = cos(difference_in_angle_along_segment);
+                          end_segment[0] = cos_angle_diff * BSPC[0] - sin_angle_diff * BSPC[1] + center_circle[0];
+                          end_segment[1] = sin_angle_diff * BSPC[0] + cos_angle_diff * BSPC[1] + center_circle[1];
+
+
+
+                          WBAssert(std::fabs((end_segment-center_circle).norm() - std::fabs(radius_angle_circle))
+                                   < 1e-8 * std::fabs((end_segment-center_circle).norm() + std::fabs(radius_angle_circle)) ,
+                                   "Internal error: The center of the circle is not a radius away from the end point. " << std::endl
+                                   << "The center is located at " << center_circle[0] << ":" << center_circle[1] << std::endl
+                                   << "The end point is located at " << end_segment[0] << ":" << end_segment[1] << std::endl
+                                   << "The computed radius is " << std::fabs((end_segment-center_circle).norm())
+                                   << ", and it should be " << radius_angle_circle << ".");
+
+                          // Now check if the angle of the check point in this circle
+                          // is larger then the angle of P1 and smaller then P1 + angle
+                          // difference. If that is the case then the distance from the
+                          // plane is radius - (center - check_point).norm(). Otherwise
+                          // it is infinity.
+                          // The angle of the check point is computed with the help of
+                          // dot product. But before that we need to adjust the check
+                          // point 2d.
+                          const Point<2> CPCR = check_point_2d - center_circle;
+                          const double CPCR_norm = CPCR.norm();
+
+                          const double dot_product = CPCR * Point<2>(0, radius_angle_circle, cartesian);
+                          // If the x of the check point is larger then the x of center
+                          // the circle, the angle is more than 180 degree, but the dot
+                          // product will decrease instead of increase from 180 degrees.
+                          // To fix this we make a special case for this.
+                          // Furthermore, when the check point is at the same location as
+                          // the center of the circle, we count that point as belonging
+                          // to the top of the top segment (0 degree).
+                          double check_point_angle = CPCR_norm == 0 ? 2.0 * const_pi : (check_point_2d[0] <= center_circle[0]
+                                                                                        ? std::acos(dot_product/(CPCR_norm * radius_angle_circle))
+                                                                                        : 2.0 * const_pi - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
+
+                          //if (check_point[0]>if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                          //  std::cout << "flag 6a: difference_in_angle_along_segment = " << difference_in_angle_along_segment << ", check_point_angle = " << check_point_angle
+                          //            << ", CPCR_norm = " << CPCR_norm << ", radius_angle_circle = " << radius_angle_circle << ", check_point_2d[0] = " << check_point_2d[0] << ", center_circle[0] = " << center_circle[0] << std::endl;
+
+
+                          //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                          //  std::cout << "flag 6b: difference_in_angle_along_segment = " << difference_in_angle_along_segment << ", check_point_angle = " << check_point_angle
+                          //            << ", CPCR_norm = " << CPCR_norm << ", radius_angle_circle = " << radius_angle_circle << ", check_point_2d[0] = " << check_point_2d[0] << ", center_circle[0] = " << center_circle[0] << std::endl;
+
+                          check_point_angle = difference_in_angle_along_segment >= 0 ? const_pi - check_point_angle : 2.0 * const_pi - check_point_angle;
+                          //check_point_angle = check_point_angle > const_pi ? check_point_angle - const_pi : check_point_angle;
+                          //check_point_angle = check_point_angle > const_pi ? check_point_angle - const_pi : check_point_angle;
+
+                          // In the case that it is exactly 2 * pi, bring it back to zero
+                          check_point_angle = (std::fabs(check_point_angle - 2 * const_pi) < 1e-14 ? 0 : check_point_angle);
+                          //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                          //  std::cout << "flag 7a: difference_in_angle_along_segment = " << difference_in_angle_along_segment << ", check_point_angle = " << check_point_angle
+                          //            << ", interpolated_angle_top = " << interpolated_angle_top << ", interpolated_angle_bottom = " << interpolated_angle_bottom  << std::endl;
+
+                          //if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                           // std::cout << "flag 7b: difference_in_angle_along_segment = " << difference_in_angle_along_segment << ", check_point_angle = " << check_point_angle
+                          //            << ", interpolated_angle_top = " << interpolated_angle_top << ", interpolated_angle_bottom = " << interpolated_angle_bottom  << std::endl;
+
+                          if ((difference_in_angle_along_segment > 0 && (check_point_angle <= interpolated_angle_top || std::fabs(check_point_angle - interpolated_angle_top) < 1e-12)
+                               && (check_point_angle >= interpolated_angle_bottom || std::fabs(check_point_angle - interpolated_angle_bottom) < 1e-12))
+                              || (difference_in_angle_along_segment < 0 && (check_point_angle >= interpolated_angle_top || std::fabs(check_point_angle - interpolated_angle_top) < 1e-12)
+                                  && (check_point_angle <= interpolated_angle_bottom || std::fabs(check_point_angle - interpolated_angle_bottom) < 1e-12)))
+                            {
+                              new_distance = (radius_angle_circle - CPCR_norm) * (difference_in_angle_along_segment < 0 ? 1 : -1);
+                              new_along_plane_distance = (radius_angle_circle * check_point_angle - radius_angle_circle * interpolated_angle_top) * (difference_in_angle_along_segment < 0 ? 1 : -1);
+
+
+                              /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                                std::cout << ">>flag 8a: new_distance = " << new_distance << ", new_along_plane_distance = " << new_along_plane_distance << ", interpolated_segment_length = " << interpolated_segment_length
+                                          << ", radius_angle_circle = " << radius_angle_circle << ", check_point_angle = " << check_point_angle << ", interpolated_angle_top = " << interpolated_angle_top
+                                          << ", radius_angle_circle * check_point_angle = " << radius_angle_circle *check_point_angle
+                                          << std::endl;
+
+
+                              if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                                std::cout << ">>flag 8b: new_distance = " << new_distance << ", new_along_plane_distance = " << new_along_plane_distance << ", interpolated_segment_length = " << interpolated_segment_length
+                                          << ", radius_angle_circle = " << radius_angle_circle << ", check_point_angle = " << check_point_angle << ", interpolated_angle_top = " << interpolated_angle_top
+                                          << ", radius_angle_circle * check_point_angle = " << radius_angle_circle *check_point_angle
+                                          << std::endl;*/
+                            }
+
                         }
 
-                      WBAssert(!std::isnan(center_circle[0]) || !std::isnan(center_circle[1]),
-                               "Internal error: The center variable contains not a number: " << center_circle[0] << ":" << center_circle[0]);
-                      WBAssert(std::fabs((begin_segment-center_circle).norm() - std::fabs(radius_angle_circle))
-                               < 1e-8 * std::fabs((begin_segment-center_circle).norm() + std::fabs(radius_angle_circle)),
-                               "Internal error: The center of the circle is not a radius away from the begin point. " << std::endl
-                               << "The center is located at " << center_circle[0] << ":" << center_circle[1] << std::endl
-                               << "The begin point is located at " << begin_segment[0] << ":" << begin_segment[1] << std::endl
-                               << "The computed radius is " << std::fabs((begin_segment-center_circle).norm())
-                               << ", and it should be " << radius_angle_circle << ".");
-
-
-                      // Now compute the location of the end of the segment by
-                      // rotating P1 around the center_circle
-                      Point<2> BSPC = begin_segment - center_circle;
-                      const double sin_angle_diff = sin(difference_in_angle_along_segment);
-                      const double cos_angle_diff = cos(difference_in_angle_along_segment);
-                      end_segment[0] = cos_angle_diff * BSPC[0] - sin_angle_diff * BSPC[1] + center_circle[0];
-                      end_segment[1] = sin_angle_diff * BSPC[0] + cos_angle_diff * BSPC[1] + center_circle[1];
-
-
-
-                      WBAssert(std::fabs((end_segment-center_circle).norm() - std::fabs(radius_angle_circle))
-                               < 1e-8 * std::fabs((end_segment-center_circle).norm() + std::fabs(radius_angle_circle)) ,
-                               "Internal error: The center of the circle is not a radius away from the end point. " << std::endl
-                               << "The center is located at " << center_circle[0] << ":" << center_circle[1] << std::endl
-                               << "The end point is located at " << end_segment[0] << ":" << end_segment[1] << std::endl
-                               << "The computed radius is " << std::fabs((end_segment-center_circle).norm())
-                               << ", and it should be " << radius_angle_circle << ".");
-
-                      // Now check if the angle of the check point in this circle
-                      // is larger then the angle of P1 and smaller then P1 + angle
-                      // difference. If that is the case then the distance from the
-                      // plane is radius - (center - check_point).norm(). Otherwise
-                      // it is infinity.
-                      // The angle of the check point is computed with the help of
-                      // dot product. But before that we need to adjust the check
-                      // point 2d.
-                      const Point<2> CPCR = check_point_2d - center_circle;
-                      const double CPCR_norm = CPCR.norm();
-
-                      const double dot_product = CPCR * Point<2>(0, radius_angle_circle, cartesian);
-                      // If the x of the check point is larger then the x of center
-                      // the circle, the angle is more than 180 degree, but the dot
-                      // product will decrease instead of increase from 180 degrees.
-                      // To fix this we make a special case for this.
-                      // Furthermore, when the check point is at the same location as
-                      // the center of the circle, we count that point as belonging
-                      // to the top of the top segment (0 degree).
-                      double check_point_angle = CPCR_norm == 0 ? 2.0 * const_pi : (check_point_2d[0] <= center_circle[0]
-                                                                                    ? std::acos(dot_product/(CPCR_norm * radius_angle_circle))
-                                                                                    : 2.0 * const_pi - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
-                      check_point_angle = difference_in_angle_along_segment >= 0 ? const_pi - check_point_angle : 2.0 * const_pi - check_point_angle;
-
-                      // In the case that it is exactly 2 * pi, bring it back to zero
-                      check_point_angle = (std::fabs(check_point_angle - 2 * const_pi) < 1e-14 ? 0 : check_point_angle);
-
-                      if ((difference_in_angle_along_segment > 0 && (check_point_angle <= interpolated_angle_top || std::fabs(check_point_angle - interpolated_angle_top) < 1e-12)
-                           && (check_point_angle >= interpolated_angle_bottom || std::fabs(check_point_angle - interpolated_angle_bottom) < 1e-12))
-                          || (difference_in_angle_along_segment < 0 && (check_point_angle >= interpolated_angle_top || std::fabs(check_point_angle - interpolated_angle_top) < 1e-12)
-                              && (check_point_angle <= interpolated_angle_bottom || std::fabs(check_point_angle - interpolated_angle_bottom) < 1e-12)))
+                      // Now we need to see whether we need to update the information
+                      // based on whether this segment is the closest one to the point
+                      // up to now. To do this we first look whether the point falls
+                      // within the bound of the segment and if it is actually closer.
+                      // TODO: find out whether the fabs() are needed.
+                      if (new_along_plane_distance >= -1e-10 &&
+                          new_along_plane_distance <= std::fabs(interpolated_segment_length) &&
+                          std::fabs(new_distance) < std::fabs(distance))
                         {
-                          new_distance = (radius_angle_circle - CPCR_norm) * (difference_in_angle_along_segment < 0 ? 1 : -1);
-                          new_along_plane_distance = (radius_angle_circle * check_point_angle - radius_angle_circle * interpolated_angle_top) * (difference_in_angle_along_segment < 0 ? 1 : -1);
+                          /*if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 3900 && check_point[1] < 4100 && check_point[2] < 121000 && check_point[2] > 119000)
+                            {
+                              std::cout << ">>flag 9a: new_distance = " << new_distance << ", new_along_plane_distance = " << new_along_plane_distance  << std::endl;
+                              //WBAssert(false,"boe!");
+                            }
+
+
+                          if (check_point[0]>225000 && check_point[0]<227000 && check_point[1] > 13332 && check_point[1] < 13334 && check_point[2] < 121000 && check_point[2] > 119000)
+                            {
+                              std::cout << ">>flag 9b: new_distance = " << new_distance << ", new_along_plane_distance = " << new_along_plane_distance << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+                              //WBAssert(false,"boe!");
+                            }*/
+                          // There are two specific cases we are concerned with. The
+                          // first case is that we want to have both the positive and
+                          // negative distances (above and below the line). The second
+                          // case is that we only want positive distances.
+                          distance = only_positive ? std::fabs(new_distance) : new_distance;
+                          along_plane_distance = new_along_plane_distance + total_length;//(closest_point_on_spline_2d-check_point_surface_2d).norm();//new_along_plane_distance + total_length;
+                          section = current_section;
+                          section_fraction = fraction_CPL_P1P2;
+                          segment = i_segment;
+                          segment_fraction = new_along_plane_distance / interpolated_segment_length;
+                          total_average_angle = (average_angle * total_length
+                                                 + 0.5 * (interpolated_angle_top + interpolated_angle_bottom  - 2 * add_angle) * new_along_plane_distance);
+                          total_average_angle = (total_average_angle == 0 ? 0 : total_average_angle /
+                                                 (total_length + new_along_plane_distance));
                         }
 
+                      // increase average angle
+                      average_angle = (average_angle * total_length +
+                                       0.5 * (interpolated_angle_top + interpolated_angle_bottom  - 2 * add_angle) * interpolated_segment_length);
+                      average_angle = (average_angle == 0 ? 0 : average_angle /
+                                       (total_length + interpolated_segment_length));
+                      // increase the total length for the next segment.
+                      total_length += interpolated_segment_length;
                     }
-
-                  // Now we need to see whether we need to update the information
-                  // based on whether this segment is the closest one to the point
-                  // up to now. To do this we first look whether the point falls
-                  // within the bound of the segment and if it is actually closer.
-                  // TODO: find out whether the fabs() are needed.
-                  if (new_along_plane_distance >= -1e-10 &&
-                      new_along_plane_distance <= std::fabs(interpolated_segment_length) &&
-                      std::fabs(new_distance) < std::fabs(distance))
-                    {
-                      // There are two specific cases we are concerned with. The
-                      // first case is that we want to have both the positive and
-                      // negative distances (above and below the line). The second
-                      // case is that we only want positive distances.
-                      distance = only_positive ? std::fabs(new_distance) : new_distance;
-                      along_plane_distance = new_along_plane_distance + total_length;
-                      section = current_section;
-                      section_fraction = fraction_CPL_P1P2;
-                      segment = i_segment;
-                      segment_fraction = new_along_plane_distance / interpolated_segment_length;
-                      total_average_angle = (average_angle * total_length
-                                             + 0.5 * (interpolated_angle_top + interpolated_angle_bottom  - 2 * add_angle) * new_along_plane_distance);
-                      total_average_angle = (total_average_angle == 0 ? 0 : total_average_angle /
-                                             (total_length + new_along_plane_distance));
-                    }
-
-                  // increase average angle
-                  average_angle = (average_angle * total_length +
-                                   0.5 * (interpolated_angle_top + interpolated_angle_bottom  - 2 * add_angle) * interpolated_segment_length);
-                  average_angle = (average_angle == 0 ? 0 : average_angle /
-                                   (total_length + interpolated_segment_length));
-                  // increase the total length for the next segment.
-                  total_length += interpolated_segment_length;
                 }
             }
-        }
+          }
+      }
       std::map<std::string, double> return_values;
       return_values["distanceFromPlane"] = distance;
       return_values["distanceAlongPlane"] = along_plane_distance;
@@ -1122,6 +1418,133 @@ namespace WorldBuilder
           interpol = ((m_a[idx]*h + m_b[idx])*h + m_c[idx])*h + m_y[idx];
         }
       return interpol;
+    }
+
+    double interpolation::derivative (double x) const
+    {
+      size_t n = m_x.size();
+      // find the closest point m_x[idx] < x, idx=0 even if x<m_x[0]
+      std::vector<double>::const_iterator it;
+      it = std::lower_bound(m_x.begin(),m_x.end(),x);
+      int idx = std::max( int(it-m_x.begin())-1, 0);
+
+      double h = x-m_x[idx];
+      double interpol;
+      if (x<m_x[0])
+        {
+          // extrapolation to the left
+          interpol = 2.0*m_b[0]*h + m_c[0];
+        }
+      else if (x>m_x[n-1])
+        {
+          // extrapolation to the right
+          interpol = 2.0*m_b[n-1]*h + m_c[n-1];
+        }
+      else
+        {
+          // interpolation
+          interpol = 3.0*m_a[idx]*h*h + 2.0*m_b[idx]*h + m_c[idx];
+        }
+      return interpol;
+    }
+
+    std::pair<double,double> interpolation::newton_update(double x, double p) const
+    {
+      size_t n = m_x.size();
+      // find the closest point m_x[idx] < x, idx=0 even if x<m_x[0]
+      std::vector<double>::const_iterator it;
+      it = std::lower_bound(m_x.begin(),m_x.end(),x);
+      int idx = std::max( int(it-m_x.begin())-1, 0);
+
+      double f = 0;
+      double df = 0;
+      if (x<m_x[0])
+        {
+          // extrapolation to the left
+          //interpol = ((m_b[0])*h + m_c[0])*h + m_y[0];
+          double h = x-m_x[0];
+          double a = m_a[0];
+          double b = m_b[0];
+          double c = m_c[0];
+          double d = m_y[0];
+          f = (p-(b*h*h*h+c*h+d))*(2*b*h+c);
+          df = -20*a*b*h*h*h  -(6*b*b)*h*h  +6*(-b*c)*h   + (2*p*b-c*c-2*b*d);
+          //std::cout << "extrapolation to the left: f = " << f << ", df = " << df << ", x = " << x << std::endl;
+        }
+      else if (x>m_x[n-1])
+        {
+          // extrapolation to the right
+          //interpol = ((m_b[n-1])*h + m_c[n-1])*h + m_y[n-1];
+          double h = x-m_x[n-1];
+          double a = m_a[n-1];
+          double b = m_b[n-1];
+          double c = m_c[n-1];
+          double d = m_y[n-1];
+          f = (p-(b*h*h*h+c*h+d))*(2*b*h+c);
+          df = -20*a*b*h*h*h  -(6*b*b)*h*h  +6*(-b*c)*h   + (2*p*b-c*c-2*b*d);
+          //std::cout << "extrapolation to the right: f = " << f << ", df = " << df << ", x = " << x << std::endl;
+        }
+      else
+        {
+          // interpolation
+          //interpol = ((m_a[idx]*h + m_b[idx])*h + m_c[idx])*h + m_y[idx];
+          double h = x-m_x[idx];
+          double a = m_a[idx];
+          double b = m_b[idx];
+          double c = m_c[idx];
+          double d = m_y[idx];
+          f = (p-(a*h*h*h+b*h*h*h+c*h+d))*(3*a*h*h+2*b*h+c);//-3*a*a*h*h*h*h*h -5*a*b*h*h*h*h -(4*a*c+2*b*b)*h*h*h +3*(p*a-b*c-a*d)*h*h + (2*p*b-c*c-2*b*d)*h + p*c -c*d;
+          df = -15*a*a*h*h*h*h -20*a*b*h*h*h  -(12*a*c+6*b*b)*h*h  +6*(p*a-b*c-a*d)*h   + (2*p*b-c*c-2*b*d);
+          //df = h*(h*(h*(-15*a*a*h-20*a*b)-12*a*c-6*b*b)-6*b*c)+d*(-6*a*h-2*b)+p*(6*a*h+2*b)-c*c;
+          //std::cout << "interpolate: f = " << f << ", df = " << df << ", x = " << x << std::endl;
+        }
+
+
+      return std::pair<double,double>(f,df);
+    }
+
+    double interpolation::residual_closest_point(double x, double p) const
+    {
+      size_t n = m_x.size();
+      std::vector<double>::const_iterator it;
+      it = std::lower_bound(m_x.begin(),m_x.end(),x);
+      int idx = std::max( int(it-m_x.begin())-1, 0);
+      if (x<m_x[0])
+        {
+          // extrapolation to the left
+          //interpol = ((m_b[0])*h + m_c[0])*h + m_y[0];
+          double h = x-m_x[0];
+          double a = m_a[0];
+          double b = m_b[0];
+          double c = m_c[0];
+          double d = m_y[0];
+          return (p-(b*h*h*h+c*h+d))*(2*b*h+c);
+        }
+      else if (x>m_x[n-1])
+        {
+          // extrapolation to the right
+          //interpol = ((m_b[n-1])*h + m_c[n-1])*h + m_y[n-1];
+          double h = x-m_x[n-1];
+          double a = m_a[n-1];
+          double b = m_b[n-1];
+          double c = m_c[n-1];
+          double d = m_y[n-1];
+          return (p-(b*h*h*h+c*h+d))*(2*b*h+c);
+        }
+      else
+        {
+          // interpolation
+          //interpol = ((m_a[idx]*h + m_b[idx])*h + m_c[idx])*h + m_y[idx];
+          double h = x-m_x[idx];
+          double a = m_a[idx];
+          double b = m_b[idx];
+          double c = m_c[idx];
+          double d = m_y[idx];
+          return (p-(a*h*h*h+b*h*h*h+c*h+d))*(3*a*h*h+2*b*h+c);//-3*a*a*h*h*h*h*h -5*a*b*h*h*h*h -(4*a*c+2*b*b)*h*h*h +3*(p*a-b*c-a*d)*h*h + (2*p*b-c*c-2*b*d)*h + p*c -c*d;
+        }
+      //std::cout << "x= " << x << "m_x[idx]= " << m_x[idx] << "h= " << h << ", a = " << a << ", b = " << b << ", c = " << c << ", d = " << d << std::endl;
+
+      //return (p-(a*h*h*h+b*h*h*h+c*h+d))*(3*a*h*h+2*b*h+c);//-3*a*a*h*h*h*h*h -5*a*b*h*h*h*h -(4*a*c+2*b*b)*h*h*h +3*(p*a-b*c-a*d)*h*h + (2*p*b-c*c-2*b*d)*h + p*c -c*d;
     }
 
     template const std::array<double,2> convert_point_to_array<2>(const Point<2> &point_);

@@ -26,6 +26,7 @@
 #include <world_builder/world.h>
 #include <world_builder/parameters.h>
 #include <world_builder/point.h>
+#include <world_builder/utilities.h>
 
 using namespace std;
 
@@ -157,6 +158,8 @@ namespace WorldBuilder
          * is allowed, but {0,2,3,4} is not.
          */
         std::vector<double> one_dimensional_coordinates;
+
+        Utilities::interpolation x_spline, y_spline;
 
 
         /**

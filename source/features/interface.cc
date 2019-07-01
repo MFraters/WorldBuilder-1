@@ -26,7 +26,6 @@
 #include <world_builder/features/subducting_plate.h>
 #include <world_builder/features/mantle_layer.h>
 #include <world_builder/assert.h>
-#include <world_builder/utilities.h>
 
 
 #include <world_builder/types/array.h>
@@ -127,54 +126,58 @@ namespace WorldBuilder
           one_dimensional_coordinates_local[j] = j;
         }
 
-      if (interpolation != "none")
-        {
-          WBAssertThrow(interpolation == "linear" || interpolation == "monotone spline",
-                        "For interpolation, linear and monotone spline are the onlyl allowed values.");
+      //if (interpolation != "none")
+      {
+        //WBAssertThrow(interpolation == "linear" || interpolation == "monotone spline",
+        //             "For interpolation, linear and monotone spline are the onlyl allowed values.");
 
-          double maximum_distance_between_coordinates = this->world->maximum_distance_between_coordinates *
-                                                        (coordinate_system == CoordinateSystem::spherical ? const_pi / 180.0 : 1.0);
+        double maximum_distance_between_coordinates = this->world->maximum_distance_between_coordinates *
+                                                      (coordinate_system == CoordinateSystem::spherical ? const_pi / 180.0 : 1.0);
 
-          if (maximum_distance_between_coordinates > 0)
-            {
-              std::vector<double> x_list(original_number_of_coordinates,0.0);
-              std::vector<double> y_list(original_number_of_coordinates,0.0);
-              std::vector<Point<2> > coordinate_list_local = coordinates;
-              for (unsigned int j=0; j<original_number_of_coordinates; ++j)
-                {
-                  x_list[j] = coordinates[j][0];
-                  y_list[j] = coordinates[j][1];
-                }
+        if (maximum_distance_between_coordinates > 0)
+          {
+            std::vector<double> x_list(original_number_of_coordinates,0.0);
+            std::vector<double> y_list(original_number_of_coordinates,0.0);
+            std::vector<Point<2> > coordinate_list_local = coordinates;
+            for (unsigned int j=0; j<original_number_of_coordinates; ++j)
+              {
+                x_list[j] = coordinates[j][0];
+                y_list[j] = coordinates[j][1];
+              }
 
-              Utilities::interpolation x_spline, y_spline;
-              x_spline.set_points(one_dimensional_coordinates_local, x_list, interpolation == "linear" ? false : true);
-              y_spline.set_points(one_dimensional_coordinates_local, y_list, interpolation == "linear" ? false : true);
+            std::cout << "set splines" << std::endl;
+            x_spline.set_points(one_dimensional_coordinates_local, x_list, interpolation == "linear" ? false : true);
+            y_spline.set_points(one_dimensional_coordinates_local, y_list, interpolation == "linear" ? false : true);
 
-              unsigned int additional_parts = 0;
-              for (unsigned int i_plane=0; i_plane<original_number_of_coordinates-1; ++i_plane)
-                {
-                  const Point<2> P1 (x_spline(one_dimensional_coordinates_local[i_plane + additional_parts]),
-                                     y_spline(one_dimensional_coordinates_local[i_plane + additional_parts]),
-                                     coordinate_system);
+            unsigned int additional_parts = 0;
+            for (unsigned int i_plane=0; i_plane<original_number_of_coordinates-1; ++i_plane)
+              {
+                std::cout << "adding point, additional_parts = " << additional_parts << std::endl;
+                const Point<2> P1 (x_spline(one_dimensional_coordinates_local[i_plane + additional_parts]),
+                                   y_spline(one_dimensional_coordinates_local[i_plane + additional_parts]),
+                                   coordinate_system);
 
-                  const Point<2> P2 (x_spline(one_dimensional_coordinates_local[i_plane + additional_parts + 1]),
-                                     y_spline(one_dimensional_coordinates_local[i_plane  + additional_parts+ 1]),
-                                     coordinate_system);
+                const Point<2> P2 (x_spline(one_dimensional_coordinates_local[i_plane + additional_parts + 1]),
+                                   y_spline(one_dimensional_coordinates_local[i_plane  + additional_parts+ 1]),
+                                   coordinate_system);
 
-                  const double length = (P1 - P2).norm();
-                  const int parts = (int)std::ceil(length / maximum_distance_between_coordinates);
-                  for (int j = 1; j < parts; j++)
-                    {
-                      const double x_position3 = i_plane+(double(j)/double(parts));
-                      const Point<2> P3(x_spline(x_position3), y_spline(x_position3), coordinate_system);
-                      one_dimensional_coordinates_local.insert(one_dimensional_coordinates_local.begin() + additional_parts + i_plane + 1, x_position3);
-                      coordinate_list_local.insert(coordinate_list_local.begin() + additional_parts + i_plane + 1, P3);
-                      additional_parts++;
-                    }
-                }
-              coordinates = coordinate_list_local;
-            }
-        }
+                const double length = (P1 - P2).norm();
+                const int parts = (int)std::ceil(length / maximum_distance_between_coordinates);
+                for (int j = 1; j < parts; j++)
+                  {
+                    const double x_position3 = i_plane+(double(j)/double(parts));
+                    const Point<2> P3(x_spline(x_position3), y_spline(x_position3), coordinate_system);
+                    std::cout << "adding point " << P3[0] << ":" << P3[1] << std::endl;
+                    one_dimensional_coordinates_local.insert(one_dimensional_coordinates_local.begin() + additional_parts + i_plane + 1, x_position3);
+                    coordinate_list_local.insert(coordinate_list_local.begin() + additional_parts + i_plane + 1, P3);
+                    additional_parts++;
+                  }
+
+                std::cout << "adding point, additional_parts = " << additional_parts << ", parts = " << parts << std::endl;
+              }
+            coordinates = coordinate_list_local;
+          }
+      }
       one_dimensional_coordinates = one_dimensional_coordinates_local;
       //prm.enter_subsection("objects");
       //prm.enter_subsection(name);

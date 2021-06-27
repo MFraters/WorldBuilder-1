@@ -20,9 +20,6 @@
 
 #include <fstream>
 
-#include "world_builder/types/object.h"
-#include "world_builder/features/fault.h"
-#include "world_builder/features/subducting_plate.h"
 #include "rapidjson/error/en.h"
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/latexwriter.h"
@@ -30,12 +27,15 @@
 #include "world_builder/features/continental_plate_models/composition/interface.h"
 #include "world_builder/features/continental_plate_models/grains/interface.h"
 #include "world_builder/features/continental_plate_models/temperature/interface.h"
-#include "world_builder/features/oceanic_plate_models/composition/interface.h"
-#include "world_builder/features/oceanic_plate_models/grains/interface.h"
-#include "world_builder/features/oceanic_plate_models/temperature/interface.h"
+#include "world_builder/features/fault.h"
 #include "world_builder/features/mantle_layer_models/composition/interface.h"
 #include "world_builder/features/mantle_layer_models/grains/interface.h"
 #include "world_builder/features/mantle_layer_models/temperature/interface.h"
+#include "world_builder/features/oceanic_plate_models/composition/interface.h"
+#include "world_builder/features/oceanic_plate_models/grains/interface.h"
+#include "world_builder/features/oceanic_plate_models/temperature/interface.h"
+#include "world_builder/features/subducting_plate.h"
+#include "world_builder/types/object.h"
 
 using namespace rapidjson;
 

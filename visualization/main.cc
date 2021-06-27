@@ -28,13 +28,13 @@
 #include <bits/exception.h>
 #include <ext/alloc_traits.h>
 
+#include "vtu11/vtu11.hpp"
 #include "world_builder/assert.h"
 #include "world_builder/coordinate_system.h"
 #include "world_builder/nan.h"
+#include "world_builder/point.h"
 #include "world_builder/utilities.h"
 #include "world_builder/world.h"
-#include "vtu11/vtu11.hpp"
-#include "world_builder/point.h"
 
 #undef max
 #undef min
@@ -47,11 +47,11 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
-#include <iterator>
 
 
 using namespace WorldBuilder;

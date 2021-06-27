@@ -26,10 +26,10 @@
 #include <iostream>
 #include <memory>
 
+#include "app/main.h"
 #include "world_builder/assert.h"
 #include "world_builder/utilities.h"
 #include "world_builder/world.h"
-#include "app/main.h"
 
 using namespace WorldBuilder::Utilities;
 

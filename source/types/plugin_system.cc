@@ -18,79 +18,70 @@
 */
 #include "world_builder/types/plugin_system.h"
 
-
-
 namespace WorldBuilder
 {
   namespace Types
   {
-    PluginSystem::PluginSystem(std::string default_value_,
-                               void ( *declare_entries_)(Parameters &, const std::string &, const std::vector<std::string> &),
-                               std::vector<std::string> required_entries_,
-                               const bool allow_multiple_)
-      :
-      default_value(std::move(default_value_)),
-      declare_entries(declare_entries_),
-      required_entries(std::move(required_entries_)),
-      allow_multiple(allow_multiple_)
-    {
+    PluginSystem::PluginSystem(
+        std::string default_value_,
+        void (*declare_entries_)(Parameters &, const std::string &,
+                                 const std::vector<std::string> &),
+        std::vector<std::string> required_entries_, const bool allow_multiple_)
+        : default_value(std::move(default_value_)),
+          declare_entries(declare_entries_),
+          required_entries(std::move(required_entries_)),
+          allow_multiple(allow_multiple_) {
       this->type_name = Types::type::PluginSystem;
 
-      WBAssert(declare_entries_ != nullptr, "declare entries may not be a null pointer.");
+      WBAssert(declare_entries_ != nullptr,
+               "declare entries may not be a null pointer.");
     }
-
 
     PluginSystem::PluginSystem(PluginSystem const &plugin_system)
-      :
-      default_value(plugin_system.default_value),
-      declare_entries(plugin_system.declare_entries),
-      required_entries(plugin_system.required_entries),
-      allow_multiple(plugin_system.allow_multiple)
-    {
+        : default_value(plugin_system.default_value),
+          declare_entries(plugin_system.declare_entries),
+          required_entries(plugin_system.required_entries),
+          allow_multiple(plugin_system.allow_multiple) {
       this->type_name = Types::type::PluginSystem;
     }
 
-    PluginSystem::~PluginSystem ()
-      = default;
+    PluginSystem::~PluginSystem() = default;
 
-    void
-    PluginSystem::write_schema(Parameters &prm,
-                               const std::string &name,
-                               const std::string &documentation) const
-    {
+    void PluginSystem::write_schema(Parameters &prm, const std::string &name,
+                                    const std::string &documentation) const {
       using namespace rapidjson;
 
       prm.enter_subsection(name);
       {
         const std::string path = prm.get_full_json_path();
-        Pointer((path + "/documentation").c_str()).Set(prm.declarations,documentation.c_str());
-        Pointer((path + "/default value").c_str()).Set(prm.declarations,default_value.c_str());
+        Pointer((path + "/documentation").c_str())
+            .Set(prm.declarations, documentation.c_str());
+        Pointer((path + "/default value").c_str())
+            .Set(prm.declarations, default_value.c_str());
 
-        if (allow_multiple)
+        if (allow_multiple) {
+          Pointer((path + "/type").c_str()).Set(prm.declarations, "array");
+
+          prm.enter_subsection("items");
           {
-            Pointer((path + "/type").c_str()).Set(prm.declarations,"array");
+            WBAssert(this->declare_entries != nullptr,
+                     "No declare entries given.");
 
-            prm.enter_subsection("items");
-            {
-              WBAssert(this->declare_entries != nullptr, "No declare entries given.");
-
-              this->declare_entries(prm, name, required_entries);
-            }
-            prm.leave_subsection();
-          }
-        else
-          {
-            Pointer((path + "/type").c_str()).Set(prm.declarations,"object");
-
-            //std::cout << "-------use pluginsystem with name " << name << ", and pointer = " << declare_entries<< " and reqruied entires.size() = " << required_entries.size() << std::endl;
-            WBAssert(this->declare_entries != nullptr, "No declare entries given.");
             this->declare_entries(prm, name, required_entries);
-
-
           }
+          prm.leave_subsection();
+        } else {
+          Pointer((path + "/type").c_str()).Set(prm.declarations, "object");
+
+          // std::cout << "-------use pluginsystem with name " << name << ", and
+          // pointer = " << declare_entries<< " and reqruied entires.size() = "
+          // << required_entries.size() << std::endl;
+          WBAssert(this->declare_entries != nullptr,
+                   "No declare entries given.");
+          this->declare_entries(prm, name, required_entries);
+        }
       }
       prm.leave_subsection();
     }
   } // namespace Types
 } // namespace WorldBuilder
-

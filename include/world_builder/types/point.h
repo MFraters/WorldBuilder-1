@@ -20,10 +20,8 @@
 #ifndef _world_feature_types_point_h
 #define _world_feature_types_point_h
 
-
 #include "world_builder/point.h"
 #include "world_builder/types/interface.h"
-
 
 namespace WorldBuilder
 {
@@ -35,98 +33,91 @@ namespace WorldBuilder
     /**
      * This class represents a continental plate and can implement submodules
      * for temperature and composition. These submodules determine what
-     * the returned temperature or composition of the temperature and composition
-     * functions of this class will be.
+     * the returned temperature or composition of the temperature and
+     * composition functions of this class will be.
      */
     template <int dim>
     class Point : public Interface
     {
       public:
+      /**
+       * A constructor used for the load_entry function
+       */
+      Point();
 
-        /**
-         * A constructor used for the load_entry function
-         */
-        Point();
+      /**
+       * A constructor used for the load_entry function
+       */
+      Point(const WorldBuilder::Point<dim> &default_value,
+            std::string description);
 
-        /**
-         * A constructor used for the load_entry function
-         */
-        Point(const WorldBuilder::Point<dim> &default_value, std::string description);
+      /**
+       * A constructor used for cloning and the set_entry function
+       */
+      Point(const WorldBuilder::Point<dim> &value,
+            const WorldBuilder::Point<dim> &default_value,
+            std::string description);
 
-        /**
-         * A constructor used for cloning and the set_entry function
-         */
-        Point(const WorldBuilder::Point<dim> &value, const WorldBuilder::Point<dim> &default_value, std::string description);
+      /**
+       * Copy constructor
+       */
+      Point(Point const &other);
 
-        /**
-         * Copy constructor
-         */
-        Point(Point const &other);
+      /**
+       * Destructor
+       */
+      ~Point();
 
-        /**
-         * Destructor
-         */
-        ~Point();
+      /**
+       * Todo
+       */
+      void write_schema(Parameters &prm, const std::string &name,
+                        const std::string &documentation) const override final;
 
-        /**
-         * Todo
-         */
-        void write_schema(Parameters &prm,
-                          const std::string &name,
-                          const std::string &documentation) const override final;
+      /**
+       * dot product
+       */
+      double operator*(const Point<dim> &point) const;
 
-        /**
-         * dot product
-         */
-        double operator*(const Point<dim> &point) const;
+      /**
+       * Multiply the vector with a scalar
+       */
+      WorldBuilder::Point<dim> operator*(const double scalar) const;
 
+      /**
+       * add two points
+       */
+      WorldBuilder::Point<dim> operator+(const Point<dim> &point) const;
 
-        /**
-         * Multiply the vector with a scalar
-         */
-        WorldBuilder::Point<dim> operator*(const double scalar) const;
+      /**
+       * Substract two points
+       */
+      WorldBuilder::Point<dim> operator-(const Point<dim> &point) const;
 
-        /**
-         * add two points
-         */
-        WorldBuilder::Point<dim> operator+(const Point<dim> &point) const;
+      /**
+       * access index (const)
+       */
+      const double &operator[](const unsigned int index) const;
 
+      /**
+       * access index
+       */
+      double &operator[](const unsigned int index);
 
-        /**
-         * Substract two points
-         */
-        WorldBuilder::Point<dim> operator-(const Point<dim> &point) const;
-
-        /**
-         * access index (const)
-         */
-        const double &operator[](const unsigned int index) const;
-
-
-        /**
-         * access index
-         */
-        double &operator[](const unsigned int index);
-
-
-
-        WorldBuilder::Point<dim> value;
-        WorldBuilder::Point<dim> default_value;
-        std::string description;
+      WorldBuilder::Point<dim> value;
+      WorldBuilder::Point<dim> default_value;
+      std::string description;
 
       protected:
-        Point *clone_impl() const override final
-        {
-          return new Point(*this);
-        };
+      Point *clone_impl() const override final { return new Point(*this); };
 
       private:
-
     };
 
-    template<int dim>
-    WorldBuilder::Point<dim> operator*(const double scalar, const Point<dim> &point);
-  }
-}
+    template <int dim>
+    WorldBuilder::Point<dim> operator*(const double scalar,
+                                       const Point<dim> &point);
+  } // namespace Types
+} // namespace WorldBuilder
 
 #endif

@@ -19,7 +19,6 @@
 
 #include "world_builder/coordinate_systems/spherical.h"
 
-
 #include "world_builder/types/object.h"
 #include "world_builder/utilities.h"
 
@@ -27,32 +26,26 @@ namespace WorldBuilder
 {
   namespace CoordinateSystems
   {
-    Spherical::Spherical(WorldBuilder::World *world_)
-    {
-      this->world = world_;
-    }
+    Spherical::Spherical(WorldBuilder::World *world_) { this->world = world_; }
 
-    Spherical::~Spherical()
-      = default;
+    Spherical::~Spherical() = default;
 
-    void
-    Spherical::declare_entries(Parameters &prm, const std::string & /*unused*/)
-    {
+    void Spherical::declare_entries(Parameters &prm,
+                                    const std::string & /*unused*/) {
 
       // Add depth method to the requried parameters.
-      prm.declare_entry("", Types::Object({"depth method"}), "Coordinate sysetm object");
+      prm.declare_entry("", Types::Object({"depth method"}),
+                        "Coordinate sysetm object");
 
-
-      prm.declare_entry("depth method",
-                        Types::String("",std::vector<std::string>({"starting point", "begin segment", "continuous"})),
-                        R"(Which depth method to use in the spherical case. The available options are 'starting point' and 'begin segment'.)");
-
-
+      prm.declare_entry(
+          "depth method",
+          Types::String("",
+                        std::vector<std::string>(
+                            {"starting point", "begin segment", "continuous"})),
+          R"(Which depth method to use in the spherical case. The available options are 'starting point' and 'begin segment'.)");
     }
 
-    void
-    Spherical::parse_entries(Parameters &prm)
-    {
+    void Spherical::parse_entries(Parameters &prm) {
       prm.enter_subsection("coordinate system");
       {
         std::string string_depth_method = prm.get<std::string>("depth method");
@@ -60,56 +53,55 @@ namespace WorldBuilder
           used_depth_method = DepthMethod::angle_at_starting_point_with_surface;
         else if (string_depth_method == "begin segment")
           used_depth_method = DepthMethod::angle_at_begin_segment_with_surface;
-        //else if (string_depth_method == "continuous")
-        //used_depth_method = DepthMethod::continuous_angle_with_surface;
+        // else if (string_depth_method == "continuous")
+        // used_depth_method = DepthMethod::continuous_angle_with_surface;
         else
-          WBAssertThrow(true,"Option " << string_depth_method << " is not a valid depth method for spherical "
-                        "coordinates. The available options are 'starting point' and 'begin segment'. "
-                        "The option 'continuous' is not yet available.");
+          WBAssertThrow(true,
+                        "Option "
+                            << string_depth_method
+                            << " is not a valid depth method for spherical "
+                               "coordinates. The available options are "
+                               "'starting point' and 'begin segment'. "
+                               "The option 'continuous' is not yet available.");
 
-        //std::cout << "string_depth_method = " << string_depth_method << std::endl;
+        // std::cout << "string_depth_method = " << string_depth_method <<
+        // std::endl;
       }
       prm.leave_subsection();
     }
 
-
-    CoordinateSystem
-    Spherical::natural_coordinate_system() const
-    {
+    CoordinateSystem Spherical::natural_coordinate_system() const {
       return CoordinateSystem::spherical;
     }
 
+    DepthMethod Spherical::depth_method() const { return used_depth_method; }
 
-    DepthMethod
-    Spherical::depth_method() const
-    {
-      return used_depth_method;
+    std::array<double, 3> Spherical::cartesian_to_natural_coordinates(
+        const std::array<double, 3> &position) const {
+      return Utilities::cartesian_to_spherical_coordinates(
+          Point<3>(position, cartesian));
     }
 
-
-    std::array<double,3>
-    Spherical::cartesian_to_natural_coordinates(const std::array<double,3> &position) const
-    {
-      return Utilities::cartesian_to_spherical_coordinates(Point<3>(position,cartesian));
+    std::array<double, 3> Spherical::natural_to_cartesian_coordinates(
+        const std::array<double, 3> &position) const {
+      return Utilities::spherical_to_cartesian_coordinates(position)
+          .get_array();
     }
 
-
-    std::array<double,3>
-    Spherical::natural_to_cartesian_coordinates(const std::array<double,3> &position) const
-    {
-      return Utilities::spherical_to_cartesian_coordinates(position).get_array();
-    }
-
-    double
-    Spherical::distance_between_points_at_same_depth(const Point<3> &point_1, const Point<3> &point_2) const
-    {
+    double Spherical::distance_between_points_at_same_depth(
+        const Point<3> &point_1, const Point<3> &point_2) const {
 
       WBAssert(point_1.get_coordinate_system() == spherical,
-               "Can not convert non spherical points through the spherical coordinate system.");
+               "Can not convert non spherical points through the spherical "
+               "coordinate system.");
       WBAssert(point_2.get_coordinate_system() == spherical,
-               "Can not convert non spherical points through the spherical coordinate system.");
+               "Can not convert non spherical points through the spherical "
+               "coordinate system.");
       const double radius = point_1[0];
-      WBAssert((radius - point_2[0]) < std::numeric_limits<double>::epsilon() * std::max(1.0,radius), "The radius of point 1 is not the same as the radius of point 2.");
+      WBAssert(
+          (radius - point_2[0]) <
+              std::numeric_limits<double>::epsilon() * std::max(1.0, radius),
+          "The radius of point 1 is not the same as the radius of point 2.");
       const double lat_1 = point_1[1];
       const double lat_2 = point_2[1];
       const double long_1 = point_1[2];
@@ -122,9 +114,12 @@ namespace WorldBuilder
       const double sin_long_diff = std::sin(long_diff);
       const double cos_long_diff = std::cos(long_diff);
 
-      const double top = std::sqrt((cos_lat_2 * sin_long_diff) * (cos_lat_2 * sin_long_diff) +
-                                   (cos_lat_1 * sin_lat_2 - sin_lat_1 * cos_lat_2 * cos_long_diff) * (cos_lat_1 * sin_lat_2 - sin_lat_1 * cos_lat_2 * cos_long_diff));
-      const double bottom = sin_lat_1 * sin_lat_2 + cos_lat_1 * cos_lat_2 * cos_long_diff;
+      const double top = std::sqrt(
+          (cos_lat_2 * sin_long_diff) * (cos_lat_2 * sin_long_diff) +
+          (cos_lat_1 * sin_lat_2 - sin_lat_1 * cos_lat_2 * cos_long_diff) *
+              (cos_lat_1 * sin_lat_2 - sin_lat_1 * cos_lat_2 * cos_long_diff));
+      const double bottom =
+          sin_lat_1 * sin_lat_2 + cos_lat_1 * cos_lat_2 * cos_long_diff;
 
       return radius * std::atan2(top, bottom);
     }
@@ -135,4 +130,3 @@ namespace WorldBuilder
     WB_REGISTER_COORDINATE_SYSTEM(Spherical, spherical)
   } // namespace CoordinateSystems
 } // namespace WorldBuilder
-

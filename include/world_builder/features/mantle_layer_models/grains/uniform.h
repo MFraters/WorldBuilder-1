@@ -20,7 +20,6 @@
 #ifndef _world_builder_features_mantle_layer_grains_uniform_h
 #define _world_builder_features_mantle_layer_grains_uniform_h
 
-
 #include "world_builder/features/mantle_layer_models/grains/interface.h"
 
 namespace WorldBuilder
@@ -41,68 +40,69 @@ namespace WorldBuilder
         class Uniform : public Interface
         {
           public:
-            /**
-             * constructor
-             */
-            Uniform(WorldBuilder::World *world);
+          /**
+           * constructor
+           */
+          Uniform(WorldBuilder::World *world);
 
-            /**
-             * Destructor
-             */
-            ~Uniform();
+          /**
+           * Destructor
+           */
+          ~Uniform();
 
-            /**
-             * declare and read in the world builder file into the parameters
-             * class
-             */
-            static void declare_entries(Parameters &prm,
-                                        const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_entries(Parameters &prm,
+                                      const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters
-             * class
-             */
-            static void declare_grain_size_model_entries(
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_grain_size_model_entries(
               Parameters &prm, const std::string &parent_name,
               const std::vector<std::string> &required_entries);
 
-            /**
-             * declare and read in the world builder file into the parameters
-             * class
-             */
-            static void
-            declare_fixed_size_model_entries(Parameters &prm,
-                                             const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void
+          declare_fixed_size_model_entries(Parameters &prm,
+                                           const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters
-             * class
-             */
-            void parse_entries(Parameters &prm) override final;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          void parse_entries(Parameters &prm) override final;
 
-            /**
-             * Returns a grains based on the given position, composition (e.g.
-             * olivine and/or enstatite)depth in the model, gravity and current grains.
-             */
-            virtual WorldBuilder::grains
-            get_grains(const Point<3> &position, const double depth,
-                       const unsigned int composition_number,
-                       WorldBuilder::grains grains,
-                       const double feature_min_depth,
-                       const double feature_max_depth) const override final;
+          /**
+           * Returns a grains based on the given position, composition (e.g.
+           * olivine and/or enstatite)depth in the model, gravity and current
+           * grains.
+           */
+          virtual WorldBuilder::grains
+          get_grains(const Point<3> &position, const double depth,
+                     const unsigned int composition_number,
+                     WorldBuilder::grains grains,
+                     const double feature_min_depth,
+                     const double feature_max_depth) const override final;
 
           private:
-            // uniform grains submodule parameters
-            double min_depth;
-            double max_depth;
-            std::vector<unsigned int> grains;
-            std::vector<unsigned int> compositions;
-            std::string operation;
-            std::vector<std::array<std::array<double, 3>, 3>> rotation_matrices;
-            std::vector<double> grain_sizes;
+          // uniform grains submodule parameters
+          double min_depth;
+          double max_depth;
+          std::vector<unsigned int> grains;
+          std::vector<unsigned int> compositions;
+          std::string operation;
+          std::vector<std::array<std::array<double, 3>, 3>> rotation_matrices;
+          std::vector<double> grain_sizes;
         };
       } // namespace Grains
-    }   // namespace MantlelayerModels
+    }   // namespace MantleLayerModels
   }     // namespace Features
 } // namespace WorldBuilder
 

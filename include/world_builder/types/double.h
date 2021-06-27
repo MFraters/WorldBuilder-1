@@ -20,9 +20,7 @@
 #ifndef _world_feature_types_double_h
 #define _world_feature_types_double_h
 
-
 #include "world_builder/types/interface.h"
-
 
 namespace WorldBuilder
 {
@@ -37,40 +35,35 @@ namespace WorldBuilder
     class Double : public Interface
     {
       public:
-        /**
-         * A constructor for the load_entry function
-         */
-        Double(const double default_value);
+      /**
+       * A constructor for the load_entry function
+       */
+      Double(const double default_value);
 
-        /**
-         * Copy constructor
-         */
-        Double(Double const &other);
+      /**
+       * Copy constructor
+       */
+      Double(Double const &other);
 
-        /**
-         * Destructor
-         */
-        ~Double();
+      /**
+       * Destructor
+       */
+      ~Double();
 
-        /**
-         * Todo
-         */
-        void write_schema(Parameters &prm,
-                          const std::string &name,
-                          const std::string &documentation) const override final;
+      /**
+       * Todo
+       */
+      void write_schema(Parameters &prm, const std::string &name,
+                        const std::string &documentation) const override final;
 
-        double default_value;
+      double default_value;
 
       protected:
-        Double *clone_impl() const override final
-        {
-          return new Double(*this);
-        };
+      Double *clone_impl() const override final { return new Double(*this); };
 
       private:
-
     };
-  }
-}
+  } // namespace Types
+} // namespace WorldBuilder
 
 #endif

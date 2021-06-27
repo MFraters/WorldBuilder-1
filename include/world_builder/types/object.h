@@ -24,7 +24,6 @@
 
 #include "world_builder/types/interface.h"
 
-
 namespace WorldBuilder
 {
   class Parameters;
@@ -37,51 +36,45 @@ namespace WorldBuilder
      * the values are actually stored in the parameters vector which hold all
      * the values of that type. This type can also hold a unique pointer to
      * the type is should hold. This is used for declaring types.The difference
-    * between an object and a list is that the object holds the values retrievable
-    * by index, and a list holds the values strictly ordered, only accessible
-    * an iterator. An other difference it that lists have a name.
+     * between an object and a list is that the object holds the values
+     * retrievable by index, and a list holds the values strictly ordered, only
+     * accessible an iterator. An other difference it that lists have a name.
      */
     class Object : public Interface
     {
       public:
-        /**
-         * Constructor for the declaration
-         */
-        Object(std::vector<std::string> required = std::vector<std::string>(),
-               const bool additional_properties = false);
+      /**
+       * Constructor for the declaration
+       */
+      Object(std::vector<std::string> required = std::vector<std::string>(),
+             const bool additional_properties = false);
 
-        /**
-         * Copy constructor
-         */
-        Object(Object const &other);
+      /**
+       * Copy constructor
+       */
+      Object(Object const &other);
 
-        /**
-         * Destructor
-         */
-        ~Object();
+      /**
+       * Destructor
+       */
+      ~Object();
 
-        /**
-         * Todo
-         */
-        void write_schema(Parameters &prm,
-                          const std::string &name,
-                          const std::string &documentation) const override final;
+      /**
+       * Todo
+       */
+      void write_schema(Parameters &prm, const std::string &name,
+                        const std::string &documentation) const override final;
 
-
-        /**
-         * Todo
-         */
-        std::vector<std::string> required;
-        bool additional_properties;
+      /**
+       * Todo
+       */
+      std::vector<std::string> required;
+      bool additional_properties;
 
       protected:
-        Object *clone_impl() const override final
-        {
-          return new Object(*this);
-        };
-
+      Object *clone_impl() const override final { return new Object(*this); };
     };
-  }
-}
+  } // namespace Types
+} // namespace WorldBuilder
 
 #endif

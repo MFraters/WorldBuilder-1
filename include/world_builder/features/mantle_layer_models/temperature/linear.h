@@ -20,10 +20,8 @@
 #ifndef _world_builder_features_mantle_layer_temperature_linear_h
 #define _world_builder_features_mantle_layer_temperature_linear_h
 
-
 #include "world_builder/features/mantle_layer_models/temperature/interface.h"
 #include "world_builder/features/utilities.h"
-
 
 namespace WorldBuilder
 {
@@ -37,58 +35,56 @@ namespace WorldBuilder
         /**
          * This class represents a mantle layer and can implement submodules
          * for temperature and composition. These submodules determine what
-         * the returned temperature or composition of the temperature and composition
-         * functions of this class will be.
+         * the returned temperature or composition of the temperature and
+         * composition functions of this class will be.
          */
         class Linear : public Interface
         {
           public:
-            /**
-             * constructor
-             */
-            Linear(WorldBuilder::World *world);
+          /**
+           * constructor
+           */
+          Linear(WorldBuilder::World *world);
 
-            /**
-             * Destructor
-             */
-            ~Linear();
+          /**
+           * Destructor
+           */
+          ~Linear();
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            static
-            void declare_entries(Parameters &prm, const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_entries(Parameters &prm,
+                                      const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            void parse_entries(Parameters &prm) override final;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          void parse_entries(Parameters &prm) override final;
 
-
-            /**
-             * Returns a temperature based on the given position, depth in the model,
-             * gravity and current temperature.
-             */
-            double get_temperature(const Point<3> &position,
-                                   const double depth,
-                                   const double gravity,
-                                   double temperature,
-                                   const double feature_min_depth,
-                                   const double feature_max_depth) const override final;
-
+          /**
+           * Returns a temperature based on the given position, depth in the
+           * model, gravity and current temperature.
+           */
+          double
+          get_temperature(const Point<3> &position, const double depth,
+                          const double gravity, double temperature,
+                          const double feature_min_depth,
+                          const double feature_max_depth) const override final;
 
           private:
-            // linear temperature submodule parameters
-            double min_depth;
-            double max_depth;
-            double top_temperature;
-            double bottom_temperature;
-            Utilities::Operations operation;
-
+          // linear temperature submodule parameters
+          double min_depth;
+          double max_depth;
+          double top_temperature;
+          double bottom_temperature;
+          Utilities::Operations operation;
         };
-      }
-    }
-  }
-}
+      } // namespace Temperature
+    }   // namespace MantleLayerModels
+  }     // namespace Features
+} // namespace WorldBuilder
 
 #endif

@@ -61,7 +61,6 @@ namespace WorldBuilder
     continuous_angle_with_surface,
     none
   };
-}
+} // namespace WorldBuilder
 
 #endif
-

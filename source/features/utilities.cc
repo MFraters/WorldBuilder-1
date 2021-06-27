@@ -19,22 +19,22 @@
 
 #include "world_builder/features/utilities.h"
 
-
 namespace WorldBuilder
 {
   namespace Features
   {
     namespace Utilities
     {
-      Operations
-      string_operations_to_enum(const std::string &operation)
-      {
-        if (operation == "add") return Operations::ADD;
-        if (operation == "subtract") return Operations::SUBTRACT;
+      Operations string_operations_to_enum(const std::string &operation) {
+        if (operation == "add")
+          return Operations::ADD;
+        if (operation == "subtract")
+          return Operations::SUBTRACT;
 
-        WBAssert(operation == "replace", "Could not find operation: " << operation << ".");
+        WBAssert(operation == "replace",
+                 "Could not find operation: " << operation << ".");
         return Operations::REPLACE;
       }
     } // namespace Utilities
-  } // namespace Features
+  }   // namespace Features
 } // namespace WorldBuilder

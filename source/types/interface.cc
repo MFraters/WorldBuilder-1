@@ -19,26 +19,14 @@
 
 #include "world_builder/types/interface.h"
 
-
-
 namespace WorldBuilder
 {
   namespace Types
   {
-    Interface::Interface()
-      :
-      type_name(type::None)
-    {}
+    Interface::Interface() : type_name(type::None) {}
 
-    Interface::~Interface ()
-      = default;
+    Interface::~Interface() = default;
 
-
-    type
-    Interface::get_type() const
-    {
-      return type_name;
-    }
+    type Interface::get_type() const { return type_name; }
   } // namespace Types
 } // namespace WorldBuilder
-

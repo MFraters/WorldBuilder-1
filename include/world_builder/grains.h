@@ -38,8 +38,8 @@ namespace WorldBuilder
 
     // the rotation matrices of the latices of the grains.
     // todo: convention.
-    std::vector<std::array<std::array<double,3>,3> > rotation_matrices;
+    std::vector<std::array<std::array<double, 3>, 3>> rotation_matrices;
   };
-}
+} // namespace WorldBuilder
 
 #endif

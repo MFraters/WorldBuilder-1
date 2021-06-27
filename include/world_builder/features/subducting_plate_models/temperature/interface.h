@@ -20,15 +20,14 @@
 #ifndef _world_builder_features_subducting_plate_temperature_interface_h
 #define _world_builder_features_subducting_plate_temperature_interface_h
 
-
 #include "world_builder/parameters.h"
-
 
 namespace WorldBuilder
 {
   class World;
   class Parameters;
-  template <int dim> class Point;
+  template <int dim>
+  class Point;
 
   /**
    * This class is an interface for the specific plate tectonic feature classes,
@@ -46,92 +45,85 @@ namespace WorldBuilder
         class Interface
         {
           public:
-            /**
-             * constructor
-             */
-            Interface();
+          /**
+           * constructor
+           */
+          Interface();
 
-            /**
-             * Destructor
-             */
-            virtual
-            ~Interface();
+          /**
+           * Destructor
+           */
+          virtual ~Interface();
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            static
-            void declare_entries(Parameters &prm,
-                                 const std::string &parent_name,
-                                 const std::vector<std::string> &required_entries);
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void
+          declare_entries(Parameters &prm, const std::string &parent_name,
+                          const std::vector<std::string> &required_entries);
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            virtual
-            void parse_entries(Parameters &prm) = 0;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          virtual void parse_entries(Parameters &prm) = 0;
 
+          /**
+           * takes temperature and position and returns a temperature.
+           */
+          virtual double get_temperature(
+              const Point<3> &position, const double depth,
+              const double gravity, double temperature,
+              const double feature_min_depth, const double feature_max_depth,
+              const std::map<std::string, double> &distance_from_planes)
+              const = 0;
+          /**
+           * A function to register a new type. This is part of the automatic
+           * registration of the object factory.
+           */
+          static void registerType(const std::string &name,
+                                   void (*)(Parameters &, const std::string &),
+                                   ObjectFactory *factory);
 
-            /**
-             * takes temperature and position and returns a temperature.
-             */
-            virtual
-            double get_temperature(const Point<3> &position,
-                                   const double depth,
-                                   const double gravity,
-                                   double temperature,
-                                   const double feature_min_depth,
-                                   const double feature_max_depth,
-                                   const std::map<std::string,double> &distance_from_planes) const = 0;
-            /**
-             * A function to register a new type. This is part of the automatic
-             * registration of the object factory.
-             */
-            static void registerType(const std::string &name,
-                                     void ( *)(Parameters &, const std::string &),
-                                     ObjectFactory *factory);
+          /**
+           * A function to create a new type. This is part of the automatic
+           * registration of the object factory.
+           */
+          static std::unique_ptr<Interface> create(const std::string &name,
+                                                   WorldBuilder::World *world);
 
-
-            /**
-             * A function to create a new type. This is part of the automatic
-             * registration of the object factory.
-             */
-            static std::unique_ptr<Interface> create(const std::string &name, WorldBuilder::World *world);
-
-            /**
-             * Returns the name of the plugin
-             */
-            std::string get_name() const
-            {
-              return name;
-            };
+          /**
+           * Returns the name of the plugin
+           */
+          std::string get_name() const { return name; };
 
           protected:
-            /**
-             * A pointer to the world class to retrieve variables.
-             */
-            WorldBuilder::World *world;
+          /**
+           * A pointer to the world class to retrieve variables.
+           */
+          WorldBuilder::World *world;
 
-            /**
-             * The name of the feature type.
-             */
-            std::string name;
+          /**
+           * The name of the feature type.
+           */
+          std::string name;
 
           private:
-            static std::map<std::string, ObjectFactory *> &get_factory_map()
-            {
-              static std::map<std::string, ObjectFactory *> factories;
-              return factories;
-            }
+          static std::map<std::string, ObjectFactory *> &get_factory_map() {
+            static std::map<std::string, ObjectFactory *> factories;
+            return factories;
+          }
 
-            static std::map<std::string, void ( *)(Parameters &,const std::string &)> &get_declare_map()
-            {
-              static std::map<std::string, void ( *)(Parameters &,const std::string &)> declares;
-              return declares;
-            }
-
+          static std::map<std::string,
+                          void (*)(Parameters &, const std::string &)> &
+          get_declare_map() {
+            static std::map<std::string,
+                            void (*)(Parameters &, const std::string &)>
+                declares;
+            return declares;
+          }
         };
-
 
         /**
          * A class to create new objects
@@ -139,7 +131,7 @@ namespace WorldBuilder
         class ObjectFactory
         {
           public:
-            virtual std::unique_ptr<Interface> create(World *world) = 0;
+          virtual std::unique_ptr<Interface> create(World *world) = 0;
         };
 
         /**
@@ -147,22 +139,22 @@ namespace WorldBuilder
          * register it. Because this is a library, we need some extra measures
          * to ensure that the static variable is actually initialized.
          */
-#define WB_REGISTER_FEATURE_SUBDUCTING_PLATE_TEMPERATURE_MODEL(klass,name) \
-  class klass##Factory : public ObjectFactory { \
+#define WB_REGISTER_FEATURE_SUBDUCTING_PLATE_TEMPERATURE_MODEL(klass, name) \
+  class klass##Factory : public ObjectFactory \
+  { \
     public: \
-      klass##Factory() \
-      { \
-        Interface::registerType(#name, klass::declare_entries, this); \
-      } \
-      std::unique_ptr<Interface> create(World *world) override final { \
-        return std::unique_ptr<Interface>(new klass(world)); \
-      } \
+    klass##Factory() { \
+      Interface::registerType(#name, klass::declare_entries, this); \
+    } \
+    std::unique_ptr<Interface> create(World *world) override final { \
+      return std::unique_ptr<Interface>(new klass(world)); \
+    } \
   }; \
   static klass##Factory global_##klass##Factory;
 
-      }
-    }
-  }
-}
+      } // namespace Temperature
+    }   // namespace SubductingPlateModels
+  }     // namespace Features
+} // namespace WorldBuilder
 
 #endif

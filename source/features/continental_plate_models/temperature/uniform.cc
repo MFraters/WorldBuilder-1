@@ -19,12 +19,10 @@
 
 #include "world_builder/features/continental_plate_models/temperature/uniform.h"
 
-
 #include "world_builder/nan.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
 #include "world_builder/utilities.h"
-
 
 namespace WorldBuilder
 {
@@ -38,68 +36,63 @@ namespace WorldBuilder
       namespace Temperature
       {
         Uniform::Uniform(WorldBuilder::World *world_)
-          :
-          min_depth(NaN::DSNAN),
-          max_depth(NaN::DSNAN),
-          temperature(NaN::DSNAN),
-          operation(Utilities::Operations::REPLACE)
-        {
+            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
+              temperature(NaN::DSNAN),
+              operation(Utilities::Operations::REPLACE) {
           this->world = world_;
           this->name = "uniform";
         }
 
-        Uniform::~Uniform()
-          = default;
+        Uniform::~Uniform() = default;
 
-        void
-        Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
-        {
+        void Uniform::declare_entries(Parameters &prm,
+                                      const std::string & /*unused*/) {
 
           // Add temperature to the required parameters.
-          prm.declare_entry("", Types::Object({"temperature"}), "Temperature model object");
+          prm.declare_entry("", Types::Object({"temperature"}),
+                            "Temperature model object");
 
           prm.declare_entry("min depth", Types::Double(0),
-                            "The depth in meters from which the temperature of this feature is present.");
+                            "The depth in meters from which the temperature of "
+                            "this feature is present.");
 
-          prm.declare_entry("max depth", Types::Double(std::numeric_limits<double>::max()),
-                            "The depth in meters to which the temperature of this feature is present.");
+          prm.declare_entry("max depth",
+                            Types::Double(std::numeric_limits<double>::max()),
+                            "The depth in meters to which the temperature of "
+                            "this feature is present.");
 
           prm.declare_entry("temperature", Types::Double(293.15),
-                            "The temperature in degree Kelvin which this feature should have");
-
+                            "The temperature in degree Kelvin which this "
+                            "feature should have");
         }
 
-        void
-        Uniform::parse_entries(Parameters &prm)
-        {
+        void Uniform::parse_entries(Parameters &prm) {
 
           min_depth = prm.get<double>("min depth");
           max_depth = prm.get<double>("max depth");
-          operation = Utilities::string_operations_to_enum(prm.get<std::string>("operation"));
+          operation = Utilities::string_operations_to_enum(
+              prm.get<std::string>("operation"));
           temperature = prm.get<double>("temperature");
         }
 
-
         double
         Uniform::get_temperature(const Point<3> & /*position*/,
-                                 const double depth,
-                                 const double  /*gravity*/,
+                                 const double depth, const double /*gravity*/,
                                  double temperature_,
                                  const double /*feature_min_depth*/,
-                                 const double /*feature_max_depth*/) const
-        {
+                                 const double /*feature_max_depth*/) const {
 
-          if (depth <= max_depth && depth >= min_depth)
-            {
-              return Utilities::apply_operation(operation,temperature_,temperature);
-            }
+          if (depth <= max_depth && depth >= min_depth) {
+            return Utilities::apply_operation(operation, temperature_,
+                                              temperature);
+          }
 
           return temperature_;
         }
 
-        WB_REGISTER_FEATURE_CONTINENTAL_PLATE_TEMPERATURE_MODEL(Uniform, uniform)
+        WB_REGISTER_FEATURE_CONTINENTAL_PLATE_TEMPERATURE_MODEL(Uniform,
+                                                                uniform)
       } // namespace Temperature
-    } // namespace ContinentalPlateModels
-  } // namespace Features
+    }   // namespace ContinentalPlateModels
+  }     // namespace Features
 } // namespace WorldBuilder
-

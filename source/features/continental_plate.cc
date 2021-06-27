@@ -19,7 +19,6 @@
 
 #include "world_builder/features/continental_plate.h"
 
-
 #include "world_builder/features/continental_plate_models/composition/interface.h"
 #include "world_builder/features/continental_plate_models/grains/interface.h"
 #include "world_builder/features/continental_plate_models/temperature/interface.h"
@@ -29,7 +28,6 @@
 #include "world_builder/types/plugin_system.h"
 #include "world_builder/world.h"
 
-
 namespace WorldBuilder
 {
   using namespace Utilities;
@@ -37,44 +35,50 @@ namespace WorldBuilder
   namespace Features
   {
     ContinentalPlate::ContinentalPlate(WorldBuilder::World *world_)
-      :
-      min_depth(NaN::DSNAN),
-      max_depth(NaN::DSNAN)
-    {
+        : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN) {
       this->world = world_;
       this->name = "continental plate";
     }
 
-    ContinentalPlate::~ContinentalPlate()
-      = default;
+    ContinentalPlate::~ContinentalPlate() = default;
 
-
-    void
-    ContinentalPlate::declare_entries(Parameters &prm,
-                                      const std::string & /*unused*/,
-                                      const std::vector<std::string> &required_entries)
-    {
-      prm.declare_entry("", Types::Object(required_entries), "continental plate object");
+    void ContinentalPlate::declare_entries(
+        Parameters &prm, const std::string & /*unused*/,
+        const std::vector<std::string> &required_entries) {
+      prm.declare_entry("", Types::Object(required_entries),
+                        "continental plate object");
 
       prm.declare_entry("min depth", Types::Double(0),
                         "The depth to which this feature is present");
-      prm.declare_entry("max depth", Types::Double(std::numeric_limits<double>::max()),
+      prm.declare_entry("max depth",
+                        Types::Double(std::numeric_limits<double>::max()),
                         "The depth to which this feature is present");
-      prm.declare_entry("temperature models",
-                        Types::PluginSystem("", Features::ContinentalPlateModels::Temperature::Interface::declare_entries, {"model"}),
-                        "A list of temperature models.");
-      prm.declare_entry("composition models",
-                        Types::PluginSystem("", Features::ContinentalPlateModels::Composition::Interface::declare_entries, {"model"}),
-                        "A list of composition models.");
-      prm.declare_entry("grains models",
-                        Types::PluginSystem("", Features::ContinentalPlateModels::Grains::Interface::declare_entries, {"model"}),
-                        "A list of grains models.");
+      prm.declare_entry(
+          "temperature models",
+          Types::PluginSystem("",
+                              Features::ContinentalPlateModels::Temperature::
+                                  Interface::declare_entries,
+                              {"model"}),
+          "A list of temperature models.");
+      prm.declare_entry(
+          "composition models",
+          Types::PluginSystem("",
+                              Features::ContinentalPlateModels::Composition::
+                                  Interface::declare_entries,
+                              {"model"}),
+          "A list of composition models.");
+      prm.declare_entry(
+          "grains models",
+          Types::PluginSystem("",
+                              Features::ContinentalPlateModels::Grains::
+                                  Interface::declare_entries,
+                              {"model"}),
+          "A list of grains models.");
     }
 
-    void
-    ContinentalPlate::parse_entries(Parameters &prm)
-    {
-      const CoordinateSystem coordinate_system = prm.coordinate_system->natural_coordinate_system();
+    void ContinentalPlate::parse_entries(Parameters &prm) {
+      const CoordinateSystem coordinate_system =
+          prm.coordinate_system->natural_coordinate_system();
 
       this->name = prm.get<std::string>("name");
       this->get_coordinates("coordinates", prm, coordinate_system);
@@ -82,151 +86,144 @@ namespace WorldBuilder
       min_depth = prm.get<double>("min depth");
       max_depth = prm.get<double>("max depth");
 
-
-      prm.get_unique_pointers<Features::ContinentalPlateModels::Temperature::Interface>("temperature models", temperature_models);
+      prm.get_unique_pointers<
+          Features::ContinentalPlateModels::Temperature::Interface>(
+          "temperature models", temperature_models);
 
       prm.enter_subsection("temperature models");
       {
-        for (unsigned int i = 0; i < temperature_models.size(); ++i)
-          {
-            prm.enter_subsection(std::to_string(i));
-            {
-              temperature_models[i]->parse_entries(prm);
-            }
-            prm.leave_subsection();
-          }
+        for (unsigned int i = 0; i < temperature_models.size(); ++i) {
+          prm.enter_subsection(std::to_string(i));
+          { temperature_models[i]->parse_entries(prm); }
+          prm.leave_subsection();
+        }
       }
       prm.leave_subsection();
 
-
-      prm.get_unique_pointers<Features::ContinentalPlateModels::Composition::Interface>("composition models", composition_models);
+      prm.get_unique_pointers<
+          Features::ContinentalPlateModels::Composition::Interface>(
+          "composition models", composition_models);
 
       prm.enter_subsection("composition models");
       {
-        for (unsigned int i = 0; i < composition_models.size(); ++i)
-          {
-            prm.enter_subsection(std::to_string(i));
-            {
-              composition_models[i]->parse_entries(prm);
-            }
-            prm.leave_subsection();
-          }
+        for (unsigned int i = 0; i < composition_models.size(); ++i) {
+          prm.enter_subsection(std::to_string(i));
+          { composition_models[i]->parse_entries(prm); }
+          prm.leave_subsection();
+        }
       }
       prm.leave_subsection();
 
-
-      prm.get_unique_pointers<Features::ContinentalPlateModels::Grains::Interface>("grains models", grains_models);
+      prm.get_unique_pointers<
+          Features::ContinentalPlateModels::Grains::Interface>("grains models",
+                                                               grains_models);
 
       prm.enter_subsection("grains models");
       {
-        for (unsigned int i = 0; i < grains_models.size(); ++i)
-          {
-            prm.enter_subsection(std::to_string(i));
-            {
-              grains_models[i]->parse_entries(prm);
-            }
-            prm.leave_subsection();
-          }
+        for (unsigned int i = 0; i < grains_models.size(); ++i) {
+          prm.enter_subsection(std::to_string(i));
+          { grains_models[i]->parse_entries(prm); }
+          prm.leave_subsection();
+        }
       }
       prm.leave_subsection();
-
     }
 
-
-    double
-    ContinentalPlate::temperature(const Point<3> &position,
-                                  const double depth,
-                                  const double gravity_norm,
-                                  double temperature) const
-    {
-      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate = WorldBuilder::Utilities::NaturalCoordinate(position,
-                                                                      *(world->parameters.coordinate_system));
+    double ContinentalPlate::temperature(const Point<3> &position,
+                                         const double depth,
+                                         const double gravity_norm,
+                                         double temperature) const {
+      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate =
+          WorldBuilder::Utilities::NaturalCoordinate(
+              position, *(world->parameters.coordinate_system));
       if (depth <= max_depth && depth >= min_depth &&
-          Utilities::polygon_contains_point(coordinates, Point<2>(natural_coordinate.get_surface_coordinates(),
-                                                                  world->parameters.coordinate_system->natural_coordinate_system())))
-        {
-          for (const auto &temperature_model: temperature_models)
-            {
-              temperature = temperature_model->get_temperature(position,
-                                                               depth,
-                                                               gravity_norm,
-                                                               temperature,
-                                                               min_depth,
-                                                               max_depth);
+          Utilities::polygon_contains_point(
+              coordinates,
+              Point<2>(natural_coordinate.get_surface_coordinates(),
+                       world->parameters.coordinate_system
+                           ->natural_coordinate_system()))) {
+        for (const auto &temperature_model : temperature_models) {
+          temperature = temperature_model->get_temperature(
+              position, depth, gravity_norm, temperature, min_depth, max_depth);
 
-              WBAssert(!std::isnan(temperature), "Temparture is not a number: " << temperature
-                       << ", based on a temperature model with the name " << temperature_model->get_name());
-              WBAssert(std::isfinite(temperature), "Temparture is not a finite: " << temperature
-                       << ", based on a temperature model with the name " << temperature_model->get_name());
-
-            }
+          WBAssert(!std::isnan(temperature),
+                   "Temparture is not a number: "
+                       << temperature
+                       << ", based on a temperature model with the name "
+                       << temperature_model->get_name());
+          WBAssert(std::isfinite(temperature),
+                   "Temparture is not a finite: "
+                       << temperature
+                       << ", based on a temperature model with the name "
+                       << temperature_model->get_name());
         }
+      }
 
       return temperature;
     }
 
-    double
-    ContinentalPlate::composition(const Point<3> &position,
-                                  const double depth,
-                                  const unsigned int composition_number,
-                                  double composition) const
-    {
-      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate = WorldBuilder::Utilities::NaturalCoordinate(position,
-                                                                      *(world->parameters.coordinate_system));
+    double ContinentalPlate::composition(const Point<3> &position,
+                                         const double depth,
+                                         const unsigned int composition_number,
+                                         double composition) const {
+      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate =
+          WorldBuilder::Utilities::NaturalCoordinate(
+              position, *(world->parameters.coordinate_system));
 
       if (depth <= max_depth && depth >= min_depth &&
-          Utilities::polygon_contains_point(coordinates, Point<2>(natural_coordinate.get_surface_coordinates(),
-                                                                  world->parameters.coordinate_system->natural_coordinate_system())))
-        {
-          for (const auto &composition_model: composition_models)
-            {
-              composition = composition_model->get_composition(position,
-                                                               depth,
-                                                               composition_number,
-                                                               composition,
-                                                               min_depth,
-                                                               max_depth);
+          Utilities::polygon_contains_point(
+              coordinates,
+              Point<2>(natural_coordinate.get_surface_coordinates(),
+                       world->parameters.coordinate_system
+                           ->natural_coordinate_system()))) {
+        for (const auto &composition_model : composition_models) {
+          composition = composition_model->get_composition(
+              position, depth, composition_number, composition, min_depth,
+              max_depth);
 
-              WBAssert(!std::isnan(composition), "Composition is not a number: " << composition
-                       << ", based on a temperature model with the name " << composition_model->get_name());
-              WBAssert(std::isfinite(composition), "Composition is not a finite: " << composition
-                       << ", based on a temperature model with the name " << composition_model->get_name());
-
-            }
+          WBAssert(!std::isnan(composition),
+                   "Composition is not a number: "
+                       << composition
+                       << ", based on a temperature model with the name "
+                       << composition_model->get_name());
+          WBAssert(std::isfinite(composition),
+                   "Composition is not a finite: "
+                       << composition
+                       << ", based on a temperature model with the name "
+                       << composition_model->get_name());
         }
+      }
 
       return composition;
     }
 
     WorldBuilder::grains
-    ContinentalPlate::grains(const Point<3> &position,
-                             const double depth,
+    ContinentalPlate::grains(const Point<3> &position, const double depth,
                              const unsigned int composition_number,
-                             WorldBuilder::grains grains) const
-    {
-      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate = WorldBuilder::Utilities::NaturalCoordinate(position,
-                                                                      *(world->parameters.coordinate_system));
+                             WorldBuilder::grains grains) const {
+      WorldBuilder::Utilities::NaturalCoordinate natural_coordinate =
+          WorldBuilder::Utilities::NaturalCoordinate(
+              position, *(world->parameters.coordinate_system));
 
       if (depth <= max_depth && depth >= min_depth &&
-          Utilities::polygon_contains_point(coordinates, Point<2>(natural_coordinate.get_surface_coordinates(),
-                                                                  world->parameters.coordinate_system->natural_coordinate_system())))
-        {
-          for (const auto &grains_model: grains_models)
-            {
-              grains = grains_model->get_grains(position,
-                                                depth,
-                                                composition_number,
-                                                grains,
-                                                min_depth,
-                                                max_depth);
+          Utilities::polygon_contains_point(
+              coordinates,
+              Point<2>(natural_coordinate.get_surface_coordinates(),
+                       world->parameters.coordinate_system
+                           ->natural_coordinate_system()))) {
+        for (const auto &grains_model : grains_models) {
+          grains = grains_model->get_grains(position, depth, composition_number,
+                                            grains, min_depth, max_depth);
 
-              /*WBAssert(!std::isnan(composition), "Composition is not a number: " << composition
-                       << ", based on a temperature model with the name " << composition_model->get_name());
-              WBAssert(std::isfinite(composition), "Composition is not a finite: " << composition
-                       << ", based on a temperature model with the name " << composition_model->get_name());*/
-
-            }
+          /*WBAssert(!std::isnan(composition), "Composition is not a number: "
+          << composition
+                   << ", based on a temperature model with the name " <<
+          composition_model->get_name()); WBAssert(std::isfinite(composition),
+          "Composition is not a finite: " << composition
+                   << ", based on a temperature model with the name " <<
+          composition_model->get_name());*/
         }
+      }
 
       return grains;
     }

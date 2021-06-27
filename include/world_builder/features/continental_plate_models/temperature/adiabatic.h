@@ -20,10 +20,8 @@
 #ifndef _world_builder_features_continental_plate_temperature_adiabatic_h
 #define _world_builder_features_continental_plate_temperature_adiabatic_h
 
-
 #include "world_builder/features/continental_plate_models/temperature/interface.h"
 #include "world_builder/features/utilities.h"
-
 
 namespace WorldBuilder
 {
@@ -35,74 +33,71 @@ namespace WorldBuilder
       namespace Temperature
       {
         /**
-         * This class represents a continental plate and can implement submodules
-         * for temperature and composition. These submodules determine what
-         * the returned temperature or composition of the temperature and composition
-         * functions of this class will be.
+         * This class represents a continental plate and can implement
+         * submodules for temperature and composition. These submodules
+         * determine what the returned temperature or composition of the
+         * temperature and composition functions of this class will be.
          */
         class Adiabatic : public Interface
         {
           public:
-            /**
-             * constructor
-             */
-            Adiabatic(WorldBuilder::World *world);
+          /**
+           * constructor
+           */
+          Adiabatic(WorldBuilder::World *world);
 
-            /**
-             * Destructor
-             */
-            ~Adiabatic();
+          /**
+           * Destructor
+           */
+          ~Adiabatic();
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            static
-            void declare_entries(Parameters &prm, const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_entries(Parameters &prm,
+                                      const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            void parse_entries(Parameters &prm) override final;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          void parse_entries(Parameters &prm) override final;
 
-
-            /**
-             * Returns a temperature based on the given position, depth in the model,
-             * gravity and current temperature.
-             */
-            double get_temperature(const Point<3> &position,
-                                   const double depth,
-                                   const double gravity,
-                                   double temperature,
-                                   const double feature_min_depth,
-                                   const double feature_max_depth) const override final;
-
+          /**
+           * Returns a temperature based on the given position, depth in the
+           * model, gravity and current temperature.
+           */
+          double
+          get_temperature(const Point<3> &position, const double depth,
+                          const double gravity, double temperature,
+                          const double feature_min_depth,
+                          const double feature_max_depth) const override final;
 
           private:
-            // adiabatic temperature submodule parameters
-            double min_depth;
-            double max_depth;
-            /**
-             * Todo
-             */
-            double potential_mantle_temperature;
+          // adiabatic temperature submodule parameters
+          double min_depth;
+          double max_depth;
+          /**
+           * Todo
+           */
+          double potential_mantle_temperature;
 
+          /**
+           * Todo
+           */
+          double thermal_expansion_coefficient;
 
-            /**
-             * Todo
-             */
-            double thermal_expansion_coefficient;
+          /**
+           * Todo
+           */
+          double specific_heat;
 
-            /**
-             * Todo
-             */
-            double specific_heat;
-
-            Utilities::Operations operation;
-
+          Utilities::Operations operation;
         };
-      }
-    }
-  }
-}
+      } // namespace Temperature
+    }   // namespace ContinentalPlateModels
+  }     // namespace Features
+} // namespace WorldBuilder
 
 #endif

@@ -20,10 +20,8 @@
 #ifndef _world_builder_features_oceanic_plate_temperature_plate_model_h
 #define _world_builder_features_oceanic_plate_temperature_plate_model_h
 
-
 #include "world_builder/features/oceanic_plate_models/temperature/interface.h"
 #include "world_builder/features/utilities.h"
-
 
 namespace WorldBuilder
 {
@@ -39,60 +37,58 @@ namespace WorldBuilder
         /**
          * This class represents a oceanic plate and can implement submodules
          * for temperature and composition. These submodules determine what
-         * the returned temperature or composition of the temperature and composition
-         * functions of this class will be.
+         * the returned temperature or composition of the temperature and
+         * composition functions of this class will be.
          */
         class PlateModel : public Interface
         {
           public:
-            /**
-             * constructor
-             */
-            PlateModel(WorldBuilder::World *world);
+          /**
+           * constructor
+           */
+          PlateModel(WorldBuilder::World *world);
 
-            /**
-             * Destructor
-             */
-            ~PlateModel();
+          /**
+           * Destructor
+           */
+          ~PlateModel();
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            static
-            void declare_entries(Parameters &prm, const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_entries(Parameters &prm,
+                                      const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            void parse_entries(Parameters &prm) override final;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          void parse_entries(Parameters &prm) override final;
 
-
-            /**
-             * Returns a temperature based on the given position, depth in the model,
-             * gravity and current temperature.
-             */
-            double get_temperature(const Point<3> &position,
-                                   const double depth,
-                                   const double gravity,
-                                   double temperature,
-                                   const double feature_min_depth,
-                                   const double feature_max_depth) const override final;
-
+          /**
+           * Returns a temperature based on the given position, depth in the
+           * model, gravity and current temperature.
+           */
+          double
+          get_temperature(const Point<3> &position, const double depth,
+                          const double gravity, double temperature,
+                          const double feature_min_depth,
+                          const double feature_max_depth) const override final;
 
           private:
-            // plate model temperature submodule parameters
-            double min_depth;
-            double max_depth;
-            double top_temperature;
-            double bottom_temperature;
-            double spreading_velocity;
-            std::vector<Point<2> > ridge_coordinates;
-            Utilities::Operations operation;
-
+          // plate model temperature submodule parameters
+          double min_depth;
+          double max_depth;
+          double top_temperature;
+          double bottom_temperature;
+          double spreading_velocity;
+          std::vector<Point<2>> ridge_coordinates;
+          Utilities::Operations operation;
         };
-      }
-    }
-  }
-}
+      } // namespace Temperature
+    }   // namespace OceanicPlateModels
+  }     // namespace Features
+} // namespace WorldBuilder
 
 #endif

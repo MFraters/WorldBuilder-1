@@ -19,66 +19,46 @@
 
 #include "world_builder/coordinate_systems/cartesian.h"
 
-
 namespace WorldBuilder
 {
   namespace CoordinateSystems
   {
-    Cartesian::Cartesian(WorldBuilder::World *world_)
-    {
-      this->world = world_;
-    }
+    Cartesian::Cartesian(WorldBuilder::World *world_) { this->world = world_; }
 
-    Cartesian::~Cartesian()
-      = default;
+    Cartesian::~Cartesian() = default;
 
-    void
-    Cartesian::declare_entries(Parameters & /*unused*/, const std::string & /*unused*/)
-    {}
+    void Cartesian::declare_entries(Parameters & /*unused*/,
+                                    const std::string & /*unused*/) {}
 
-    void
-    Cartesian::parse_entries(Parameters & /*prm*/)
-    {}
+    void Cartesian::parse_entries(Parameters & /*prm*/) {}
 
-
-    CoordinateSystem
-    Cartesian::natural_coordinate_system() const
-    {
+    CoordinateSystem Cartesian::natural_coordinate_system() const {
       return CoordinateSystem::cartesian;
     }
 
+    DepthMethod Cartesian::depth_method() const { return DepthMethod::none; }
 
-    DepthMethod
-    Cartesian::depth_method() const
-    {
-      return DepthMethod::none;
-    }
-
-
-    std::array<double,3>
-    Cartesian::cartesian_to_natural_coordinates(const std::array<double,3> &position) const
-    {
+    std::array<double, 3> Cartesian::cartesian_to_natural_coordinates(
+        const std::array<double, 3> &position) const {
       return position;
     }
 
-
-    std::array<double,3>
-    Cartesian::natural_to_cartesian_coordinates(const std::array<double,3> &position) const
-    {
+    std::array<double, 3> Cartesian::natural_to_cartesian_coordinates(
+        const std::array<double, 3> &position) const {
       return position;
     }
 
-
-    double
-    Cartesian::distance_between_points_at_same_depth(const Point<3> &point_1, const Point<3> &point_2) const
-    {
+    double Cartesian::distance_between_points_at_same_depth(
+        const Point<3> &point_1, const Point<3> &point_2) const {
       WBAssert(point_1.get_coordinate_system() == cartesian,
-               "Can not convert non cartesian points through the cartesian coordinate system.");
+               "Can not convert non cartesian points through the cartesian "
+               "coordinate system.");
       WBAssert(point_2.get_coordinate_system() == cartesian,
-               "Can not convert non cartesian points through the cartesian coordinate system.");
+               "Can not convert non cartesian points through the cartesian "
+               "coordinate system.");
       // Todo: check that points are at the same depth.
-      const Point<3> difference = point_1-point_2;
-      const Point<2> point_at_depth(difference[0],difference[1], cartesian);
+      const Point<3> difference = point_1 - point_2;
+      const Point<2> point_at_depth(difference[0], difference[1], cartesian);
 
       return point_at_depth.norm();
     }
@@ -89,4 +69,3 @@ namespace WorldBuilder
     WB_REGISTER_COORDINATE_SYSTEM(Cartesian, cartesian)
   } // namespace CoordinateSystems
 } // namespace WorldBuilder
-

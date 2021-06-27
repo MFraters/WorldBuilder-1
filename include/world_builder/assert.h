@@ -24,40 +24,40 @@
 namespace WorldBuilder
 {
 #ifndef NDEBUG
-#   define WBAssert(condition, message) \
+#define WBAssert(condition, message) \
   do { \
-      if (! (condition)) { \
-          std::stringstream smessage; \
-          smessage << "Assert `" #condition "` failed in " << __FILE__ \
-                   << " at line " << __LINE__ << ": " << message << std::endl; \
-          throw std::runtime_error(smessage.str()); \
-        } \
-    } while (false)
+    if (!(condition)) { \
+      std::stringstream smessage; \
+      smessage << "Assert `" #condition "` failed in " << __FILE__ \
+               << " at line " << __LINE__ << ": " << message << std::endl; \
+      throw std::runtime_error(smessage.str()); \
+    } \
+  } while (false)
 #else
-#   define WBAssert(condition, message) do { } while (false)
+#define WBAssert(condition, message) \
+  do { \
+  } while (false)
 #endif
 
-#   define WBAssertThrow(condition, message) \
+#define WBAssertThrow(condition, message) \
   do { \
-      if (! (condition)) { \
-          std::stringstream smessage; \
-          smessage << "AssertThrow `" #condition "` failed in " << __FILE__ \
-                   << " at line " << __LINE__ << ": " << message << std::endl; \
-          throw std::runtime_error(smessage.str()); \
-        } \
-    } while (false)
+    if (!(condition)) { \
+      std::stringstream smessage; \
+      smessage << "AssertThrow `" #condition "` failed in " << __FILE__ \
+               << " at line " << __LINE__ << ": " << message << std::endl; \
+      throw std::runtime_error(smessage.str()); \
+    } \
+  } while (false)
 
-
-#   define WBAssertThrowExc(condition, exc, message) \
+#define WBAssertThrowExc(condition, exc, message) \
   do { \
-      if (! (condition)) { \
-          exc \
-          std::stringstream smessage; \
-          smessage << "AssertThrow `" #condition "` failed in " << __FILE__ \
-                   << " at line " << __LINE__ << ": " << message << std::endl; \
-          throw std::runtime_error(smessage.str()); \
-        } \
-    } while (false)
-}
+    if (!(condition)) { \
+      exc std::stringstream smessage; \
+      smessage << "AssertThrow `" #condition "` failed in " << __FILE__ \
+               << " at line " << __LINE__ << ": " << message << std::endl; \
+      throw std::runtime_error(smessage.str()); \
+    } \
+  } while (false)
+} // namespace WorldBuilder
 
 #endif

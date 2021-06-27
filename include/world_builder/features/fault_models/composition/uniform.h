@@ -20,9 +20,7 @@
 #ifndef _world_builder_features_fault_composition_uniform_h
 #define _world_builder_features_fault_composition_uniform_h
 
-
 #include "world_builder/features/fault_models/composition/interface.h"
-
 
 namespace WorldBuilder
 {
@@ -36,59 +34,58 @@ namespace WorldBuilder
         /**
          * This class represents a subducting plate and can implement submodules
          * for temperature and composition. These submodules determine what
-         * the returned temperature or composition of the temperature and composition
-         * functions of this class will be.
+         * the returned temperature or composition of the temperature and
+         * composition functions of this class will be.
          */
         class Uniform : public Interface
         {
           public:
-            /**
-             * constructor
-             */
-            Uniform(WorldBuilder::World *world);
+          /**
+           * constructor
+           */
+          Uniform(WorldBuilder::World *world);
 
-            /**
-             * Destructor
-             */
-            ~Uniform();
+          /**
+           * Destructor
+           */
+          ~Uniform();
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            static
-            void declare_entries(Parameters &prm, const std::string &parent_name = "");
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          static void declare_entries(Parameters &prm,
+                                      const std::string &parent_name = "");
 
-            /**
-             * declare and read in the world builder file into the parameters class
-             */
-            void parse_entries(Parameters &prm) override final;
+          /**
+           * declare and read in the world builder file into the parameters
+           * class
+           */
+          void parse_entries(Parameters &prm) override final;
 
-
-            /**
-             * Returns a composition based on the given position, depth in the model,
-             * gravity and current composition.
-             */
-            double get_composition(const Point<3> &position,
-                                   const double depth,
-                                   const unsigned int composition_number,
-                                   double composition,
-                                   const double feature_min_depth,
-                                   const double feature_max_depth,
-                                   const std::map<std::string,double> &distance_from_planes) const override final;
-
+          /**
+           * Returns a composition based on the given position, depth in the
+           * model, gravity and current composition.
+           */
+          double get_composition(const Point<3> &position, const double depth,
+                                 const unsigned int composition_number,
+                                 double composition,
+                                 const double feature_min_depth,
+                                 const double feature_max_depth,
+                                 const std::map<std::string, double> &
+                                     distance_from_planes) const override final;
 
           private:
-            // uniform composition submodule parameters
-            double min_depth;
-            double max_depth;
-            std::vector<unsigned int> compositions;
-            std::vector<double> fractions;
-            std::string operation;
-
+          // uniform composition submodule parameters
+          double min_depth;
+          double max_depth;
+          std::vector<unsigned int> compositions;
+          std::vector<double> fractions;
+          std::string operation;
         };
-      }
-    }
-  }
-}
+      } // namespace Composition
+    }   // namespace FaultModels
+  }     // namespace Features
+} // namespace WorldBuilder
 
 #endif

@@ -32,7 +32,7 @@ namespace WorldBuilder
   namespace Types
   {
     class Interface;
-    template<int dim>
+    template <int dim>
     class Point;
     class Double;
     class String;
@@ -40,7 +40,7 @@ namespace WorldBuilder
     class Array;
     class Bool;
     class UnsignedInt;
-  }
+  } // namespace Types
 
   namespace Features
   {
@@ -71,230 +71,235 @@ namespace WorldBuilder
   class Parameters
   {
     public:
-      /**
-       * Constructor
-       * \param world A reference to the World class
-       */
-      Parameters(World &world);
+    /**
+     * Constructor
+     * \param world A reference to the World class
+     */
+    Parameters(World &world);
 
-      /**
-       * Destructor
-       */
-      ~Parameters();
+    /**
+     * Destructor
+     */
+    ~Parameters();
 
-      /**
-       * Initializes the parameter file
-       * \param filename A string with the path to the world builder file
-       * \param has_output_dir A bool indicating whether the world builder may write out information.
-       * \param output_dir A string with the path to the directory where it can output information if allowed by has_output_dir
-       */
-      void initialize(std::string &filename, bool has_output_dir = false, const std::string &output_dir = "");
+    /**
+     * Initializes the parameter file
+     * \param filename A string with the path to the world builder file
+     * \param has_output_dir A bool indicating whether the world builder may
+     * write out information. \param output_dir A string with the path to the
+     * directory where it can output information if allowed by has_output_dir
+     */
+    void initialize(std::string &filename, bool has_output_dir = false,
+                    const std::string &output_dir = "");
 
-      /**
-       * A generic get function to retrieve setting from the parameter file.
-       * Note that this is dependent on the current path/subsection which you are in.
-       * \param name The name of the entry to retrieved
-       * @see path
-       * @see enter_subsection()
-       * @see leave_subsection()
-       */
-      template<class T>
-      T get(const std::string &name);
+    /**
+     * A generic get function to retrieve setting from the parameter file.
+     * Note that this is dependent on the current path/subsection which you are
+     * in. \param name The name of the entry to retrieved
+     * @see path
+     * @see enter_subsection()
+     * @see leave_subsection()
+     */
+    template <class T>
+    T get(const std::string &name);
 
-      /**
-       * A specialized verions of get which can retun vecors/arrays.
-       * \param name The name of the entry to retrieved
-       */
-      template<class T>
-      std::vector<T> get_vector(const std::string &name);
+    /**
+     * A specialized verions of get which can retun vecors/arrays.
+     * \param name The name of the entry to retrieved
+     */
+    template <class T>
+    std::vector<T> get_vector(const std::string &name);
 
-      /**
-       * A specialized verions of get which can retun vecors/arrays.
-       * This version is designed for the plugin system.
-       * \param name The name of the entry to retrieved
-       */
-      template<class T, class A, class B, class C>
-      std::vector<T> get_vector(const std::string &name, std::vector<std::shared_ptr<A> > &, std::vector<std::shared_ptr<B> > &, std::vector<std::shared_ptr<C> > &);
+    /**
+     * A specialized verions of get which can retun vecors/arrays.
+     * This version is designed for the plugin system.
+     * \param name The name of the entry to retrieved
+     */
+    template <class T, class A, class B, class C>
+    std::vector<T> get_vector(const std::string &name,
+                              std::vector<std::shared_ptr<A>> &,
+                              std::vector<std::shared_ptr<B>> &,
+                              std::vector<std::shared_ptr<C>> &);
 
-      /**
-       * A specialized verions of get which can retun unique pointers.
-       * \param name The name of the entry to retrieved
-       */
-      template<class T>
-      std::unique_ptr<T> get_unique_pointer(const std::string &name);
+    /**
+     * A specialized verions of get which can retun unique pointers.
+     * \param name The name of the entry to retrieved
+     */
+    template <class T>
+    std::unique_ptr<T> get_unique_pointer(const std::string &name);
 
-      /**
-       * A specialized verions of get which can retun unique pointers as an argument
-       * and returns a bool to indicate whether it was successfull or not.
-       * Note that this function will erase all information in the vector.
-       * \param name The name of the entry to retrieved
-       * \param vector A vector of unique pointers.
-       */
-      template<class T>
-      bool
-      get_unique_pointers(const std::string &name, std::vector<std::unique_ptr<T> > &vector);
+    /**
+     * A specialized verions of get which can retun unique pointers as an
+     * argument and returns a bool to indicate whether it was successfull or
+     * not. Note that this function will erase all information in the vector.
+     * \param name The name of the entry to retrieved
+     * \param vector A vector of unique pointers.
+     */
+    template <class T>
+    bool get_unique_pointers(const std::string &name,
+                             std::vector<std::unique_ptr<T>> &vector);
 
-      /**
-       * A specialized verions of get which can retun shared pointers as an argument
-       * and returns a bool to indicate whether it was successfull or not.
-       * Note that this function will erase all information in the vector.
-       * \param name The name of the entry to retrieved
-       * \param vector A vector of shared pointers.
-       */
-      template<class T>
-      bool
-      get_shared_pointers(const std::string &name, std::vector<std::shared_ptr<T> > &);
+    /**
+     * A specialized verions of get which can retun shared pointers as an
+     * argument and returns a bool to indicate whether it was successfull or
+     * not. Note that this function will erase all information in the vector.
+     * \param name The name of the entry to retrieved
+     * \param vector A vector of shared pointers.
+     */
+    template <class T>
+    bool get_shared_pointers(const std::string &name,
+                             std::vector<std::shared_ptr<T>> &);
 
-      /**
-       * Checks for the existance of an entry in the parameter file.
-       * Return true when an entry is specified and false when it is not.
-       * This is independent of whether an entry has been declared or not.
-       * The main intended usage is to check whether the user has provided
-       * the specified entry in the user supplied parameters file, since
-       * the get functions may use default values.
-       * \param name The name of the entry to be checked.
-       */
-      bool
-      check_entry(const std::string &name) const;
+    /**
+     * Checks for the existance of an entry in the parameter file.
+     * Return true when an entry is specified and false when it is not.
+     * This is independent of whether an entry has been declared or not.
+     * The main intended usage is to check whether the user has provided
+     * the specified entry in the user supplied parameters file, since
+     * the get functions may use default values.
+     * \param name The name of the entry to be checked.
+     */
+    bool check_entry(const std::string &name) const;
 
-      /**
-       * Declares the existance an entry in the parameters class.
-       * Default values are supplied by the type.
-       * \param name The name of the entry to be declared
-       * \param type The type of entry (e.g. Double, Array, etc.)
-       * \param documentation A string containing information about this parameter.
-       */
-      void declare_entry(const std::string &name,
-                         const Types::Interface &type,
-                         const std::string &documentation);
+    /**
+     * Declares the existance an entry in the parameters class.
+     * Default values are supplied by the type.
+     * \param name The name of the entry to be declared
+     * \param type The type of entry (e.g. Double, Array, etc.)
+     * \param documentation A string containing information about this
+     * parameter.
+     */
+    void declare_entry(const std::string &name, const Types::Interface &type,
+                       const std::string &documentation);
 
+    /**
+     * This function is used to enter a subsection. It appends to the path
+     * variable. This action is revesed by the leave subsection function.
+     * \param name The name of the subsection to be entered.
+     * @see path
+     * @see leave_subsection()
+     */
+    void enter_subsection(const std::string &name);
 
-      /**
-       * This function is used to enter a subsection. It appends to the path
-       * variable. This action is revesed by the leave subsection function.
-       * \param name The name of the subsection to be entered.
-       * @see path
-       * @see leave_subsection()
-       */
-      void enter_subsection(const std::string &name);
+    /**
+     * This function is used to leave a subsection by removing the last
+     * element of the path variable. It reverses the action of the enter
+     * subsection function.
+     * @see path
+     * @see enter_subsection()
+     */
+    void leave_subsection();
 
-      /**
-       * This function is used to leave a subsection by removing the last
-       * element of the path variable. It reverses the action of the enter
-       * subsection function.
-       * @see path
-       * @see enter_subsection()
-       */
-      void leave_subsection();
+    /**
+     * A utilties function for declaring plugin model entries. This always
+     * contains a model declaration entry with the plugin name.
+     * @param model_group_name The name of the model group which is declared.
+     * @param parent_name The name of the parent declaration group.
+     * @param declaration_map A map containing plugin names and plugin
+     * declaration functions
+     * @param requried_entries A vector containing what entries should be
+     * required from the user. Default value is empty.
+     * @param extra_declarations A vector containing extra declarations common
+     * to all plugins in this group. Default value is empty.
+     */
+    void declare_model_entries(
+        const std::string &model_group_name, const std::string &parent_name,
+        const std::map<std::string, void (*)(Parameters &, const std::string &)>
+            &declare_map,
+        const std::vector<std::string> &required_entries = {},
+        const std::vector<std::tuple<
+            std::string, const WorldBuilder::Types::Interface &, std::string>>
+            &extra_declarations = {});
 
-      /**
-       * A utilties function for declaring plugin model entries. This always contains a model declaration entry with the plugin name.
-       * @param model_group_name The name of the model group which is declared.
-       * @param parent_name The name of the parent declaration group.
-       * @param declaration_map A map containing plugin names and plugin declaration functions
-       * @param requried_entries A vector containing what entries should be required from the user. Default value is empty.
-       * @param extra_declarations A vector containing extra declarations common to all plugins in this group. Default value is empty.
-       */
-      void
-      declare_model_entries(const std::string &model_group_name,
-                            const std::string &parent_name,
-                            const std::map<std::string, void ( *)(Parameters &,const std::string &)> &declare_map,
-                            const std::vector<std::string> &required_entries = {},
-                            const std::vector<std::tuple<std::string,const WorldBuilder::Types::Interface &, std::string> > &extra_declarations = {});
+    /**
+     * A reference to the World class. This is needed to create the features.
+     */
+    World &world;
 
+    /**
+     * This variable stores what path separtor is used in the property tree
+     * and in this class.
+     */
+    const std::string path_seperator = ".";
 
-      /**
-       * A reference to the World class. This is needed to create the features.
-       */
-      World &world;
+    /**
+     * This variable stores the path in a vector of strings.
+     * @see enter_subsection()
+     * @see leave_subsection()
+     */
+    std::vector<std::string> path;
 
-      /**
-       * This variable stores what path separtor is used in the property tree
-       * and in this class.
-       */
-      const std::string path_seperator = ".";
+    rapidjson::Document declarations;
+    rapidjson::Document parameters;
 
-      /**
-       * This variable stores the path in a vector of strings.
-       * @see enter_subsection()
-       * @see leave_subsection()
-       */
-      std::vector<std::string> path;
+    /**
+     * A vector containing all the pointers to the features. This vector is
+     * responsible for the features and has ownership over them. Therefore
+     * unique pointers are used.
+     * @see Features
+     */
+    std::vector<std::unique_ptr<WorldBuilder::Features::Interface>> features;
 
-      rapidjson::Document declarations;
-      rapidjson::Document parameters;
+    /**
+     * A pointers to the corodinate system. This variable is responsible for
+     * the coordinate system and has ownership over it. Therefore a unique
+     * pointer are used.
+     * @see CoordinateSystem
+     */
+    std::unique_ptr<WorldBuilder::CoordinateSystems::Interface>
+        coordinate_system;
 
+    /**
+     * This function return the current path as stored in the path variable
+     * as a string in json pointer format.
+     * \return std::string
+     */
+    std::string get_full_json_path(
+        size_t max_size = std::numeric_limits<size_t>::max()) const;
 
+    /**
+     * todo: Warning: do not use before declarations is filled.
+     * This function return the current path as stored in the path variable
+     * as a string in json pointer format.
+     * \return std::string
+     */
+    std::string get_full_json_schema_path() const;
 
+    /**
+     * This function return the current path as stored in the path variable
+     * as a string.
+     * \return std::string
+     */
+    // std::string get_full_path() const;
 
-      /**
-       * A vector containing all the pointers to the features. This vector is
-       * responsible for the features and has ownership over them. Therefore
-       * unique pointers are used.
-       * @see Features
-       */
-      std::vector<std::unique_ptr<WorldBuilder::Features::Interface> > features;
-
-      /**
-       * A pointers to the corodinate system. This variable is responsible for
-       * the coordinate system and has ownership over it. Therefore a unique
-       * pointer are used.
-       * @see CoordinateSystem
-       */
-      std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> coordinate_system;
-
-      /**
-       * This function return the current path as stored in the path variable
-       * as a string in json pointer format.
-       * \return std::string
-       */
-      std::string get_full_json_path(size_t max_size = std::numeric_limits<size_t>::max()) const;
-
-      /**
-       * todo: Warning: do not use before declarations is filled.
-       * This function return the current path as stored in the path variable
-       * as a string in json pointer format.
-       * \return std::string
-       */
-      std::string get_full_json_schema_path() const;
-
-      /**
-       * This function return the current path as stored in the path variable
-       * as a string.
-       * \return std::string
-       */
-      //std::string get_full_path() const;
-
-      /**
-       * This function return the current path as stored in the path variable
-       * as a string, but the arrays are striped. This is useful for working
-       * with the boost property tree.
-       * \return std::string
-       */
-      //std::string get_full_path_without_arrays() const;
+    /**
+     * This function return the current path as stored in the path variable
+     * as a string, but the arrays are striped. This is useful for working
+     * with the boost property tree.
+     * \return std::string
+     */
+    // std::string get_full_path_without_arrays() const;
 
     private:
+    /**
+     * This is used for the get relative path functions. It stores how many
+     * top entries of the path should be ignored.
+     */
+    size_t path_level;
 
+    /**
+     * A function which returns the relative path, which is the full path
+     * minus the path_level top entries..
+     * @see get_current_path()
+     */
+    std::string get_relative_path() const;
 
-      /**
-       * This is used for the get relative path functions. It stores how many
-       * top entries of the path should be ignored.
-       */
-      size_t path_level;
-
-      /**
-       * A function which returns the relative path, which is the full path
-       * minus the path_level top entries..
-       * @see get_current_path()
-       */
-      std::string get_relative_path() const;
-
-      /**
-       * A function which returns the relative path, which is the full path
-       * minus the path_level top entries., without names for the arrays.
-       * @see get_current_path_without_arrays()
-       */
-      std::string get_relative_path_without_arrays() const;
+    /**
+     * A function which returns the relative path, which is the full path
+     * minus the path_level top entries., without names for the arrays.
+     * @see get_current_path_without_arrays()
+     */
+    std::string get_relative_path_without_arrays() const;
   };
-}
+} // namespace WorldBuilder
 #endif

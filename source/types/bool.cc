@@ -24,39 +24,27 @@ namespace WorldBuilder
 {
   namespace Types
   {
-    Bool::Bool(const bool default_value_)
-      :
-      default_value(default_value_)
-    {
+    Bool::Bool(const bool default_value_) : default_value(default_value_) {
       this->type_name = Types::type::Bool;
     }
 
-
-    Bool::Bool(Bool const &other)
-      :
-      default_value(other.default_value)
-    {
+    Bool::Bool(Bool const &other) : default_value(other.default_value) {
       this->type_name = Types::type::Bool;
     }
 
+    Bool::~Bool() = default;
 
-    Bool::~Bool ()
-      = default;
-
-
-    void
-    Bool::write_schema(Parameters &prm,
-                       const std::string &name,
-                       const std::string &documentation) const
-    {
+    void Bool::write_schema(Parameters &prm, const std::string &name,
+                            const std::string &documentation) const {
       using namespace rapidjson;
       Document &declarations = prm.declarations;
       const std::string base = prm.get_full_json_path() + "/" + name;
 
-      Pointer((base + "/default value").c_str()).Set(declarations,default_value);
-      Pointer((base + "/type").c_str()).Set(declarations,"boolean");
-      Pointer((base + "/documentation").c_str()).Set(declarations,documentation.c_str());
+      Pointer((base + "/default value").c_str())
+          .Set(declarations, default_value);
+      Pointer((base + "/type").c_str()).Set(declarations, "boolean");
+      Pointer((base + "/documentation").c_str())
+          .Set(declarations, documentation.c_str());
     }
   } // namespace Types
 } // namespace WorldBuilder
-

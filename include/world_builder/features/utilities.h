@@ -17,7 +17,6 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #ifndef _world_builder_features_utilities_h
 #define _world_builder_features_utilities_h
 
@@ -33,45 +32,43 @@ namespace WorldBuilder
     {
       enum class Operations
       {
-        REPLACE,ADD,SUBTRACT
+        REPLACE,
+        ADD,
+        SUBTRACT
       };
 
       /**
        * transforms string operations into enums.
        */
-      Operations
-      string_operations_to_enum(const std::string &operation);
-
+      Operations string_operations_to_enum(const std::string &operation);
 
       /**
-       * Applies different opertions such as replace, add and subtract to the original values
+       * Applies different opertions such as replace, add and subtract to the
+       * original values
        */
-      inline double
-      apply_operation(const Utilities::Operations operation,
-                      const double old_value,
-                      const double new_value)
-      {
-        switch (operation)
-          {
-            case Utilities::Operations::REPLACE:
-              return new_value;
-              break;
+      inline double apply_operation(const Utilities::Operations operation,
+                                    const double old_value,
+                                    const double new_value) {
+        switch (operation) {
+        case Utilities::Operations::REPLACE:
+          return new_value;
+          break;
 
-            case Utilities::Operations::ADD:
-              return old_value + new_value;
-              break;
+        case Utilities::Operations::ADD:
+          return old_value + new_value;
+          break;
 
-            case Utilities::Operations::SUBTRACT:
-              return old_value - new_value;
+        case Utilities::Operations::SUBTRACT:
+          return old_value - new_value;
 
-            default:
-              WBAssert(false,"Operation not found.");
-          }
+        default:
+          WBAssert(false, "Operation not found.");
+        }
 
         return std::numeric_limits<double>::signaling_NaN();
       }
-    }
-  }
-}
+    } // namespace Utilities
+  }   // namespace Features
+} // namespace WorldBuilder
 
 #endif

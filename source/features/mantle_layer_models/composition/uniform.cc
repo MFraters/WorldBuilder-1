@@ -38,7 +38,8 @@ namespace WorldBuilder
       namespace Composition
       {
         Uniform::Uniform(WorldBuilder::World *world_)
-            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN), operation("") {
+          : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN), operation("")
+        {
           this->world = world_;
           this->name = "uniform";
         }
@@ -46,7 +47,8 @@ namespace WorldBuilder
         Uniform::~Uniform() = default;
 
         void Uniform::declare_entries(Parameters &prm,
-                                      const std::string & /*unused*/) {
+                                      const std::string & /*unused*/)
+        {
           // Add compositions to the required parameters.
           prm.declare_entry("", Types::Object({"compositions"}),
                             "Uniform compositional model object");
@@ -66,16 +68,17 @@ namespace WorldBuilder
                             "TA list of compositional fractions corresponding "
                             "to the compositions list.");
           prm.declare_entry(
-              "operation",
-              Types::String("replace", std::vector<std::string>{"replace"}),
-              "Whether the value should replace any value previously defined "
-              "at this location (replace) or "
-              "add the value to the previously define value (add, not "
-              "implemented). Replacing implies that all values not "
-              "explicitly defined are set to zero.");
+            "operation",
+            Types::String("replace", std::vector<std::string> {"replace"}),
+            "Whether the value should replace any value previously defined "
+            "at this location (replace) or "
+            "add the value to the previously define value (add, not "
+            "implemented). Replacing implies that all values not "
+            "explicitly defined are set to zero.");
         }
 
-        void Uniform::parse_entries(Parameters &prm) {
+        void Uniform::parse_entries(Parameters &prm)
+        {
           min_depth = prm.get<double>("min depth");
           max_depth = prm.get<double>("max depth");
           compositions = prm.get_vector<unsigned int>("compositions");
@@ -83,26 +86,30 @@ namespace WorldBuilder
           operation = prm.get<std::string>("operation");
 
           WBAssertThrow(
-              compositions.size() == fractions.size(),
-              "There are not the same amount of compositions and fractions.");
+            compositions.size() == fractions.size(),
+            "There are not the same amount of compositions and fractions.");
         }
 
         double Uniform::get_composition(
-            const Point<3> & /*position*/, const double depth,
-            const unsigned int composition_number, double composition_,
-            const double /*feature_min_depth*/,
-            const double /*feature_max_depth*/) const {
+          const Point<3> & /*position*/, const double depth,
+          const unsigned int composition_number, double composition_,
+          const double /*feature_min_depth*/,
+          const double /*feature_max_depth*/) const
+        {
           double composition = composition_;
-          if (depth <= max_depth && depth >= min_depth) {
-            for (unsigned int i = 0; i < compositions.size(); ++i) {
-              if (compositions[i] == composition_number) {
-                return fractions[i];
-              }
-            }
+          if (depth <= max_depth && depth >= min_depth)
+            {
+              for (unsigned int i = 0; i < compositions.size(); ++i)
+                {
+                  if (compositions[i] == composition_number)
+                    {
+                      return fractions[i];
+                    }
+                }
 
-            if (operation == "replace")
-              return 0.0;
-          }
+              if (operation == "replace")
+                return 0.0;
+            }
           return composition;
         }
         WB_REGISTER_FEATURE_MANTLE_LAYER_COMPOSITION_MODEL(Uniform, uniform)

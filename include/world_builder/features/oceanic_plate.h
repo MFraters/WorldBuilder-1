@@ -54,90 +54,90 @@ namespace WorldBuilder
     class OceanicPlate : public Interface
     {
       public:
-      /**
-       * constructor
-       */
-      OceanicPlate(WorldBuilder::World *world);
+        /**
+         * constructor
+         */
+        OceanicPlate(WorldBuilder::World *world);
 
-      /**
-       * Destructor
-       */
-      ~OceanicPlate();
+        /**
+         * Destructor
+         */
+        ~OceanicPlate();
 
-      /**
-       * declare and read in the world builder file into the parameters class
-       */
-      static void
-      declare_entries(Parameters &prm, const std::string &parent_name = "",
-                      const std::vector<std::string> &required_entries = {});
+        /**
+         * declare and read in the world builder file into the parameters class
+         */
+        static void
+        declare_entries(Parameters &prm, const std::string &parent_name = "",
+                        const std::vector<std::string> &required_entries = {});
 
-      /**
-       * declare and read in the world builder file into the parameters class
-       */
-      void parse_entries(Parameters &prm) override final;
+        /**
+         * declare and read in the world builder file into the parameters class
+         */
+        void parse_entries(Parameters &prm) override final;
 
-      /**
-       * Returns a temperature based on the given position, depth in the model,
-       * gravity and current temperature.
-       */
-      double temperature(const Point<3> &position, const double depth,
-                         const double gravity,
-                         double temperature) const override final;
+        /**
+         * Returns a temperature based on the given position, depth in the model,
+         * gravity and current temperature.
+         */
+        double temperature(const Point<3> &position, const double depth,
+                           const double gravity,
+                           double temperature) const override final;
 
-      /**
-       * Returns a value for the requests composition (0 is not present,
-       * 1 is present) based on the given position, depth in the model,
-       * the composition which is being requested and the current value
-       * of that composition at this location and depth.
-       */
-      double composition(const Point<3> &position, const double depth,
-                         const unsigned int composition_number,
-                         double composition) const override final;
+        /**
+         * Returns a value for the requests composition (0 is not present,
+         * 1 is present) based on the given position, depth in the model,
+         * the composition which is being requested and the current value
+         * of that composition at this location and depth.
+         */
+        double composition(const Point<3> &position, const double depth,
+                           const unsigned int composition_number,
+                           double composition) const override final;
 
-      /**
-       * Returns a grains (rotation matrix and grain size) based on the
-       * given position, depth in the model, the composition (e.g. representing
-       * olvine and/or enstatite) which is being requested and the current value
-       * of that composition at this location and depth.
-       */
-      virtual WorldBuilder::grains
-      grains(const Point<3> &position, const double depth,
-             const unsigned int composition_number,
-             WorldBuilder::grains grains) const override final;
+        /**
+         * Returns a grains (rotation matrix and grain size) based on the
+         * given position, depth in the model, the composition (e.g. representing
+         * olvine and/or enstatite) which is being requested and the current value
+         * of that composition at this location and depth.
+         */
+        virtual WorldBuilder::grains
+        grains(const Point<3> &position, const double depth,
+               const unsigned int composition_number,
+               WorldBuilder::grains grains) const override final;
 
       private:
-      /**
-       * A vector containing all the pointers to the temperature models. This
-       * vector is responsible for the features and has ownership over them.
-       * Therefore unique pointers are used.
-       * @see Features
-       */
-      std::vector<
-          std::unique_ptr<Features::OceanicPlateModels::Temperature::Interface>>
-          temperature_models;
+        /**
+         * A vector containing all the pointers to the temperature models. This
+         * vector is responsible for the features and has ownership over them.
+         * Therefore unique pointers are used.
+         * @see Features
+         */
+        std::vector<
+        std::unique_ptr<Features::OceanicPlateModels::Temperature::Interface>>
+                                                                            temperature_models;
 
-      /**
-       * A vector containing all the pointers to the composition models. This
-       * vector is responsible for the features and has ownership over them.
-       * Therefore unique pointers are used.
-       * @see Features
-       */
-      std::vector<
-          std::unique_ptr<Features::OceanicPlateModels::Composition::Interface>>
-          composition_models;
+        /**
+         * A vector containing all the pointers to the composition models. This
+         * vector is responsible for the features and has ownership over them.
+         * Therefore unique pointers are used.
+         * @see Features
+         */
+        std::vector<
+        std::unique_ptr<Features::OceanicPlateModels::Composition::Interface>>
+                                                                            composition_models;
 
-      /**
-       * A vector containing all the pointers to the grains models. This vector
-       * is responsible for the features and has ownership over them. Therefore
-       * unique pointers are used.
-       * @see Features
-       */
-      std::vector<
-          std::unique_ptr<Features::OceanicPlateModels::Grains::Interface>>
-          grains_models;
+        /**
+         * A vector containing all the pointers to the grains models. This vector
+         * is responsible for the features and has ownership over them. Therefore
+         * unique pointers are used.
+         * @see Features
+         */
+        std::vector<
+        std::unique_ptr<Features::OceanicPlateModels::Grains::Interface>>
+                                                                       grains_models;
 
-      double min_depth;
-      double max_depth;
+        double min_depth;
+        double max_depth;
     };
   } // namespace Features
 } // namespace WorldBuilder

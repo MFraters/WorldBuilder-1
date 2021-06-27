@@ -41,46 +41,46 @@ namespace WorldBuilder
         class Uniform : public Interface
         {
           public:
-          /**
-           * constructor
-           */
-          Uniform(WorldBuilder::World *world);
+            /**
+             * constructor
+             */
+            Uniform(WorldBuilder::World *world);
 
-          /**
-           * Destructor
-           */
-          ~Uniform();
+            /**
+             * Destructor
+             */
+            ~Uniform();
 
-          /**
-           * declare and read in the world builder file into the parameters
-           * class
-           */
-          static void declare_entries(Parameters &prm,
-                                      const std::string &parent_name = "");
+            /**
+             * declare and read in the world builder file into the parameters
+             * class
+             */
+            static void declare_entries(Parameters &prm,
+                                        const std::string &parent_name = "");
 
-          /**
-           * declare and read in the world builder file into the parameters
-           * class
-           */
-          void parse_entries(Parameters &prm) override final;
+            /**
+             * declare and read in the world builder file into the parameters
+             * class
+             */
+            void parse_entries(Parameters &prm) override final;
 
-          /**
-           * Returns a temperature based on the given position, depth in the
-           * model, gravity and current temperature.
-           */
-          double get_temperature(const Point<3> &position, const double depth,
-                                 const double gravity, double temperature,
-                                 const double feature_min_depth,
-                                 const double feature_max_depth,
-                                 const std::map<std::string, double> &
-                                     distance_from_planes) const override final;
+            /**
+             * Returns a temperature based on the given position, depth in the
+             * model, gravity and current temperature.
+             */
+            double get_temperature(const Point<3> &position, const double depth,
+                                   const double gravity, double temperature,
+                                   const double feature_min_depth,
+                                   const double feature_max_depth,
+                                   const std::map<std::string, double> &
+                                   distance_from_planes) const override final;
 
           private:
-          // uniform temperature submodule parameters
-          double min_depth;
-          double max_depth;
-          double temperature;
-          Utilities::Operations operation;
+            // uniform temperature submodule parameters
+            double min_depth;
+            double max_depth;
+            double temperature;
+            Utilities::Operations operation;
         };
       } // namespace Temperature
     }   // namespace SubductingPlateModels

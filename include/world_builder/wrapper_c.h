@@ -25,50 +25,50 @@ extern "C"
 {
 #endif
 
-  /**
-   * This function creates an object of the world builder and returns a pointer
-   * to it. This pointer can then be used to call the temperature and
-   * composition functions. When done call the release world function to destroy
-   * the object.
-   */
-  void create_world(void **ptr_ptr_world, const char *world_builder_file,
-                    const bool *has_output_dir, const char *output_dir,
-                    const unsigned long random_number_seed);
+/**
+ * This function creates an object of the world builder and returns a pointer
+ * to it. This pointer can then be used to call the temperature and
+ * composition functions. When done call the release world function to destroy
+ * the object.
+ */
+void create_world(void **ptr_ptr_world, const char *world_builder_file,
+                  const bool *has_output_dir, const char *output_dir,
+                  const unsigned long random_number_seed);
 
-  /**
-   * This function return the temperature at a specific location given x, z,
-   * depth and gravity.
-   */
-  void temperature_2d(void *ptr_ptr_world, double x, double z, double depth,
-                      double gravity, double *temperature);
+/**
+ * This function return the temperature at a specific location given x, z,
+ * depth and gravity.
+ */
+void temperature_2d(void *ptr_ptr_world, double x, double z, double depth,
+                    double gravity, double *temperature);
 
-  /**
-   * This function return the temperature at a specific location given x, y, z,
-   * depth and gravity.
-   */
-  void temperature_3d(void *ptr_ptr_world, double x, double y, double z,
-                      double depth, double gravity, double *temperature);
+/**
+ * This function return the temperature at a specific location given x, y, z,
+ * depth and gravity.
+ */
+void temperature_3d(void *ptr_ptr_world, double x, double y, double z,
+                    double depth, double gravity, double *temperature);
 
-  /**
-   * This function return the composition at a specific location given x, z,
-   * depth and composition number.
-   */
-  void composition_2d(void *ptr_ptr_world, double x, double z, double depth,
-                      unsigned int composition_number, double *composition);
+/**
+ * This function return the composition at a specific location given x, z,
+ * depth and composition number.
+ */
+void composition_2d(void *ptr_ptr_world, double x, double z, double depth,
+                    unsigned int composition_number, double *composition);
 
-  /**
-   * This function return the composition at a specific location given x, y, z,
-   * depth and composition number.
-   */
-  void composition_3d(void *ptr_ptr_world, double x, double y, double z,
-                      double depth, unsigned int composition_number,
-                      double *composition);
+/**
+ * This function return the composition at a specific location given x, y, z,
+ * depth and composition number.
+ */
+void composition_3d(void *ptr_ptr_world, double x, double y, double z,
+                    double depth, unsigned int composition_number,
+                    double *composition);
 
-  /**
-   * The destructor for the world builder class. Call this function when done
-   * with the world builder.
-   */
-  void release_world(void *ptr_ptr_world);
+/**
+ * The destructor for the world builder class. Call this function when done
+ * with the world builder.
+ */
+void release_world(void *ptr_ptr_world);
 
 #ifdef __cplusplus
 }

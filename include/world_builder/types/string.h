@@ -40,56 +40,59 @@ namespace WorldBuilder
     class String : public Interface
     {
       public:
-      /**
-       * constructor
-       */
-      String(std::string default_value);
+        /**
+         * constructor
+         */
+        String(std::string default_value);
 
-      /**
-       * constructor
-       */
-      String(std::string default_value, const std::string &restricted_value);
+        /**
+         * constructor
+         */
+        String(std::string default_value, const std::string &restricted_value);
 
-      /**
-       * constructor
-       */
-      String(std::string default_value,
-             std::vector<std::string> restricted_values);
+        /**
+         * constructor
+         */
+        String(std::string default_value,
+               std::vector<std::string> restricted_values);
 
-      /**
-       * constructor
-       */
-      // String(std::string default_value, std::string description);
+        /**
+         * constructor
+         */
+        // String(std::string default_value, std::string description);
 
-      /**
-       * A constructor for the clone and set_entry function
-       */
-      String(std::string value, std::string default_value,
-             std::string description);
+        /**
+         * A constructor for the clone and set_entry function
+         */
+        String(std::string value, std::string default_value,
+               std::string description);
 
-      /**
-       * Copy constructor
-       */
-      String(String const &other);
+        /**
+         * Copy constructor
+         */
+        String(String const &other);
 
-      /**
-       * Destructor
-       */
-      ~String();
+        /**
+         * Destructor
+         */
+        ~String();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      std::string value;
-      std::string default_value;
-      std::string description;
-      std::vector<std::string> restricted_values;
+        std::string value;
+        std::string default_value;
+        std::string description;
+        std::vector<std::string> restricted_values;
 
       protected:
-      String *clone_impl() const override final { return new String(*this); };
+        String *clone_impl() const override final
+        {
+          return new String(*this);
+        };
     };
   } // namespace Types
 } // namespace WorldBuilder

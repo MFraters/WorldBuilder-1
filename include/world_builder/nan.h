@@ -44,7 +44,7 @@ namespace WorldBuilder
      * A unsigned int signaling NaN
      */
     const unsigned int ISNAN =
-        std::numeric_limits<unsigned int>::signaling_NaN();
+      std::numeric_limits<unsigned int>::signaling_NaN();
   } // namespace NaN
 } // namespace WorldBuilder
 

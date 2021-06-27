@@ -57,39 +57,40 @@ namespace WorldBuilder
     class Interface
     {
       public:
-      /**
-       * Constructor
-       */
-      Interface();
+        /**
+         * Constructor
+         */
+        Interface();
 
-      /**
-       * Destructor
-       */
-      virtual ~Interface();
+        /**
+         * Destructor
+         */
+        virtual ~Interface();
 
-      /**
-       * Todo
-       */
-      virtual void write_schema(Parameters &prm, const std::string &name,
-                                const std::string &documentation) const = 0;
+        /**
+         * Todo
+         */
+        virtual void write_schema(Parameters &prm, const std::string &name,
+                                  const std::string &documentation) const = 0;
 
-      /**
-       * clone
-       */
-      virtual std::unique_ptr<Interface> clone() const {
-        return std::unique_ptr<Interface>(clone_impl());
-      }
+        /**
+         * clone
+         */
+        virtual std::unique_ptr<Interface> clone() const
+        {
+          return std::unique_ptr<Interface>(clone_impl());
+        }
 
-      /**
-       * read in the world builder file
-       */
+        /**
+         * read in the world builder file
+         */
 
-      type get_type() const;
+        type get_type() const;
 
       protected:
-      type type_name;
+        type type_name;
 
-      virtual Interface *clone_impl() const = 0;
+        virtual Interface *clone_impl() const = 0;
     };
   } // namespace Types
 } // namespace WorldBuilder

@@ -24,46 +24,52 @@ using namespace WorldBuilder;
 namespace wrapper_cpp
 {
   WorldBuilderWrapper::WorldBuilderWrapper(
-      std::string filename, bool has_output_dir, const std::string &output_dir,
-      const unsigned long random_number_seed)
-      : ptr_ptr_world(nullptr) {
+    std::string filename, bool has_output_dir, const std::string &output_dir,
+    const unsigned long random_number_seed)
+    : ptr_ptr_world(nullptr)
+  {
     WorldBuilder::World *a = new WorldBuilder::World(
-        std::move(filename), has_output_dir, output_dir, random_number_seed);
+      std::move(filename), has_output_dir, output_dir, random_number_seed);
     ptr_ptr_world = reinterpret_cast<void *>(a);
   }
 
-  WorldBuilderWrapper::~WorldBuilderWrapper() {
+  WorldBuilderWrapper::~WorldBuilderWrapper()
+  {
     WorldBuilder::World *a =
-        reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world);
+      reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world);
     delete a;
   }
 
   double WorldBuilderWrapper::temperature_2d(double x, double z, double depth,
-                                             double gravity) {
+                                             double gravity)
+  {
     std::array<double, 2> position = {{x, z}};
     return reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world)
-        ->temperature(position, depth, gravity);
+           ->temperature(position, depth, gravity);
   }
 
   double WorldBuilderWrapper::temperature_3d(double x, double y, double z,
-                                             double depth, double gravity) {
+                                             double depth, double gravity)
+  {
     std::array<double, 3> position = {{x, y, z}};
     return reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world)
-        ->temperature(position, depth, gravity);
+           ->temperature(position, depth, gravity);
   }
 
   double WorldBuilderWrapper::composition_2d(double x, double z, double depth,
-                                             unsigned int composition_number) {
+                                             unsigned int composition_number)
+  {
     std::array<double, 2> position = {{x, z}};
     return reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world)
-        ->composition(position, depth, composition_number);
+           ->composition(position, depth, composition_number);
   }
 
   double WorldBuilderWrapper::composition_3d(double x, double y, double z,
                                              double depth,
-                                             unsigned int composition_number) {
+                                             unsigned int composition_number)
+  {
     std::array<double, 3> position = {{x, y, z}};
     return reinterpret_cast<WorldBuilder::World *>(ptr_ptr_world)
-        ->composition(position, depth, composition_number);
+           ->composition(position, depth, composition_number);
   }
 } // namespace wrapper_cpp

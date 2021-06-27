@@ -51,7 +51,7 @@ namespace WorldBuilder
      * the point falls within the polygon.
      */
     bool polygon_contains_point_implementation(
-        const std::vector<Point<2>> &point_list, const Point<2> &point);
+      const std::vector<Point<2>> &point_list, const Point<2> &point);
 
     /**
      * Given a 2d point and a list of points which form a polygon, compute the
@@ -67,54 +67,54 @@ namespace WorldBuilder
     class NaturalCoordinate
     {
       public:
-      /**
-       * Constructor based on providing the geometry model as a pointer
-       */
-      NaturalCoordinate(const std::array<double, 3> &position,
-                        const ::WorldBuilder::CoordinateSystems::Interface
-                            &coordinate_system);
+        /**
+         * Constructor based on providing the geometry model as a pointer
+         */
+        NaturalCoordinate(const std::array<double, 3> &position,
+                          const ::WorldBuilder::CoordinateSystems::Interface
+                          &coordinate_system);
 
-      /**
-       * Constructor based on providing the geometry model as a pointer
-       */
-      NaturalCoordinate(const Point<3> &position,
-                        const ::WorldBuilder::CoordinateSystems::Interface
-                            &coordinate_system);
+        /**
+         * Constructor based on providing the geometry model as a pointer
+         */
+        NaturalCoordinate(const Point<3> &position,
+                          const ::WorldBuilder::CoordinateSystems::Interface
+                          &coordinate_system);
 
-      /**
-       * Returns the coordinates in the given coordinate system, which may
-       * not be Cartesian.
-       */
-      const std::array<double, 3> &get_coordinates();
+        /**
+         * Returns the coordinates in the given coordinate system, which may
+         * not be Cartesian.
+         */
+        const std::array<double, 3> &get_coordinates();
 
-      /**
-       * The coordinate that represents the 'surface' directions in the
-       * chosen coordinate system.
-       */
-      std::array<double, 2> get_surface_coordinates() const;
+        /**
+         * The coordinate that represents the 'surface' directions in the
+         * chosen coordinate system.
+         */
+        std::array<double, 2> get_surface_coordinates() const;
 
-      /**
-       * The coordinate that represents the 'depth' direction in the chosen
-       * coordinate system.
-       */
-      double get_depth_coordinate() const;
+        /**
+         * The coordinate that represents the 'depth' direction in the chosen
+         * coordinate system.
+         */
+        double get_depth_coordinate() const;
 
-      /**
-       * get the coordinate system type of this coordinate.
-       */
-      CoordinateSystem get_coordinate_system() const;
+        /**
+         * get the coordinate system type of this coordinate.
+         */
+        CoordinateSystem get_coordinate_system() const;
 
       private:
-      /**
-       * An enum which stores the the coordinate system of this natural
-       * point
-       */
-      CoordinateSystem coordinate_system;
+        /**
+         * An enum which stores the the coordinate system of this natural
+         * point
+         */
+        CoordinateSystem coordinate_system;
 
-      /**
-       * An array which stores the coordinates in the coordinates system
-       */
-      std::array<double, 3> coordinates;
+        /**
+         * An array which stores the coordinates in the coordinates system
+         */
+        std::array<double, 3> coordinates;
     };
 
     /**
@@ -149,8 +149,8 @@ namespace WorldBuilder
      * phi and radius.
      */
     Point<3> ellipsoidal_to_cartesian_coordinates(
-        const std::array<double, 3> &phi_theta_d,
-        const double semi_major_axis_a, const double eccentricity);
+      const std::array<double, 3> &phi_theta_d,
+      const double semi_major_axis_a, const double eccentricity);
 
     /**
      * A function that takes a string representation of the name of a
@@ -203,35 +203,35 @@ namespace WorldBuilder
     class interpolation
     {
       public:
-      /**
-       * Initialize the spline.
-       *
-       * @param x X coordinates of interpolation points.
-       * @param y Values in the interpolation points.
-       * @param monotone_spline Whether to construct a monotone cubic spline or
-       * just do linear interpolation.
-       */
-      void set_points(const std::vector<double> &x,
-                      const std::vector<double> &y,
-                      const bool monotone_spline = false);
-      /**
-       * Evaluate at point @p x.
-       */
-      double operator()(const double x) const;
+        /**
+         * Initialize the spline.
+         *
+         * @param x X coordinates of interpolation points.
+         * @param y Values in the interpolation points.
+         * @param monotone_spline Whether to construct a monotone cubic spline or
+         * just do linear interpolation.
+         */
+        void set_points(const std::vector<double> &x,
+                        const std::vector<double> &y,
+                        const bool monotone_spline = false);
+        /**
+         * Evaluate at point @p x.
+         */
+        double operator()(const double x) const;
 
       private:
-      /**
-       * x coordinates of points
-       */
-      std::vector<double> m_x;
+        /**
+         * x coordinates of points
+         */
+        std::vector<double> m_x;
 
-      /**
-       * interpolation parameters
-       * \[
-       * f(x) = a*(x-x_i)^3 + b*(x-x_i)^2 + c*(x-x_i) + y_i
-       * \]
-       */
-      std::vector<double> m_a, m_b, m_c, m_y;
+        /**
+         * interpolation parameters
+         * \[
+         * f(x) = a*(x-x_i)^3 + b*(x-x_i)^2 + c*(x-x_i) + y_i
+         * \]
+         */
+        std::vector<double> m_a, m_b, m_c, m_y;
     };
 
     /**
@@ -275,15 +275,15 @@ namespace WorldBuilder
      * of 4 points, {0,0.5,1,2} is allowed, but {0,2,3,4} is not.
      */
     std::map<std::string, double> distance_point_from_curved_planes(
-        const Point<3> &point, const Point<2> &reference_point,
-        const std::vector<Point<2>> &point_list,
-        const std::vector<std::vector<double>> &plane_segment_lengths,
-        const std::vector<std::vector<Point<2>>> &plane_segment_angles,
-        const double start_radius,
-        const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
-        const bool only_positive, const InterpolationType interpolation_type,
-        const interpolation &x_spline, const interpolation &y_spline,
-        std::vector<double> global_x_list = {});
+      const Point<3> &point, const Point<2> &reference_point,
+      const std::vector<Point<2>> &point_list,
+      const std::vector<std::vector<double>> &plane_segment_lengths,
+      const std::vector<std::vector<Point<2>>> &plane_segment_angles,
+      const double start_radius,
+      const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
+      const bool only_positive, const InterpolationType interpolation_type,
+      const interpolation &x_spline, const interpolation &y_spline,
+      std::vector<double> global_x_list = {});
 
     /**
      * Ensure angle is between 0 and 360 degrees
@@ -294,7 +294,7 @@ namespace WorldBuilder
      * Transorm a rotation matrix into euler angles
      */
     std::array<double, 3> euler_angles_from_rotation_matrix(
-        const std::array<std::array<double, 3>, 3> &rotation_matrix);
+      const std::array<std::array<double, 3>, 3> &rotation_matrix);
 
     /**
      * Transform euler angles into a rotation matrix

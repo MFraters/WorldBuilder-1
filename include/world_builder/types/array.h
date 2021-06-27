@@ -41,69 +41,72 @@ namespace WorldBuilder
     class Array : public Interface
     {
       public:
-      /**
-       * Constructor for the declaration
-       */
-      Array(const Interface &type, const unsigned int min_items = 0,
-            const unsigned int max_items =
+        /**
+         * Constructor for the declaration
+         */
+        Array(const Interface &type, const unsigned int min_items = 0,
+              const unsigned int max_items =
                 std::numeric_limits<unsigned int>::max(),
-            const bool unique_items = false);
+              const bool unique_items = false);
 
-      /**
-       * Constructor for cloning an array.
-       */
-      Array(Array const &other);
+        /**
+         * Constructor for cloning an array.
+         */
+        Array(Array const &other);
 
-      /**
-       * Destructor
-       */
-      ~Array();
+        /**
+         * Destructor
+         */
+        ~Array();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      /**
-       * An enum of the type which this class points to
-       * @see Types::type
-       */
-      Types::type inner_type;
+        /**
+         * An enum of the type which this class points to
+         * @see Types::type
+         */
+        Types::type inner_type;
 
-      /**
-       * This class is sometimes responsible for the object it points to, but
-       * sometimes it is not responsible for the object is points to.
-       * When it is responsible the unique_inner_type points to it and the
-       * inner_type should have size zero. When it is not responsible,
-       * unique_inner_type should point to the nullptr and inner_type should
-       * have a size larger then zero.
-       * @see inner_type_index
-       */
-      std::unique_ptr<Interface> inner_type_ptr;
+        /**
+         * This class is sometimes responsible for the object it points to, but
+         * sometimes it is not responsible for the object is points to.
+         * When it is responsible the unique_inner_type points to it and the
+         * inner_type should have size zero. When it is not responsible,
+         * unique_inner_type should point to the nullptr and inner_type should
+         * have a size larger then zero.
+         * @see inner_type_index
+         */
+        std::unique_ptr<Interface> inner_type_ptr;
 
-      /**
-       * Todo
-       */
-      bool required;
+        /**
+         * Todo
+         */
+        bool required;
 
-      /**
-       * Todo
-       */
-      unsigned int min_items;
+        /**
+         * Todo
+         */
+        unsigned int min_items;
 
-      /**
-       * Todo
-       */
-      unsigned int max_items;
+        /**
+         * Todo
+         */
+        unsigned int max_items;
 
-      /**
-       * Todo
-       */
-      bool unique_items;
+        /**
+         * Todo
+         */
+        bool unique_items;
 
       protected:
-      Array *clone_impl() const override final { return new Array(*this); };
+        Array *clone_impl() const override final
+        {
+          return new Array(*this);
+        };
     };
   } // namespace Types
 } // namespace WorldBuilder

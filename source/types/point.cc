@@ -27,17 +27,19 @@ namespace WorldBuilder
 
     template <int dim>
     Point<dim>::Point()
-        : value(WorldBuilder::Point<dim>(CoordinateSystem::cartesian)),
-          default_value(WorldBuilder::Point<dim>(CoordinateSystem::cartesian)),
-          description("") {
+      : value(WorldBuilder::Point<dim>(CoordinateSystem::cartesian)),
+        default_value(WorldBuilder::Point<dim>(CoordinateSystem::cartesian)),
+        description("")
+    {
       this->type_name = dim == 2 ? Types::type::Point2D : Types::type::Point3D;
     }
 
     template <int dim>
     Point<dim>::Point(const WorldBuilder::Point<dim> &default_value_,
                       std::string description_)
-        : value(default_value_), default_value(default_value_),
-          description(std::move(description_)) {
+      : value(default_value_), default_value(default_value_),
+        description(std::move(description_))
+    {
       this->type_name = dim == 2 ? Types::type::Point2D : Types::type::Point3D;
     }
 
@@ -45,15 +47,17 @@ namespace WorldBuilder
     Point<dim>::Point(const WorldBuilder::Point<dim> &value_,
                       const WorldBuilder::Point<dim> &default_value_,
                       std::string description_)
-        : value(value_), default_value(default_value_),
-          description(std::move(description_)) {
+      : value(value_), default_value(default_value_),
+        description(std::move(description_))
+    {
       this->type_name = dim == 2 ? Types::type::Point2D : Types::type::Point3D;
     }
 
     template <int dim>
     Point<dim>::Point(Point const &other)
-        : value(other.value), default_value(other.default_value),
-          description(other.description) {
+      : value(other.value), default_value(other.default_value),
+        description(other.description)
+    {
       this->type_name = dim == 2 ? Types::type::Point2D : Types::type::Point3D;
     }
 
@@ -62,7 +66,8 @@ namespace WorldBuilder
 
     template <int dim>
     void Point<dim>::write_schema(Parameters &prm, const std::string &name,
-                                  const std::string &documentation) const {
+                                  const std::string &documentation) const
+    {
       using namespace rapidjson;
       Document &declarations = prm.declarations;
       const std::string base = prm.get_full_json_path() + "/" + name;
@@ -71,13 +76,14 @@ namespace WorldBuilder
       Pointer((base + "/minItems").c_str()).Set(declarations, dim);
       Pointer((base + "/maxItems").c_str()).Set(declarations, dim);
       Pointer((base + "/documentation").c_str())
-          .Set(declarations, documentation.c_str());
+      .Set(declarations, documentation.c_str());
       Pointer((base + "/items/type").c_str()).Set(declarations, "number");
       // todo: default value
     }
 
     template <int dim>
-    double Point<dim>::operator*(const Point<dim> &point_) const {
+    double Point<dim>::operator*(const Point<dim> &point_) const
+    {
       const std::array<double, dim> array = point_.value.get_array();
       double dot_product = 0;
       for (unsigned int i = 0; i < dim; ++i)
@@ -86,10 +92,11 @@ namespace WorldBuilder
     }
 
     template <int dim>
-    WorldBuilder::Point<dim> Point<dim>::operator*(const double scalar) const {
+    WorldBuilder::Point<dim> Point<dim>::operator*(const double scalar) const
+    {
       // initialize the array to zero.
       std::array<double, dim> array =
-          WorldBuilder::Point<dim>(value.get_coordinate_system()).get_array();
+        WorldBuilder::Point<dim>(value.get_coordinate_system()).get_array();
       for (unsigned int i = 0; i < dim; ++i)
         array[i] += value[i] * scalar;
       return WorldBuilder::Point<dim>(array, value.get_coordinate_system());
@@ -97,7 +104,8 @@ namespace WorldBuilder
 
     template <int dim>
     WorldBuilder::Point<dim>
-    Point<dim>::operator+(const Point<dim> &point_) const {
+    Point<dim>::operator+(const Point<dim> &point_) const
+    {
       WorldBuilder::Point<dim> point_tmp(value);
       point_tmp += point_.value;
 
@@ -106,7 +114,8 @@ namespace WorldBuilder
 
     template <int dim>
     WorldBuilder::Point<dim>
-    Point<dim>::operator-(const Point<dim> &point_) const {
+    Point<dim>::operator-(const Point<dim> &point_) const
+    {
       WorldBuilder::Point<dim> point_tmp(value);
       point_tmp -= point_.value;
 
@@ -117,7 +126,8 @@ namespace WorldBuilder
      * access index
      */
     template <int dim>
-    double &Point<dim>::operator[](const unsigned int index) {
+    double &Point<dim>::operator[](const unsigned int index)
+    {
       return value[index];
     }
 
@@ -127,7 +137,8 @@ namespace WorldBuilder
      */
     template <int dim>
     WorldBuilder::Point<dim> operator*(const double scalar,
-                                       const Point<dim> &point) {
+                                       const Point<dim> &point)
+    {
       return point.value * scalar;
     }
 

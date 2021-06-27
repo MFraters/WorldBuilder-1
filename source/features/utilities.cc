@@ -25,7 +25,8 @@ namespace WorldBuilder
   {
     namespace Utilities
     {
-      Operations string_operations_to_enum(const std::string &operation) {
+      Operations string_operations_to_enum(const std::string &operation)
+      {
         if (operation == "add")
           return Operations::ADD;
         if (operation == "subtract")

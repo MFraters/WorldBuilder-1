@@ -36,9 +36,10 @@ namespace WorldBuilder
       namespace Temperature
       {
         Linear::Linear(WorldBuilder::World *world_)
-            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
-              center_temperature(NaN::DSNAN), side_temperature(NaN::DSNAN),
-              operation(Utilities::Operations::REPLACE) {
+          : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
+            center_temperature(NaN::DSNAN), side_temperature(NaN::DSNAN),
+            operation(Utilities::Operations::REPLACE)
+        {
           this->world = world_;
           this->name = "linear";
         }
@@ -46,89 +47,95 @@ namespace WorldBuilder
         Linear::~Linear() = default;
 
         void Linear::declare_entries(Parameters &prm,
-                                     const std::string & /*unused*/) {
+                                     const std::string & /*unused*/)
+        {
           // Add max depth to the required parameters.
           prm.declare_entry("", Types::Object({"max distance fault center"}),
                             "Temperature model object");
 
           prm.declare_entry(
-              "min distance fault center", Types::Double(0),
-              "The minimum distance to the center of the fault. This "
-              "determines where the linear temperature starts.");
+            "min distance fault center", Types::Double(0),
+            "The minimum distance to the center of the fault. This "
+            "determines where the linear temperature starts.");
 
           prm.declare_entry(
-              "max distance fault center",
-              Types::Double(std::numeric_limits<double>::max()),
-              "The minimum distance to the center of the fault. This "
-              "determines where the linear temperature end.");
+            "max distance fault center",
+            Types::Double(std::numeric_limits<double>::max()),
+            "The minimum distance to the center of the fault. This "
+            "determines where the linear temperature end.");
 
           prm.declare_entry(
-              "center temperature", Types::Double(293.15),
-              "The temperature at the center of this feature in degree Kelvin."
-              "If the value is below zero, the an adiabatic temperature is "
-              "used.");
+            "center temperature", Types::Double(293.15),
+            "The temperature at the center of this feature in degree Kelvin."
+            "If the value is below zero, the an adiabatic temperature is "
+            "used.");
 
           prm.declare_entry(
-              "side temperature", Types::Double(-1),
-              "The temperature at the sides of this feature in degree Kelvin. "
-              "If the value is below zero, an adiabatic temperature is used.");
+            "side temperature", Types::Double(-1),
+            "The temperature at the sides of this feature in degree Kelvin. "
+            "If the value is below zero, an adiabatic temperature is used.");
         }
 
-        void Linear::parse_entries(Parameters &prm) {
+        void Linear::parse_entries(Parameters &prm)
+        {
           min_depth = prm.get<double>("min distance fault center");
           max_depth = prm.get<double>("max distance fault center");
           WBAssert(max_depth >= min_depth,
                    "max depth needs to be larger or equal to min depth.");
           operation = Utilities::string_operations_to_enum(
-              prm.get<std::string>("operation"));
+                        prm.get<std::string>("operation"));
           center_temperature = prm.get<double>("center temperature");
           side_temperature = prm.get<double>("side temperature");
         }
 
         double Linear::get_temperature(
-            const Point<3> & /*position*/, const double /*depth*/,
-            const double gravity_norm, double temperature_,
-            const double /*feature_min_depth*/,
-            const double /*feature_max_depth*/,
-            const std::map<std::string, double> &distance_from_planes) const {
+          const Point<3> & /*position*/, const double /*depth*/,
+          const double gravity_norm, double temperature_,
+          const double /*feature_min_depth*/,
+          const double /*feature_max_depth*/,
+          const std::map<std::string, double> &distance_from_planes) const
+        {
 
           if (std::fabs(distance_from_planes.at("distanceFromPlane")) <=
-                  max_depth &&
+              max_depth &&
               std::fabs(distance_from_planes.at("distanceFromPlane")) >=
-                  min_depth) {
-            const double min_depth_local = min_depth;
-            const double max_depth_local = max_depth;
+              min_depth)
+            {
+              const double min_depth_local = min_depth;
+              const double max_depth_local = max_depth;
 
-            double center_temperature_local = center_temperature;
-            if (center_temperature_local < 0) {
-              center_temperature_local =
-                  this->world->potential_mantle_temperature *
-                  std::exp(((this->world->thermal_expansion_coefficient *
-                             gravity_norm) /
-                            this->world->specific_heat) *
-                           min_depth_local);
-            }
+              double center_temperature_local = center_temperature;
+              if (center_temperature_local < 0)
+                {
+                  center_temperature_local =
+                    this->world->potential_mantle_temperature *
+                    std::exp(((this->world->thermal_expansion_coefficient *
+                               gravity_norm) /
+                              this->world->specific_heat) *
+                             min_depth_local);
+                }
 
-            double side_temperature_local = side_temperature;
-            if (side_temperature_local < 0) {
-              side_temperature_local =
-                  this->world->potential_mantle_temperature *
-                  std::exp(((this->world->thermal_expansion_coefficient *
-                             gravity_norm) /
-                            this->world->specific_heat) *
-                           max_depth_local);
-            }
+              double side_temperature_local = side_temperature;
+              if (side_temperature_local < 0)
+                {
+                  side_temperature_local =
+                    this->world->potential_mantle_temperature *
+                    std::exp(((this->world->thermal_expansion_coefficient *
+                               gravity_norm) /
+                              this->world->specific_heat) *
+                             max_depth_local);
+                }
 
-            const double new_temperature =
+              const double new_temperature =
                 center_temperature_local +
                 (std::fabs(distance_from_planes.at("distanceFromPlane")) -
                  min_depth_local) *
-                    ((side_temperature_local - center_temperature_local) /
-                     (max_depth_local - min_depth_local));
+                ((side_temperature_local - center_temperature_local) /
+                 (max_depth_local - min_depth_local));
 
-            return Utilities::apply_operation(operation, temperature_,
-                                              new_temperature);
-          }
+              return Utilities::apply_operation(operation, temperature_,
+                                                new_temperature);
+            }
 
           return temperature_;
         }

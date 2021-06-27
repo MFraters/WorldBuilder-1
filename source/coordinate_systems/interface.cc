@@ -33,46 +33,50 @@ namespace WorldBuilder
     Interface::~Interface() = default;
 
     void Interface::declare_entries(
-        Parameters &prm, const std::string &parent_name,
-        const std::vector<std::string> &required_entries) {
+      Parameters &prm, const std::string &parent_name,
+      const std::vector<std::string> &required_entries)
+    {
 
       unsigned int counter = 0;
-      for (auto &it : get_declare_map()) {
-        prm.enter_subsection("oneOf");
+      for (auto &it : get_declare_map())
         {
-          prm.enter_subsection(std::to_string(counter));
+          prm.enter_subsection("oneOf");
           {
-            prm.enter_subsection("properties");
+            prm.enter_subsection(std::to_string(counter));
             {
-              prm.declare_entry("", Types::Object(required_entries),
-                                "Coordinate system object");
+              prm.enter_subsection("properties");
+              {
+                prm.declare_entry("", Types::Object(required_entries),
+                                  "Coordinate system object");
 
-              prm.declare_entry(
+                prm.declare_entry(
                   "model", Types::String("", it.first),
                   "The name which the user has given to the feature.");
 
-              it.second(prm, parent_name);
+                it.second(prm, parent_name);
+              }
+              prm.leave_subsection();
             }
             prm.leave_subsection();
           }
           prm.leave_subsection();
-        }
-        prm.leave_subsection();
 
-        counter++;
-      }
+          counter++;
+        }
     }
 
     void Interface::registerType(const std::string &name,
                                  void (*declare_entries)(Parameters &,
                                                          const std::string &),
-                                 ObjectFactory *factory) {
+                                 ObjectFactory *factory)
+    {
       get_factory_map()[name] = factory;
       get_declare_map()[name] = declare_entries;
     }
 
     std::unique_ptr<Interface> Interface::create(const std::string &name,
-                                                 WorldBuilder::World *world) {
+                                                 WorldBuilder::World *world)
+    {
       std::string lower_case_name;
       std::transform(name.begin(), name.end(),
                      std::back_inserter(lower_case_name), ::tolower);
@@ -81,12 +85,12 @@ namespace WorldBuilder
       // Have a nice assert message to check whether a plugin exists in the case
       // of a debug compilation.
       WBAssertThrow(get_factory_map().find(lower_case_name) !=
-                        get_factory_map().end(),
+                    get_factory_map().end(),
                     "Internal error: Plugin with name '"
-                        << lower_case_name
-                        << "' is not found. "
-                           "The size of factories is "
-                        << get_factory_map().size() << ".");
+                    << lower_case_name
+                    << "' is not found. "
+                    "The size of factories is "
+                    << get_factory_map().size() << ".");
 
       // Using at() because the [] will just insert values
       // which is undesirable in this case. An exception is

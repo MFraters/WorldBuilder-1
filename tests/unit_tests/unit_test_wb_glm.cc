@@ -35,20 +35,23 @@ using namespace WorldBuilder;
  * Catch::Approx)
  */
 inline void compare_3d_arrays_approx(const std::array<double, 3> &computed,
-                                     const std::array<double, 3> &expected) {
+                                     const std::array<double, 3> &expected)
+{
   CHECK(computed.size() == expected.size());
-  for (unsigned int i = 0; i < computed.size(); ++i) {
-    INFO("vector index i=" << i << ": ");
-    CHECK(computed[i] == Approx(expected[i]));
-  }
+  for (unsigned int i = 0; i < computed.size(); ++i)
+    {
+      INFO("vector index i=" << i << ": ");
+      CHECK(computed[i] == Approx(expected[i]));
+    }
 }
 
 /**
  * Compare two rotation matrices
  */
 inline void compare_rotation_matrices_approx(
-    const std::array<std::array<double, 3>, 3> &computed,
-    const std::array<std::array<double, 3>, 3> &expected) {
+  const std::array<std::array<double, 3>, 3> &computed,
+  const std::array<std::array<double, 3>, 3> &expected)
+{
   // sign of eigenvector is not important
   INFO("rotation matrices are not the same: \n"
        << "expected = " << expected[0][0] << " " << expected[0][1] << " "
@@ -84,14 +87,16 @@ inline void compare_rotation_matrices_approx(
 }
 
 inline void compare_quaternions(const glm::quaternion::quat &computed,
-                                const glm::quaternion::quat &expected) {
+                                const glm::quaternion::quat &expected)
+{
   CHECK(computed.w == Approx(expected.w));
   CHECK(computed.x == Approx(expected.x));
   CHECK(computed.y == Approx(expected.y));
   CHECK(computed.z == Approx(expected.z));
 }
 
-TEST_CASE("glm quat basic functions") {
+TEST_CASE("glm quat basic functions")
+{
   typedef glm::quaternion::quat QT;
   QT q1(2, 3, 4, 5);
   QT q2(6, 7, 8, 9);
@@ -167,23 +172,30 @@ TEST_CASE("glm quat basic functions") {
   CHECK(res == Approx(1.0));
 }
 
-TEST_CASE("glm quat slerp functions") {
+TEST_CASE("glm quat slerp functions")
+{
   {
     // This shows that two equal rotation matrices average in the same rotation
     // matrix
-    std::array<std::array<double, 3>, 3> rot1 = {
-        {{{0.36, 0.48, -0.8}},
-         {{-0.8, 0.6, 0}},
-         {{0.48, 0.64,
-           0.6}}}}; //{{normalize({{1,2,3}}),normalize({{4,5,6}}),normalize({{7,8,9}})}};
+    std::array<std::array<double, 3>, 3> rot1 =
+    {
+      { {{0.36, 0.48, -0.8}},
+        {{-0.8, 0.6, 0}},
+        { {
+            0.48, 0.64,
+            0.6
+          }
+        }
+      }
+    }; //{{normalize({{1,2,3}}),normalize({{4,5,6}}),normalize({{7,8,9}})}};
     glm::quaternion::quat quat_current = glm::quaternion::quat_cast(rot1);
     glm::quaternion::quat quat_next = glm::quaternion::quat_cast(rot1);
 
     glm::quaternion::quat quat_average =
-        glm::quaternion::slerp(quat_current, quat_next, 0.5);
+      glm::quaternion::slerp(quat_current, quat_next, 0.5);
 
     std::array<std::array<double, 3>, 3> result1 =
-        glm::quaternion::mat3_cast(quat_average);
+      glm::quaternion::mat3_cast(quat_average);
 
     auto ea1 = Utilities::euler_angles_from_rotation_matrix(rot1);
     auto ear = Utilities::euler_angles_from_rotation_matrix(result1);
@@ -195,27 +207,36 @@ TEST_CASE("glm quat slerp functions") {
   {
     // This shows that a very small difference in the rotation matrix causes a
     // very small difference in the resulting rotation matrix.
-    std::array<std::array<double, 3>, 3> rot1 = {
-        {{{0.360000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> rot2 = {
-        {{{0.350000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> expt = {
-        {{{0.358571, 0.479818, -0.800533}},
-         {{-0.800533, 0.599107, 0.000627009}},
-         {{0.479818, 0.640802, 0.599107}}}};
+    std::array<std::array<double, 3>, 3> rot1 =
+    {
+      { {{0.360000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> rot2 =
+    {
+      { {{0.350000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> expt =
+    {
+      { {{0.358571, 0.479818, -0.800533}},
+        {{-0.800533, 0.599107, 0.000627009}},
+        {{0.479818, 0.640802, 0.599107}}
+      }
+    };
 
     glm::quaternion::quat quat_current = glm::quaternion::quat_cast(rot1);
     glm::quaternion::quat quat_next = glm::quaternion::quat_cast(rot2);
 
     glm::quaternion::quat quat_average =
-        glm::quaternion::slerp(quat_current, quat_next, 0.5);
+      glm::quaternion::slerp(quat_current, quat_next, 0.5);
 
     std::array<std::array<double, 3>, 3> result1 =
-        glm::quaternion::mat3_cast(quat_average);
+      glm::quaternion::mat3_cast(quat_average);
 
     compare_rotation_matrices_approx(result1, expt);
   }
@@ -223,27 +244,36 @@ TEST_CASE("glm quat slerp functions") {
   {
     // This shows that a small difference in the rotation matrix causes a small
     // difference in the resulting rotation matrix.
-    std::array<std::array<double, 3>, 3> rot1 = {
-        {{{0.360000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> rot2 = {
-        {{{0.300000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> expt = {
-        {{{0.351289, 0.478886, -0.803242}},
-         {{-0.803242, 0.594555, 0.00382358}},
-         {{0.478886, 0.644888, 0.594555}}}};
+    std::array<std::array<double, 3>, 3> rot1 =
+    {
+      { {{0.360000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> rot2 =
+    {
+      { {{0.300000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> expt =
+    {
+      { {{0.351289, 0.478886, -0.803242}},
+        {{-0.803242, 0.594555, 0.00382358}},
+        {{0.478886, 0.644888, 0.594555}}
+      }
+    };
 
     glm::quaternion::quat quat_current = glm::quaternion::quat_cast(rot1);
     glm::quaternion::quat quat_next = glm::quaternion::quat_cast(rot2);
 
     glm::quaternion::quat quat_average =
-        glm::quaternion::slerp(quat_current, quat_next, 0.5);
+      glm::quaternion::slerp(quat_current, quat_next, 0.5);
 
     std::array<std::array<double, 3>, 3> result1 =
-        glm::quaternion::mat3_cast(quat_average);
+      glm::quaternion::mat3_cast(quat_average);
 
     compare_rotation_matrices_approx(result1, expt);
   }
@@ -251,27 +281,36 @@ TEST_CASE("glm quat slerp functions") {
   {
     // This shows that a small difference in the rotation matrix causes a small
     // difference in the resulting rotation matrix.
-    std::array<std::array<double, 3>, 3> rot1 = {
-        {{{0.360000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> rot2 = {
-        {{{0.300000, 0.450000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> expt = {
-        {{{0.35767, 0.472227, -0.802856}},
-         {{-0.7972, 0.6014, 0.000000000}},
-         {{0.481714, 0.642285, 0.593783}}}};
+    std::array<std::array<double, 3>, 3> rot1 =
+    {
+      { {{0.360000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> rot2 =
+    {
+      { {{0.300000, 0.450000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> expt =
+    {
+      { {{0.35767, 0.472227, -0.802856}},
+        {{-0.7972, 0.6014, 0.000000000}},
+        {{0.481714, 0.642285, 0.593783}}
+      }
+    };
 
     glm::quaternion::quat quat_current = glm::quaternion::quat_cast(rot1);
     glm::quaternion::quat quat_next = glm::quaternion::quat_cast(rot2);
 
     glm::quaternion::quat quat_average =
-        glm::quaternion::slerp(quat_current, quat_next, 0.5);
+      glm::quaternion::slerp(quat_current, quat_next, 0.5);
 
     std::array<std::array<double, 3>, 3> result1 =
-        glm::quaternion::mat3_cast(quat_average);
+      glm::quaternion::mat3_cast(quat_average);
 
     compare_rotation_matrices_approx(result1, expt);
   }
@@ -279,27 +318,36 @@ TEST_CASE("glm quat slerp functions") {
   {
     // This shows that a significant difference in the rotation matrix causes a
     // significat difference in the resulting rotation matrix.
-    std::array<std::array<double, 3>, 3> rot1 = {
-        {{{0.360000, 0.480000, -0.800000}},
-         {{-0.800000, 0.600000, 0.000000000}},
-         {{0.480000, 0.640000, 0.600000}}}};
-    std::array<std::array<double, 3>, 3> rot2 = {
-        {{{0.200000, 0.250000, -0.400000}},
-         {{-0.500000, 0.200000, 0.300000000}},
-         {{0.380000, 0.840000, 0.500000}}}};
-    std::array<std::array<double, 3>, 3> expt = {
-        {{{0.493495, 0.403007, -0.707894}},
-         {{-0.70133, 0.664351, -0.0720395}},
-         {{0.414325, 0.578479, 0.656215}}}};
+    std::array<std::array<double, 3>, 3> rot1 =
+    {
+      { {{0.360000, 0.480000, -0.800000}},
+        {{-0.800000, 0.600000, 0.000000000}},
+        {{0.480000, 0.640000, 0.600000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> rot2 =
+    {
+      { {{0.200000, 0.250000, -0.400000}},
+        {{-0.500000, 0.200000, 0.300000000}},
+        {{0.380000, 0.840000, 0.500000}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> expt =
+    {
+      { {{0.493495, 0.403007, -0.707894}},
+        {{-0.70133, 0.664351, -0.0720395}},
+        {{0.414325, 0.578479, 0.656215}}
+      }
+    };
 
     glm::quaternion::quat quat_current = glm::quaternion::quat_cast(rot1);
     glm::quaternion::quat quat_next = glm::quaternion::quat_cast(rot2);
 
     glm::quaternion::quat quat_average =
-        glm::quaternion::slerp(quat_current, quat_next, 0.5);
+      glm::quaternion::slerp(quat_current, quat_next, 0.5);
 
     std::array<std::array<double, 3>, 3> result1 =
-        glm::quaternion::mat3_cast(quat_average);
+      glm::quaternion::mat3_cast(quat_average);
 
     compare_rotation_matrices_approx(result1, expt);
   }

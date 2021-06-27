@@ -35,38 +35,39 @@ namespace WorldBuilder
     class UnsignedInt : public Interface
     {
       public:
-      /**
-       * A constructor for the load_entry function
-       */
-      UnsignedInt(unsigned int default_value = 0);
+        /**
+         * A constructor for the load_entry function
+         */
+        UnsignedInt(unsigned int default_value = 0);
 
-      /**
-       * Copy constructor
-       */
-      UnsignedInt(UnsignedInt const &other);
+        /**
+         * Copy constructor
+         */
+        UnsignedInt(UnsignedInt const &other);
 
-      /**
-       * Destructor
-       */
-      ~UnsignedInt();
+        /**
+         * Destructor
+         */
+        ~UnsignedInt();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      unsigned int value;
-      unsigned int default_value;
+        unsigned int value;
+        unsigned int default_value;
 
       protected:
-      /**
-       * This implements the actual cloneing for the clone function in the base
-       * class.
-       */
-      UnsignedInt *clone_impl() const override final {
-        return new UnsignedInt(*this);
-      };
+        /**
+         * This implements the actual cloneing for the clone function in the base
+         * class.
+         */
+        UnsignedInt *clone_impl() const override final
+        {
+          return new UnsignedInt(*this);
+        };
 
       private:
     };

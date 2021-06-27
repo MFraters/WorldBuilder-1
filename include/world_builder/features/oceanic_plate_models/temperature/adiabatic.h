@@ -41,59 +41,59 @@ namespace WorldBuilder
         class Adiabatic : public Interface
         {
           public:
-          /**
-           * constructor
-           */
-          Adiabatic(WorldBuilder::World *world);
+            /**
+             * constructor
+             */
+            Adiabatic(WorldBuilder::World *world);
 
-          /**
-           * Destructor
-           */
-          ~Adiabatic();
+            /**
+             * Destructor
+             */
+            ~Adiabatic();
 
-          /**
-           * declare and read in the world builder file into the parameters
-           * class
-           */
-          static void declare_entries(Parameters &prm,
-                                      const std::string &parent_name = "");
+            /**
+             * declare and read in the world builder file into the parameters
+             * class
+             */
+            static void declare_entries(Parameters &prm,
+                                        const std::string &parent_name = "");
 
-          /**
-           * declare and read in the world builder file into the parameters
-           * class
-           */
-          void parse_entries(Parameters &prm) override final;
+            /**
+             * declare and read in the world builder file into the parameters
+             * class
+             */
+            void parse_entries(Parameters &prm) override final;
 
-          /**
-           * Returns a temperature based on the given position, depth in the
-           * model, gravity and current temperature.
-           */
-          double
-          get_temperature(const Point<3> &position, const double depth,
-                          const double gravity, double temperature,
-                          const double feature_min_depth,
-                          const double feature_max_depth) const override final;
+            /**
+             * Returns a temperature based on the given position, depth in the
+             * model, gravity and current temperature.
+             */
+            double
+            get_temperature(const Point<3> &position, const double depth,
+                            const double gravity, double temperature,
+                            const double feature_min_depth,
+                            const double feature_max_depth) const override final;
 
           private:
-          // adiabatic temperature submodule parameters
-          double min_depth;
-          double max_depth;
-          /**
-           * Todo
-           */
-          double potential_mantle_temperature;
+            // adiabatic temperature submodule parameters
+            double min_depth;
+            double max_depth;
+            /**
+             * Todo
+             */
+            double potential_mantle_temperature;
 
-          /**
-           * Todo
-           */
-          double thermal_expansion_coefficient;
+            /**
+             * Todo
+             */
+            double thermal_expansion_coefficient;
 
-          /**
-           * Todo
-           */
-          double specific_heat;
+            /**
+             * Todo
+             */
+            double specific_heat;
 
-          Utilities::Operations operation;
+            Utilities::Operations operation;
         };
       } // namespace Temperature
     }   // namespace OceanicPlateModels

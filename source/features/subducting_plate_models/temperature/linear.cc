@@ -36,9 +36,10 @@ namespace WorldBuilder
       namespace Temperature
       {
         Linear::Linear(WorldBuilder::World *world_)
-            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
-              top_temperature(NaN::DSNAN), bottom_temperature(NaN::DSNAN),
-              operation(Utilities::Operations::REPLACE) {
+          : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
+            top_temperature(NaN::DSNAN), bottom_temperature(NaN::DSNAN),
+            operation(Utilities::Operations::REPLACE)
+        {
           this->world = world_;
           this->name = "linear";
         }
@@ -46,7 +47,8 @@ namespace WorldBuilder
         Linear::~Linear() = default;
 
         void Linear::declare_entries(Parameters &prm,
-                                     const std::string & /*unused*/) {
+                                     const std::string & /*unused*/)
+        {
           // Add max depth to the required parameters.
           prm.declare_entry("", Types::Object({"max distance slab top"}),
                             "Temperature model object");
@@ -61,68 +63,73 @@ namespace WorldBuilder
                             "of this feature is present.");
 
           prm.declare_entry(
-              "top temperature", Types::Double(293.15),
-              "The temperature at the top in degree Kelvin of this feature."
-              "If the value is below zero, the an adiabatic temperature is "
-              "used.");
+            "top temperature", Types::Double(293.15),
+            "The temperature at the top in degree Kelvin of this feature."
+            "If the value is below zero, the an adiabatic temperature is "
+            "used.");
 
           prm.declare_entry(
-              "bottom temperature", Types::Double(-1),
-              "The temperature at the bottom in degree Kelvin of this feature. "
-              "If the value is below zero, an adiabatic temperature is used.");
+            "bottom temperature", Types::Double(-1),
+            "The temperature at the bottom in degree Kelvin of this feature. "
+            "If the value is below zero, an adiabatic temperature is used.");
         }
 
-        void Linear::parse_entries(Parameters &prm) {
+        void Linear::parse_entries(Parameters &prm)
+        {
           min_depth = prm.get<double>("min distance slab top");
           max_depth = prm.get<double>("max distance slab top");
           WBAssert(max_depth >= min_depth,
                    "max depth needs to be larger or equal to min depth.");
           operation = Utilities::string_operations_to_enum(
-              prm.get<std::string>("operation"));
+                        prm.get<std::string>("operation"));
           top_temperature = prm.get<double>("top temperature");
           bottom_temperature = prm.get<double>("bottom temperature");
         }
 
         double Linear::get_temperature(
-            const Point<3> & /*position*/, const double /*depth*/,
-            const double gravity_norm, double temperature_,
-            const double /*feature_min_depth*/,
-            const double /*feature_max_depth*/,
-            const std::map<std::string, double> &distance_from_plane) const {
+          const Point<3> & /*position*/, const double /*depth*/,
+          const double gravity_norm, double temperature_,
+          const double /*feature_min_depth*/,
+          const double /*feature_max_depth*/,
+          const std::map<std::string, double> &distance_from_plane) const
+        {
           if (distance_from_plane.at("distanceFromPlane") <= max_depth &&
-              distance_from_plane.at("distanceFromPlane") >= min_depth) {
-            const double min_depth_local = min_depth;
-            const double max_depth_local = max_depth;
+              distance_from_plane.at("distanceFromPlane") >= min_depth)
+            {
+              const double min_depth_local = min_depth;
+              const double max_depth_local = max_depth;
 
-            double top_temperature_local = top_temperature;
-            if (top_temperature_local < 0) {
-              top_temperature_local =
-                  this->world->potential_mantle_temperature *
-                  std::exp(((this->world->thermal_expansion_coefficient *
-                             gravity_norm) /
-                            this->world->specific_heat) *
-                           min_depth_local);
-            }
+              double top_temperature_local = top_temperature;
+              if (top_temperature_local < 0)
+                {
+                  top_temperature_local =
+                    this->world->potential_mantle_temperature *
+                    std::exp(((this->world->thermal_expansion_coefficient *
+                               gravity_norm) /
+                              this->world->specific_heat) *
+                             min_depth_local);
+                }
 
-            double bottom_temperature_local = bottom_temperature;
-            if (bottom_temperature_local < 0) {
-              bottom_temperature_local =
-                  this->world->potential_mantle_temperature *
-                  std::exp(((this->world->thermal_expansion_coefficient *
-                             gravity_norm) /
-                            this->world->specific_heat) *
-                           max_depth_local);
-            }
+              double bottom_temperature_local = bottom_temperature;
+              if (bottom_temperature_local < 0)
+                {
+                  bottom_temperature_local =
+                    this->world->potential_mantle_temperature *
+                    std::exp(((this->world->thermal_expansion_coefficient *
+                               gravity_norm) /
+                              this->world->specific_heat) *
+                             max_depth_local);
+                }
 
-            const double new_temperature =
+              const double new_temperature =
                 top_temperature_local +
                 (distance_from_plane.at("distanceFromPlane") -
                  min_depth_local) *
-                    ((bottom_temperature_local - top_temperature_local) /
-                     (max_depth_local - min_depth_local));
-            return Utilities::apply_operation(operation, temperature_,
-                                              new_temperature);
-          }
+                ((bottom_temperature_local - top_temperature_local) /
+                 (max_depth_local - min_depth_local));
+              return Utilities::apply_operation(operation, temperature_,
+                                                new_temperature);
+            }
           return temperature_;
         }
 

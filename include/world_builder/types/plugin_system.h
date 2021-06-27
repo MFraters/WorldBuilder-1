@@ -36,41 +36,42 @@ namespace WorldBuilder
     class PluginSystem : public Interface
     {
       public:
-      /**
-       * constructor
-       */
-      PluginSystem(std::string default_value_,
-                   void (*declare_entries)(Parameters &, const std::string &,
-                                           const std::vector<std::string> &),
-                   std::vector<std::string> required_entries,
-                   const bool allow_multiple = true);
+        /**
+         * constructor
+         */
+        PluginSystem(std::string default_value_,
+                     void (*declare_entries)(Parameters &, const std::string &,
+                                             const std::vector<std::string> &),
+                     std::vector<std::string> required_entries,
+                     const bool allow_multiple = true);
 
-      /**
-       * Copy constructor
-       */
-      PluginSystem(PluginSystem const &plugin_system);
+        /**
+         * Copy constructor
+         */
+        PluginSystem(PluginSystem const &plugin_system);
 
-      /**
-       * Destructor
-       */
-      ~PluginSystem();
+        /**
+         * Destructor
+         */
+        ~PluginSystem();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      std::string default_value;
-      void (*declare_entries)(Parameters &, const std::string &,
-                              const std::vector<std::string> &);
-      std::vector<std::string> required_entries;
-      bool allow_multiple;
+        std::string default_value;
+        void (*declare_entries)(Parameters &, const std::string &,
+                                const std::vector<std::string> &);
+        std::vector<std::string> required_entries;
+        bool allow_multiple;
 
       protected:
-      PluginSystem *clone_impl() const override final {
-        return new PluginSystem(*this);
-      };
+        PluginSystem *clone_impl() const override final
+        {
+          return new PluginSystem(*this);
+        };
 
       private:
     };

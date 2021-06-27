@@ -27,6 +27,9 @@ namespace WorldBuilder
 
     Interface::~Interface() = default;
 
-    type Interface::get_type() const { return type_name; }
+    type Interface::get_type() const
+    {
+      return type_name;
+    }
   } // namespace Types
 } // namespace WorldBuilder

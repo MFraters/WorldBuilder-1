@@ -35,31 +35,34 @@ namespace WorldBuilder
     class Bool : public Interface
     {
       public:
-      /**
-       * A constructor for the load_entry function
-       */
-      Bool(const bool default_value);
+        /**
+         * A constructor for the load_entry function
+         */
+        Bool(const bool default_value);
 
-      /**
-       * Copy constructor
-       */
-      Bool(Bool const &other);
+        /**
+         * Copy constructor
+         */
+        Bool(Bool const &other);
 
-      /**
-       * Destructor
-       */
-      ~Bool();
+        /**
+         * Destructor
+         */
+        ~Bool();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      bool default_value;
+        bool default_value;
 
       protected:
-      Bool *clone_impl() const override final { return new Bool(*this); };
+        Bool *clone_impl() const override final
+        {
+          return new Bool(*this);
+        };
 
       private:
     };

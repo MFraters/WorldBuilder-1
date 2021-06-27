@@ -25,27 +25,30 @@ namespace WorldBuilder
   namespace Types
   {
     Double::Double(const double default_value_)
-        : default_value(default_value_) {
+      : default_value(default_value_)
+    {
       this->type_name = Types::type::Double;
     }
 
-    Double::Double(Double const &other) : default_value(other.default_value) {
+    Double::Double(Double const &other) : default_value(other.default_value)
+    {
       this->type_name = Types::type::Double;
     }
 
     Double::~Double() = default;
 
     void Double::write_schema(Parameters &prm, const std::string &name,
-                              const std::string &documentation) const {
+                              const std::string &documentation) const
+    {
       using namespace rapidjson;
       Document &declarations = prm.declarations;
       const std::string base = prm.get_full_json_path() + "/" + name;
 
       Pointer((base + "/default value").c_str())
-          .Set(declarations, default_value);
+      .Set(declarations, default_value);
       Pointer((base + "/type").c_str()).Set(declarations, "number");
       Pointer((base + "/documentation").c_str())
-          .Set(declarations, documentation.c_str());
+      .Set(declarations, documentation.c_str());
     }
   } // namespace Types
 } // namespace WorldBuilder

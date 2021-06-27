@@ -43,36 +43,39 @@ namespace WorldBuilder
     class Object : public Interface
     {
       public:
-      /**
-       * Constructor for the declaration
-       */
-      Object(std::vector<std::string> required = std::vector<std::string>(),
-             const bool additional_properties = false);
+        /**
+         * Constructor for the declaration
+         */
+        Object(std::vector<std::string> required = std::vector<std::string>(),
+               const bool additional_properties = false);
 
-      /**
-       * Copy constructor
-       */
-      Object(Object const &other);
+        /**
+         * Copy constructor
+         */
+        Object(Object const &other);
 
-      /**
-       * Destructor
-       */
-      ~Object();
+        /**
+         * Destructor
+         */
+        ~Object();
 
-      /**
-       * Todo
-       */
-      void write_schema(Parameters &prm, const std::string &name,
-                        const std::string &documentation) const override final;
+        /**
+         * Todo
+         */
+        void write_schema(Parameters &prm, const std::string &name,
+                          const std::string &documentation) const override final;
 
-      /**
-       * Todo
-       */
-      std::vector<std::string> required;
-      bool additional_properties;
+        /**
+         * Todo
+         */
+        std::vector<std::string> required;
+        bool additional_properties;
 
       protected:
-      Object *clone_impl() const override final { return new Object(*this); };
+        Object *clone_impl() const override final
+        {
+          return new Object(*this);
+        };
     };
   } // namespace Types
 } // namespace WorldBuilder

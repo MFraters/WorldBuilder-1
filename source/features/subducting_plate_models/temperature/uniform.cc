@@ -36,9 +36,10 @@ namespace WorldBuilder
       namespace Temperature
       {
         Uniform::Uniform(WorldBuilder::World *world_)
-            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
-              temperature(NaN::DSNAN),
-              operation(Utilities::Operations::REPLACE) {
+          : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
+            temperature(NaN::DSNAN),
+            operation(Utilities::Operations::REPLACE)
+        {
           this->world = world_;
           this->name = "uniform";
         }
@@ -46,7 +47,8 @@ namespace WorldBuilder
         Uniform::~Uniform() = default;
 
         void Uniform::declare_entries(Parameters &prm,
-                                      const std::string & /*unused*/) {
+                                      const std::string & /*unused*/)
+        {
 
           // Add temperature to the required parameters.
           prm.declare_entry("", Types::Object({"temperature"}),
@@ -66,27 +68,30 @@ namespace WorldBuilder
                             "feature should have");
         }
 
-        void Uniform::parse_entries(Parameters &prm) {
+        void Uniform::parse_entries(Parameters &prm)
+        {
 
           min_depth = prm.get<double>("min distance slab top");
           max_depth = prm.get<double>("max distance slab top");
           operation = Utilities::string_operations_to_enum(
-              prm.get<std::string>("operation"));
+                        prm.get<std::string>("operation"));
           temperature = prm.get<double>("temperature");
         }
 
         double Uniform::get_temperature(
-            const Point<3> & /*position*/, const double /*depth*/,
-            const double /*gravity*/, double temperature_,
-            const double /*feature_min_depth*/,
-            const double /*feature_max_depth*/,
-            const std::map<std::string, double> &distance_from_plane) const {
+          const Point<3> & /*position*/, const double /*depth*/,
+          const double /*gravity*/, double temperature_,
+          const double /*feature_min_depth*/,
+          const double /*feature_max_depth*/,
+          const std::map<std::string, double> &distance_from_plane) const
+        {
 
           if (distance_from_plane.at("distanceFromPlane") <= max_depth &&
-              distance_from_plane.at("distanceFromPlane") >= min_depth) {
-            return Utilities::apply_operation(operation, temperature_,
-                                              temperature);
-          }
+              distance_from_plane.at("distanceFromPlane") >= min_depth)
+            {
+              return Utilities::apply_operation(operation, temperature_,
+                                                temperature);
+            }
 
           return temperature_;
         }

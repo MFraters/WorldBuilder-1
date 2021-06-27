@@ -36,9 +36,10 @@ namespace WorldBuilder
       namespace Temperature
       {
         Uniform::Uniform(WorldBuilder::World *world_)
-            : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
-              temperature(NaN::DSNAN),
-              operation(Utilities::Operations::REPLACE) {
+          : min_depth(NaN::DSNAN), max_depth(NaN::DSNAN),
+            temperature(NaN::DSNAN),
+            operation(Utilities::Operations::REPLACE)
+        {
           this->world = world_;
           this->name = "uniform";
         }
@@ -46,7 +47,8 @@ namespace WorldBuilder
         Uniform::~Uniform() = default;
 
         void Uniform::declare_entries(Parameters &prm,
-                                      const std::string & /*unused*/) {
+                                      const std::string & /*unused*/)
+        {
 
           // Add temperature to the required parameters.
           prm.declare_entry("", Types::Object({"temperature"}),
@@ -66,12 +68,13 @@ namespace WorldBuilder
                             "feature should have");
         }
 
-        void Uniform::parse_entries(Parameters &prm) {
+        void Uniform::parse_entries(Parameters &prm)
+        {
 
           min_depth = prm.get<double>("min depth");
           max_depth = prm.get<double>("max depth");
           operation = Utilities::string_operations_to_enum(
-              prm.get<std::string>("operation"));
+                        prm.get<std::string>("operation"));
           temperature = prm.get<double>("temperature");
         }
 
@@ -80,12 +83,14 @@ namespace WorldBuilder
                                  const double depth, const double /*gravity*/,
                                  double temperature_,
                                  const double /*feature_min_depth*/,
-                                 const double /*feature_max_depth*/) const {
+                                 const double /*feature_max_depth*/) const
+        {
 
-          if (depth <= max_depth && depth >= min_depth) {
-            return Utilities::apply_operation(operation, temperature_,
-                                              temperature);
-          }
+          if (depth <= max_depth && depth >= min_depth)
+            {
+              return Utilities::apply_operation(operation, temperature_,
+                                                temperature);
+            }
 
           return temperature_;
         }

@@ -26,24 +26,27 @@ namespace WorldBuilder
   {
     Array::Array(const Interface &type, const unsigned int min_items_,
                  const unsigned int max_items_, const bool unique_items_)
-        : inner_type(type.get_type()), inner_type_ptr(type.clone()),
-          required(false), min_items(min_items_), max_items(max_items_),
-          unique_items(unique_items_) {
+      : inner_type(type.get_type()), inner_type_ptr(type.clone()),
+        required(false), min_items(min_items_), max_items(max_items_),
+        unique_items(unique_items_)
+    {
       this->type_name = Types::type::Array;
     }
 
     Array::Array(Array const &other)
-        : inner_type(other.inner_type),
-          inner_type_ptr(other.inner_type_ptr->clone()),
-          required(other.required), min_items(other.min_items),
-          max_items(other.max_items), unique_items(other.unique_items) {
+      : inner_type(other.inner_type),
+        inner_type_ptr(other.inner_type_ptr->clone()),
+        required(other.required), min_items(other.min_items),
+        max_items(other.max_items), unique_items(other.unique_items)
+    {
       this->type_name = Types::type::Array;
     }
 
     Array::~Array() = default;
 
     void Array::write_schema(Parameters &prm, const std::string &name,
-                             const std::string &documentation) const {
+                             const std::string &documentation) const
+    {
       using namespace rapidjson;
       Document &declarations = prm.declarations;
       const std::string &base = prm.get_full_json_path() + "/" + name;
@@ -53,7 +56,7 @@ namespace WorldBuilder
       Pointer((base + "/maxItems").c_str()).Set(declarations, max_items);
       Pointer((base + "/uniqueItems").c_str()).Set(declarations, unique_items);
       Pointer((base + "/documentation").c_str())
-          .Set(declarations, documentation.c_str());
+      .Set(declarations, documentation.c_str());
 
       prm.enter_subsection(name);
       {

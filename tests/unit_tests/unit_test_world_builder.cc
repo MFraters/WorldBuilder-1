@@ -91,9 +91,10 @@ using Catch::Matchers::Contains;
 /**
  * normalize 3d array
  */
-inline std::array<double, 3> normalize(std::array<double, 3> array) {
+inline std::array<double, 3> normalize(std::array<double, 3> array)
+{
   const double norm =
-      sqrt(array[0] * array[0] + array[1] * array[1] + array[2] * array[2]);
+    sqrt(array[0] * array[0] + array[1] * array[1] + array[2] * array[2]);
   return {{array[0] / norm, array[1] / norm, array[2] / norm}};
 }
 
@@ -102,12 +103,14 @@ inline std::array<double, 3> normalize(std::array<double, 3> array) {
  * Catch::Approx)
  */
 inline void compare_vectors_approx(const std::vector<double> &computed,
-                                   const std::vector<double> &expected) {
+                                   const std::vector<double> &expected)
+{
   CHECK(computed.size() == expected.size());
-  for (unsigned int i = 0; i < computed.size(); ++i) {
-    INFO("vector index i=" << i << ": ");
-    CHECK(computed[i] == Approx(expected[i]));
-  }
+  for (unsigned int i = 0; i < computed.size(); ++i)
+    {
+      INFO("vector index i=" << i << ": ");
+      CHECK(computed[i] == Approx(expected[i]));
+    }
 }
 
 /**
@@ -115,12 +118,14 @@ inline void compare_vectors_approx(const std::vector<double> &computed,
  * Catch::Approx)
  */
 inline void compare_3d_arrays_approx(const std::array<double, 3> &computed,
-                                     const std::array<double, 3> &expected) {
+                                     const std::array<double, 3> &expected)
+{
   CHECK(computed.size() == expected.size());
-  for (unsigned int i = 0; i < computed.size(); ++i) {
-    INFO("vector index i=" << i << ": ");
-    CHECK(computed[i] == Approx(expected[i]));
-  }
+  for (unsigned int i = 0; i < computed.size(); ++i)
+    {
+      INFO("vector index i=" << i << ": ");
+      CHECK(computed[i] == Approx(expected[i]));
+    }
 }
 
 /**
@@ -128,31 +133,36 @@ inline void compare_3d_arrays_approx(const std::array<double, 3> &computed,
  * entries with an epsilon (using Catch::Approx)
  */
 inline void compare_vectors_array3_array3_approx(
-    const std::vector<std::array<std::array<double, 3>, 3>> &computed,
-    const std::vector<std::array<std::array<double, 3>, 3>> &expected) {
+  const std::vector<std::array<std::array<double, 3>, 3>> &computed,
+  const std::vector<std::array<std::array<double, 3>, 3>> &expected)
+{
   CHECK(computed.size() == expected.size());
-  for (unsigned int i = 0; i < computed.size(); ++i) {
-    CHECK(computed[i].size() == expected[i].size());
-    for (unsigned int j = 0; j < computed[i].size(); ++j) {
-      CHECK(computed[i][j].size() == expected[i][j].size());
-      for (unsigned int k = 0; k < computed[i][j].size(); ++k) {
-        INFO("vector index i:j:k = "
-             << i << ":" << j << ":" << k << std::setprecision(10)
-             << " = computed: " << computed[i][j][k]
-             << ", expected: " << expected[i][j][k] << ", diff = "
-             << computed[i][j][k] - expected[i][j][k] << ", eps = " << 1e-10);
-        CHECK(std::fabs(computed[i][j][k] - expected[i][j][k]) <= 1e-10);
-      }
+  for (unsigned int i = 0; i < computed.size(); ++i)
+    {
+      CHECK(computed[i].size() == expected[i].size());
+      for (unsigned int j = 0; j < computed[i].size(); ++j)
+        {
+          CHECK(computed[i][j].size() == expected[i][j].size());
+          for (unsigned int k = 0; k < computed[i][j].size(); ++k)
+            {
+              INFO("vector index i:j:k = "
+                   << i << ":" << j << ":" << k << std::setprecision(10)
+                   << " = computed: " << computed[i][j][k]
+                   << ", expected: " << expected[i][j][k] << ", diff = "
+                   << computed[i][j][k] - expected[i][j][k] << ", eps = " << 1e-10);
+              CHECK(std::fabs(computed[i][j][k] - expected[i][j][k]) <= 1e-10);
+            }
+        }
     }
-  }
 }
 
 /**
  * Compare two rotation matrices
  */
 inline void compare_rotation_matrices_approx(
-    const std::array<std::array<double, 3>, 3> &computed,
-    const std::array<std::array<double, 3>, 3> &expected) {
+  const std::array<std::array<double, 3>, 3> &computed,
+  const std::array<std::array<double, 3>, 3> &expected)
+{
   // sign of eigenvector is not important
   INFO("rotation matrices are not the same: \n"
        << "expected = " << expected[0][0] << " " << expected[0][1] << " "
@@ -187,31 +197,32 @@ inline void compare_rotation_matrices_approx(
           computed[2][2] == Approx(-expected[2][2]))));
 }
 
-TEST_CASE("WorldBuilder Point: Testing initialize and operators") {
+TEST_CASE("WorldBuilder Point: Testing initialize and operators")
+{
   // Test initialization of the Point class
   Point<2> p2(cartesian);
   Point<3> p3(cartesian);
 
-  CHECK(p2.get_array() == std::array<double, 2>{{0, 0}});
-  CHECK(p3.get_array() == std::array<double, 3>{{0, 0, 0}});
+  CHECK(p2.get_array() == std::array<double, 2> {{0, 0}});
+  CHECK(p3.get_array() == std::array<double, 3> {{0, 0, 0}});
 
-  const Point<2> p2_array(std::array<double, 2>{{1, 2}}, cartesian);
-  const Point<3> p3_array(std::array<double, 3>{{1, 2, 3}}, cartesian);
+  const Point<2> p2_array(std::array<double, 2> {{1, 2}}, cartesian);
+  const Point<3> p3_array(std::array<double, 3> {{1, 2, 3}}, cartesian);
 
-  CHECK(p2_array.get_array() == std::array<double, 2>{{1, 2}});
-  CHECK(p3_array.get_array() == std::array<double, 3>{{1, 2, 3}});
+  CHECK(p2_array.get_array() == std::array<double, 2> {{1, 2}});
+  CHECK(p3_array.get_array() == std::array<double, 3> {{1, 2, 3}});
 
   const Point<2> &p2_point(p2_array);
   const Point<3> &p3_point(p3_array);
 
-  CHECK(p2_point.get_array() == std::array<double, 2>{{1, 2}});
-  CHECK(p3_point.get_array() == std::array<double, 3>{{1, 2, 3}});
+  CHECK(p2_point.get_array() == std::array<double, 2> {{1, 2}});
+  CHECK(p3_point.get_array() == std::array<double, 3> {{1, 2, 3}});
 
   const Point<2> p2_explicit(3, 4, cartesian);
   const Point<3> p3_explicit(4, 5, 6, cartesian);
 
-  CHECK(p2_explicit.get_array() == std::array<double, 2>{{3, 4}});
-  CHECK(p3_explicit.get_array() == std::array<double, 3>{{4, 5, 6}});
+  CHECK(p2_explicit.get_array() == std::array<double, 2> {{3, 4}});
+  CHECK(p3_explicit.get_array() == std::array<double, 3> {{4, 5, 6}});
 
   // Test Point operators
 
@@ -219,21 +230,21 @@ TEST_CASE("WorldBuilder Point: Testing initialize and operators") {
   p2 = p2_array;
   p3 = p3_array;
 
-  CHECK(p2.get_array() == std::array<double, 2>{{1, 2}});
-  CHECK(p3.get_array() == std::array<double, 3>{{1, 2, 3}});
+  CHECK(p2.get_array() == std::array<double, 2> {{1, 2}});
+  CHECK(p3.get_array() == std::array<double, 3> {{1, 2, 3}});
 
   // Test multiply operator
   p2 = 2 * p2 * 1.0;
   p3 = 2 * p3 * 1.0;
 
-  CHECK(p2.get_array() == std::array<double, 2>{{2, 4}});
-  CHECK(p3.get_array() == std::array<double, 3>{{2, 4, 6}});
+  CHECK(p2.get_array() == std::array<double, 2> {{2, 4}});
+  CHECK(p3.get_array() == std::array<double, 3> {{2, 4, 6}});
 
   p2 *= 2;
   p3 *= 2;
 
-  CHECK(p2.get_array() == std::array<double, 2>{{4, 8}});
-  CHECK(p3.get_array() == std::array<double, 3>{{4, 8, 12}});
+  CHECK(p2.get_array() == std::array<double, 2> {{4, 8}});
+  CHECK(p3.get_array() == std::array<double, 3> {{4, 8, 12}});
 
   // Test dot operator
   CHECK(p2_array * p2_explicit == Approx(11.0));
@@ -243,27 +254,27 @@ TEST_CASE("WorldBuilder Point: Testing initialize and operators") {
   p2 = p2 + p2;
   p3 = p3 + p3;
 
-  CHECK(p2.get_array() == std::array<double, 2>{{8, 16}});
-  CHECK(p3.get_array() == std::array<double, 3>{{8, 16, 24}});
+  CHECK(p2.get_array() == std::array<double, 2> {{8, 16}});
+  CHECK(p3.get_array() == std::array<double, 3> {{8, 16, 24}});
 
   p2 += p2;
   p3 += p3;
 
-  CHECK(p2.get_array() == std::array<double, 2>{{16, 32}});
-  CHECK(p3.get_array() == std::array<double, 3>{{16, 32, 48}});
+  CHECK(p2.get_array() == std::array<double, 2> {{16, 32}});
+  CHECK(p3.get_array() == std::array<double, 3> {{16, 32, 48}});
 
   // Test subtract operator
   p2 = p2 - (0.5 * p2);
   p3 = p3 - (0.5 * p3);
 
-  CHECK(p2.get_array() == std::array<double, 2>{{8, 16}});
-  CHECK(p3.get_array() == std::array<double, 3>{{8, 16, 24}});
+  CHECK(p2.get_array() == std::array<double, 2> {{8, 16}});
+  CHECK(p3.get_array() == std::array<double, 3> {{8, 16, 24}});
 
   p2 -= (0.5 * p2);
   p3 -= (0.5 * p3);
 
-  CHECK(p2.get_array() == std::array<double, 2>{{4, 8}});
-  CHECK(p3.get_array() == std::array<double, 3>{{4, 8, 12}});
+  CHECK(p2.get_array() == std::array<double, 2> {{4, 8}});
+  CHECK(p3.get_array() == std::array<double, 3> {{4, 8, 12}});
 
   // Test coordinate system
   // CHECK(p2.get_coordinate_system() == CoordinateSystem::cartesian);
@@ -280,8 +291,8 @@ TEST_CASE("WorldBuilder Point: Testing initialize and operators") {
   std::array<double, 2> an2 = Utilities::convert_point_to_array(p2_point);
   std::array<double, 3> an3 = Utilities::convert_point_to_array(p3_point);
 
-  CHECK(an2 == std::array<double, 2>{{1, 2}});
-  CHECK(an3 == std::array<double, 3>{{1, 2, 3}});
+  CHECK(an2 == std::array<double, 2> {{1, 2}});
+  CHECK(an3 == std::array<double, 3> {{1, 2, 3}});
 
   CHECK_THROWS_WITH(Point<2>(1, 2, 3, cartesian),
                     Contains("Can't use the 3d constructor in 2d."));
@@ -289,7 +300,8 @@ TEST_CASE("WorldBuilder Point: Testing initialize and operators") {
                     Contains("Can't use the 2d constructor in 3d."));
 }
 
-TEST_CASE("WorldBuilder Utilities: string to conversions") {
+TEST_CASE("WorldBuilder Utilities: string to conversions")
+{
   // Test string to number conversion
   CHECK(Utilities::string_to_double("1") == Approx(1.0));
   CHECK(Utilities::string_to_double(" 1 ") == Approx(1.0));
@@ -330,9 +342,9 @@ TEST_CASE("WorldBuilder Utilities: string to conversions") {
   const Point<2> p2(1, 2, cartesian);
   const Point<3> p3(1, 2, 3, cartesian);
 
-  CHECK(Utilities::convert_point_to_array(p2) == std::array<double, 2>{{1, 2}});
+  CHECK(Utilities::convert_point_to_array(p2) == std::array<double, 2> {{1, 2}});
   CHECK(Utilities::convert_point_to_array(p3) ==
-        std::array<double, 3>{{1, 2, 3}});
+  std::array<double, 3> {{1, 2, 3}});
 
   // Test coordinate system
   CHECK(Utilities::string_to_coordinate_system("cartesian") ==
@@ -343,7 +355,8 @@ TEST_CASE("WorldBuilder Utilities: string to conversions") {
                     Contains("Coordinate system not implemented."));
 }
 
-TEST_CASE("WorldBuilder Utilities: interpolation") {
+TEST_CASE("WorldBuilder Utilities: interpolation")
+{
   Utilities::interpolation linear;
   std::vector<double> x = {{0, 1, 2, 6}};
   std::vector<double> y = {{10, 5, 5, 35}};
@@ -509,7 +522,8 @@ TEST_CASE("WorldBuilder Utilities: interpolation") {
   CHECK(monotone_cubic_spline_y(3) == Approx(10.0));
 }
 
-TEST_CASE("WorldBuilder Utilities: Point in polygon") {
+TEST_CASE("WorldBuilder Utilities: Point in polygon")
+{
   std::vector<Point<2>> point_list_4_elements(4, Point<2>(cartesian));
   point_list_4_elements[0] = Point<2>(0, 0, cartesian);
   point_list_4_elements[1] = Point<2>(5, 0, cartesian);
@@ -549,26 +563,29 @@ TEST_CASE("WorldBuilder Utilities: Point in polygon") {
   awnsers_signed_distance[2] = {{0, -std::sqrt(125)}};
   awnsers_signed_distance[3] = {{0, -std::sqrt(125)}};
   awnsers_signed_distance[4] = {{0, -std::sqrt(50)}};
-  awnsers_signed_distance[5] = {
-      {-std::sqrt(0.01 * 0.01), -std::sqrt(5 * 5 + 4.99 * 4.99)}};
+  awnsers_signed_distance[5] =
+  {
+    {-std::sqrt(0.01 * 0.01), -std::sqrt(5 * 5 + 4.99 * 4.99)}
+  };
   awnsers_signed_distance[6] = {{1, -std::sqrt(9 * 9 + 9 * 9)}};
   awnsers_signed_distance[7] = {{-10.2591422643, -0.3535533906}};
   awnsers_signed_distance[8] = {{-9.5524865873, 0.3535533906}};
 
-  for (unsigned int i = 0; i < check_points.size(); ++i) {
-    INFO("checking point " << i << " = (" << check_points[i][0] << ":"
-                           << check_points[i][1] << ")");
-    CHECK(Utilities::polygon_contains_point(point_list_4_elements,
-                                            check_points[i]) == awnsers[i][0]);
-    CHECK(Utilities::polygon_contains_point(point_list_3_elements,
-                                            check_points[i]) == awnsers[i][1]);
-    CHECK(Utilities::signed_distance_to_polygon(point_list_4_elements,
-                                                check_points[i]) ==
-          Approx(awnsers_signed_distance[i][0]));
-    CHECK(Utilities::signed_distance_to_polygon(point_list_3_elements,
-                                                check_points[i]) ==
-          Approx(awnsers_signed_distance[i][1]));
-  }
+  for (unsigned int i = 0; i < check_points.size(); ++i)
+    {
+      INFO("checking point " << i << " = (" << check_points[i][0] << ":"
+           << check_points[i][1] << ")");
+      CHECK(Utilities::polygon_contains_point(point_list_4_elements,
+                                              check_points[i]) == awnsers[i][0]);
+      CHECK(Utilities::polygon_contains_point(point_list_3_elements,
+                                              check_points[i]) == awnsers[i][1]);
+      CHECK(Utilities::signed_distance_to_polygon(point_list_4_elements,
+                                                  check_points[i]) ==
+            Approx(awnsers_signed_distance[i][0]));
+      CHECK(Utilities::signed_distance_to_polygon(point_list_3_elements,
+                                                  check_points[i]) ==
+            Approx(awnsers_signed_distance[i][1]));
+    }
 
   std::vector<Point<2>> point_list_2_elements(2, Point<2>(cartesian));
   CHECK_THROWS_WITH(Utilities::signed_distance_to_polygon(point_list_2_elements,
@@ -586,30 +603,31 @@ TEST_CASE("WorldBuilder Utilities: Point in polygon") {
                     Contains("Not enough polygon points were specified."));
 }
 
-TEST_CASE("WorldBuilder Utilities: Natural Coordinate") {
+TEST_CASE("WorldBuilder Utilities: Natural Coordinate")
+{
   // Cartesian
   std::unique_ptr<CoordinateSystems::Interface> cartesian(
-      CoordinateSystems::Interface::create("cartesian", nullptr));
+    CoordinateSystems::Interface::create("cartesian", nullptr));
 
   // Test the natural coordinate system
-  Utilities::NaturalCoordinate nca1(std::array<double, 3>{{1, 2, 3}},
-                                    *cartesian);
-  CHECK(nca1.get_coordinates() == std::array<double, 3>{{1, 2, 3}});
-  CHECK(nca1.get_surface_coordinates() == std::array<double, 2>{{1, 2}});
+  Utilities::NaturalCoordinate nca1(std::array<double, 3> {{1, 2, 3}},
+  *cartesian);
+  CHECK(nca1.get_coordinates() == std::array<double, 3> {{1, 2, 3}});
+  CHECK(nca1.get_surface_coordinates() == std::array<double, 2> {{1, 2}});
   CHECK(nca1.get_depth_coordinate() == Approx(3.0));
 
   Utilities::NaturalCoordinate ncp1(
-      Point<3>(1, 2, 3, CoordinateSystem::cartesian), *cartesian);
-  CHECK(ncp1.get_coordinates() == std::array<double, 3>{{1, 2, 3}});
-  CHECK(ncp1.get_surface_coordinates() == std::array<double, 2>{{1, 2}});
+    Point<3>(1, 2, 3, CoordinateSystem::cartesian), *cartesian);
+  CHECK(ncp1.get_coordinates() == std::array<double, 3> {{1, 2, 3}});
+  CHECK(ncp1.get_surface_coordinates() == std::array<double, 2> {{1, 2}});
   CHECK(ncp1.get_depth_coordinate() == Approx(3.0));
 
   std::unique_ptr<CoordinateSystems::Interface> spherical(
-      CoordinateSystems::Interface::create("spherical", nullptr));
+    CoordinateSystems::Interface::create("spherical", nullptr));
 
   // Test the natural coordinate system
-  Utilities::NaturalCoordinate nsa1(std::array<double, 3>{{1, 2, 3}},
-                                    *spherical);
+  Utilities::NaturalCoordinate nsa1(std::array<double, 3> {{1, 2, 3}},
+  *spherical);
   std::array<double, 3> nsa1_array = nsa1.get_coordinates();
   CHECK(nsa1_array[0] == Approx(std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0)));
   CHECK(nsa1_array[1] == Approx(1.1071487178));
@@ -621,7 +639,7 @@ TEST_CASE("WorldBuilder Utilities: Natural Coordinate") {
         Approx(std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0)));
 
   Utilities::NaturalCoordinate nsp1(
-      Point<3>(1, 2, 3, CoordinateSystem::spherical), *spherical);
+    Point<3>(1, 2, 3, CoordinateSystem::spherical), *spherical);
   std::array<double, 3> nsp1_array = nsp1.get_coordinates();
   CHECK(nsp1_array[0] == Approx(std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0)));
   CHECK(nsp1_array[1] == Approx(1.1071487178));
@@ -633,80 +651,86 @@ TEST_CASE("WorldBuilder Utilities: Natural Coordinate") {
         Approx(std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0)));
 }
 
-TEST_CASE("WorldBuilder Utilities: Coordinate systems transformations") {
+TEST_CASE("WorldBuilder Utilities: Coordinate systems transformations")
+{
   // Test coordinate system transformation
   {
     Point<3> cartesian(3, 4, 5, CoordinateSystem::cartesian);
 
     Point<3> spherical(Utilities::cartesian_to_spherical_coordinates(Point<3>(
-                           cartesian.get_array(), CoordinateSystem::cartesian)),
+                                                                       cartesian.get_array(), CoordinateSystem::cartesian)),
                        CoordinateSystem::spherical);
 
     compare_vectors_approx(
-        std::vector<double>(std::begin(spherical.get_array()),
-                            std::end(spherical.get_array())),
-        std::vector<double>{
-            {std::sqrt(3 * 3 + 4 * 4 + 5 * 5), 0.927295218001613, 0.7853982}});
+      std::vector<double>(std::begin(spherical.get_array()),
+                          std::end(spherical.get_array())),
+      std::vector<double>
+    {
+      {std::sqrt(3 * 3 + 4 * 4 + 5 * 5), 0.927295218001613, 0.7853982}
+    });
 
     Point<3> cartesian_back(
-        Utilities::spherical_to_cartesian_coordinates(spherical.get_array()),
-        CoordinateSystem::cartesian);
+      Utilities::spherical_to_cartesian_coordinates(spherical.get_array()),
+      CoordinateSystem::cartesian);
 
     compare_vectors_approx(
-        std::vector<double>(std::begin(cartesian_back.get_array()),
-                            std::end(cartesian_back.get_array())),
-        std::vector<double>{{3, 4, 5}});
+      std::vector<double>(std::begin(cartesian_back.get_array()),
+                          std::end(cartesian_back.get_array())),
+    std::vector<double> {{3, 4, 5}});
   }
 
   {
     Point<3> cartesian(-2, -1, 6, CoordinateSystem::cartesian);
 
     Point<3> spherical(Utilities::cartesian_to_spherical_coordinates(Point<3>(
-                           cartesian.get_array(), CoordinateSystem::cartesian)),
+                                                                       cartesian.get_array(), CoordinateSystem::cartesian)),
                        CoordinateSystem::spherical);
 
     compare_vectors_approx(
-        std::vector<double>(std::begin(spherical.get_array()),
-                            std::end(spherical.get_array())),
-        std::vector<double>{
-            {std::sqrt(2 * 2 + 1 * 1 + 6 * 6), -2.6779450446, 1.2140629383}});
+      std::vector<double>(std::begin(spherical.get_array()),
+                          std::end(spherical.get_array())),
+      std::vector<double>
+    {
+      {std::sqrt(2 * 2 + 1 * 1 + 6 * 6), -2.6779450446, 1.2140629383}
+    });
 
     Point<3> cartesian_back(
-        Utilities::spherical_to_cartesian_coordinates(spherical.get_array()),
-        CoordinateSystem::cartesian);
+      Utilities::spherical_to_cartesian_coordinates(spherical.get_array()),
+      CoordinateSystem::cartesian);
 
     compare_vectors_approx(
-        std::vector<double>(std::begin(cartesian_back.get_array()),
-                            std::end(cartesian_back.get_array())),
-        std::vector<double>{{-2, -1, 6}});
+      std::vector<double>(std::begin(cartesian_back.get_array()),
+                          std::end(cartesian_back.get_array())),
+    std::vector<double> {{-2, -1, 6}});
   }
 }
 
-TEST_CASE("WorldBuilder Utilities: cross product") {
+TEST_CASE("WorldBuilder Utilities: cross product")
+{
   const Point<3> unit_x(1, 0, 0, cartesian);
   const Point<3> unit_y(0, 1, 0, cartesian);
   const Point<3> unit_z(0, 0, 1, cartesian);
 
   compare_3d_arrays_approx(Utilities::cross_product(unit_x, unit_x).get_array(),
-                           std::array<double, 3>{{0, 0, 0}});
+  std::array<double, 3> {{0, 0, 0}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_x, unit_y).get_array(),
-                           std::array<double, 3>{{0, 0, 1}});
+  std::array<double, 3> {{0, 0, 1}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_x, unit_z).get_array(),
-                           std::array<double, 3>{{0, -1, 0}});
+  std::array<double, 3> {{0, -1, 0}});
 
   compare_3d_arrays_approx(Utilities::cross_product(unit_y, unit_x).get_array(),
-                           std::array<double, 3>{{0, 0, -1}});
+  std::array<double, 3> {{0, 0, -1}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_y, unit_y).get_array(),
-                           std::array<double, 3>{{0, 0, 0}});
+  std::array<double, 3> {{0, 0, 0}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_y, unit_z).get_array(),
-                           std::array<double, 3>{{1, 0, 0}});
+  std::array<double, 3> {{1, 0, 0}});
 
   compare_3d_arrays_approx(Utilities::cross_product(unit_z, unit_x).get_array(),
-                           std::array<double, 3>{{0, 1, 0}});
+  std::array<double, 3> {{0, 1, 0}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_z, unit_y).get_array(),
-                           std::array<double, 3>{{-1, 0, 0}});
+  std::array<double, 3> {{-1, 0, 0}});
   compare_3d_arrays_approx(Utilities::cross_product(unit_z, unit_z).get_array(),
-                           std::array<double, 3>{{0, 0, 0}});
+  std::array<double, 3> {{0, 0, 0}});
 
   const double sqrt2 = sqrt(0.5);
   const Point<3> sqrt2_x(sqrt2, 0, 0, cartesian);
@@ -718,45 +742,46 @@ TEST_CASE("WorldBuilder Utilities: cross product") {
   const Point<3> unit_yz(0, sqrt2, sqrt2, cartesian);
 
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xy, sqrt2_x).get_array(),
-      std::array<double, 3>{{0, 0, -0.5}});
+    Utilities::cross_product(unit_xy, sqrt2_x).get_array(),
+  std::array<double, 3> {{0, 0, -0.5}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xy, sqrt2_y).get_array(),
-      std::array<double, 3>{{0, 0, 0.5}});
+    Utilities::cross_product(unit_xy, sqrt2_y).get_array(),
+  std::array<double, 3> {{0, 0, 0.5}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xy, sqrt2_z).get_array(),
-      std::array<double, 3>{{0.5, -0.5, 0}});
+    Utilities::cross_product(unit_xy, sqrt2_z).get_array(),
+  std::array<double, 3> {{0.5, -0.5, 0}});
 
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xz, sqrt2_x).get_array(),
-      std::array<double, 3>{{0, 0.5, 0}});
+    Utilities::cross_product(unit_xz, sqrt2_x).get_array(),
+  std::array<double, 3> {{0, 0.5, 0}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xz, sqrt2_y).get_array(),
-      std::array<double, 3>{{-0.5, 0, 0.5}});
+    Utilities::cross_product(unit_xz, sqrt2_y).get_array(),
+  std::array<double, 3> {{-0.5, 0, 0.5}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_xz, sqrt2_z).get_array(),
-      std::array<double, 3>{{0, -0.5, 0}});
+    Utilities::cross_product(unit_xz, sqrt2_z).get_array(),
+  std::array<double, 3> {{0, -0.5, 0}});
 
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_yz, sqrt2_x).get_array(),
-      std::array<double, 3>{{0, 0.5, -0.5}});
+    Utilities::cross_product(unit_yz, sqrt2_x).get_array(),
+  std::array<double, 3> {{0, 0.5, -0.5}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_yz, sqrt2_y).get_array(),
-      std::array<double, 3>{{-0.5, 0, 0}});
+    Utilities::cross_product(unit_yz, sqrt2_y).get_array(),
+  std::array<double, 3> {{-0.5, 0, 0}});
   compare_3d_arrays_approx(
-      Utilities::cross_product(unit_yz, sqrt2_z).get_array(),
-      std::array<double, 3>{{0.5, 0, 0}});
+    Utilities::cross_product(unit_yz, sqrt2_z).get_array(),
+  std::array<double, 3> {{0.5, 0, 0}});
 
   const Point<3> point1(2, 3, 4, cartesian);
   const Point<3> point2(5, 6, 7, cartesian);
 
   compare_3d_arrays_approx(Utilities::cross_product(point1, point2).get_array(),
-                           std::array<double, 3>{{-3, 6, -3}});
+  std::array<double, 3> {{-3, 6, -3}});
   compare_3d_arrays_approx(Utilities::cross_product(point2, point1).get_array(),
-                           std::array<double, 3>{{3, -6, 3}});
+  std::array<double, 3> {{3, -6, 3}});
 }
 
-TEST_CASE("WorldBuilder C wrapper") {
+TEST_CASE("WorldBuilder C wrapper")
+{
   // First test a world builder file with a cross section defined
   std::string file = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                      "/tests/data/simple_wb1.json";
@@ -803,9 +828,9 @@ TEST_CASE("WorldBuilder C wrapper") {
   create_world(ptr_ptr_world, world_builder_file2, &has_output_dir, "", 1.0);
 
   CHECK_THROWS_WITH(
-      temperature_2d(*ptr_ptr_world, 1, 2, 0, 10, &temperature),
-      Contains("This function can only be called when the cross section "
-               "variable in the world builder file has been set. Dim is 3."));
+    temperature_2d(*ptr_ptr_world, 1, 2, 0, 10, &temperature),
+    Contains("This function can only be called when the cross section "
+             "variable in the world builder file has been set. Dim is 3."));
   temperature_3d(*ptr_ptr_world, 1, 2, 3, 0, 10, &temperature);
   CHECK(temperature == Approx(1600));
   temperature_3d(*ptr_ptr_world, 120e3, 500e3, 0, 0, 10, &temperature);
@@ -813,9 +838,9 @@ TEST_CASE("WorldBuilder C wrapper") {
 
   // Test the compositions
   CHECK_THROWS_WITH(
-      composition_2d(*ptr_ptr_world, 1, 2, 0, 2, &composition),
-      Contains("This function can only be called when the cross section "
-               "variable in the world builder file has been set. Dim is 3."));
+    composition_2d(*ptr_ptr_world, 1, 2, 0, 2, &composition),
+    Contains("This function can only be called when the cross section "
+             "variable in the world builder file has been set. Dim is 3."));
 
   composition_3d(*ptr_ptr_world, 1, 2, 3, 0, 2, &composition);
   CHECK(composition == Approx(0.0));
@@ -825,7 +850,8 @@ TEST_CASE("WorldBuilder C wrapper") {
   release_world(*ptr_ptr_world);
 }
 
-TEST_CASE("WorldBuilder CPP wrapper") {
+TEST_CASE("WorldBuilder CPP wrapper")
+{
   // First test a world builder file with a cross section defined
   std::string file = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                      "/tests/data/simple_wb1.json";
@@ -862,9 +888,9 @@ TEST_CASE("WorldBuilder CPP wrapper") {
   wrapper_cpp::WorldBuilderWrapper world2(file);
 
   CHECK_THROWS_WITH(
-      world2.temperature_2d(1, 2, 0, 10),
-      Contains("This function can only be called when the cross section "
-               "variable in the world builder file has been set. Dim is 3."));
+    world2.temperature_2d(1, 2, 0, 10),
+    Contains("This function can only be called when the cross section "
+             "variable in the world builder file has been set. Dim is 3."));
   temperature = world2.temperature_3d(1, 2, 3, 0, 10);
   CHECK(temperature == Approx(1600));
   temperature = world2.temperature_3d(120e3, 500e3, 0, 0, 10);
@@ -872,9 +898,9 @@ TEST_CASE("WorldBuilder CPP wrapper") {
 
   // Test the compositions
   CHECK_THROWS_WITH(
-      world2.composition_2d(1, 2, 0, 2),
-      Contains("This function can only be called when the cross section "
-               "variable in the world builder file has been set. Dim is 3."));
+    world2.composition_2d(1, 2, 0, 2),
+    Contains("This function can only be called when the cross section "
+             "variable in the world builder file has been set. Dim is 3."));
 
   composition = world2.composition_3d(1, 2, 3, 0, 2);
   CHECK(composition == Approx(0.0));
@@ -882,7 +908,8 @@ TEST_CASE("WorldBuilder CPP wrapper") {
   CHECK(composition == Approx(1.0));
 }
 
-TEST_CASE("WorldBuilder World random") {
+TEST_CASE("WorldBuilder World random")
+{
   // The world builder uses a deterministic random number generator. This is on
   // prorpose because even though you might want to use random numbers, the
   // result should be reproducable. Note that when the world builder is used in
@@ -917,42 +944,52 @@ TEST_CASE("WorldBuilder World random") {
   CHECK(dist(world3.get_random_number_engine()) == Approx(1.1281244478));
 }
 
-TEST_CASE("WorldBuilder Coordinate Systems: Interface") {
+TEST_CASE("WorldBuilder Coordinate Systems: Interface")
+{
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/oceanic_plate_spherical.wb";
   WorldBuilder::World world(file_name);
 
   CHECK_THROWS_WITH(
-      CoordinateSystems::Interface::create(
-          "!not_implemented_coordinate_system!", &world),
-      Contains("Internal error: Plugin with name "
-               "'!not_implemented_coordinate_system!' is not found. "
-               "The size of factories is "));
+    CoordinateSystems::Interface::create(
+      "!not_implemented_coordinate_system!", &world),
+    Contains("Internal error: Plugin with name "
+             "'!not_implemented_coordinate_system!' is not found. "
+             "The size of factories is "));
 
   std::unique_ptr<CoordinateSystems::Interface> interface(
-      CoordinateSystems::Interface::create("cartesian", &world));
+    CoordinateSystems::Interface::create("cartesian", &world));
 
   interface->declare_entries(world.parameters, "", {});
 
-  CHECK(interface->cartesian_to_natural_coordinates(std::array<double, 3>{
-            {1, 2, 3}}) == std::array<double, 3>{{1, 2, 3}});
-  CHECK(interface->natural_to_cartesian_coordinates(std::array<double, 3>{
-            {1, 2, 3}}) == std::array<double, 3>{{1, 2, 3}});
+  CHECK(interface->cartesian_to_natural_coordinates(std::array<double, 3>
+  {
+    {1, 2, 3}
+  }) == std::array<double, 3> {{1, 2, 3}});
+  CHECK(interface->natural_to_cartesian_coordinates(std::array<double, 3>
+  {
+    {1, 2, 3}
+  }) == std::array<double, 3> {{1, 2, 3}});
 
   CHECK(interface->natural_coordinate_system() == CoordinateSystem::cartesian);
 }
 
-TEST_CASE("WorldBuilder Coordinate Systems: Cartesian") {
+TEST_CASE("WorldBuilder Coordinate Systems: Cartesian")
+{
   std::unique_ptr<CoordinateSystems::Interface> cartesian(
-      CoordinateSystems::Interface::create("cartesian", nullptr));
+    CoordinateSystems::Interface::create("cartesian", nullptr));
 
   // todo:fix
   // cartesian->declare_entries();
 
-  CHECK(cartesian->cartesian_to_natural_coordinates(std::array<double, 3>{
-            {1, 2, 3}}) == std::array<double, 3>{{1, 2, 3}});
-  CHECK(cartesian->natural_to_cartesian_coordinates(std::array<double, 3>{
-            {1, 2, 3}}) == std::array<double, 3>{{1, 2, 3}});
+  CHECK(cartesian->cartesian_to_natural_coordinates(std::array<double, 3>
+  {
+    {1, 2, 3}
+  }) == std::array<double, 3> {{1, 2, 3}});
+  CHECK(cartesian->natural_to_cartesian_coordinates(std::array<double, 3>
+  {
+    {1, 2, 3}
+  }) == std::array<double, 3> {{1, 2, 3}});
 
   CHECK(cartesian->natural_coordinate_system() == CoordinateSystem::cartesian);
 
@@ -970,7 +1007,8 @@ TEST_CASE("WorldBuilder Coordinate Systems: Cartesian") {
         Approx(std::sqrt(2 * 2 + 1)));
 }
 
-TEST_CASE("WorldBuilder Coordinate Systems: Spherical") {
+TEST_CASE("WorldBuilder Coordinate Systems: Spherical")
+{
   // TODO: make test where a cartesian wb file is loaded into a spherical
   // coordinate system.
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
@@ -979,27 +1017,32 @@ TEST_CASE("WorldBuilder Coordinate Systems: Spherical") {
   WorldBuilder::World world(file_name);
 
   std::unique_ptr<CoordinateSystems::Interface> spherical(
-      CoordinateSystems::Interface::create("spherical", &world));
+    CoordinateSystems::Interface::create("spherical", &world));
 
   world.parameters.enter_subsection("coordinate system");
   {
     world.parameters.enter_subsection("spherical");
-    { spherical->declare_entries(world.parameters, "", {}); }
+    {
+      spherical->declare_entries(world.parameters, "", {});
+    }
     world.parameters.leave_subsection();
   }
   world.parameters.leave_subsection();
 
   std::array<double, 3> spherical_array =
-      spherical->cartesian_to_natural_coordinates(
-          std::array<double, 3>{{1, 2, 3}});
+    spherical->cartesian_to_natural_coordinates(
+  std::array<double, 3> {{1, 2, 3}});
   CHECK(spherical_array[0] ==
         Approx(std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0)));
   CHECK(spherical_array[1] == Approx(1.1071487178));
   CHECK(spherical_array[2] == Approx(0.9302740141));
   std::array<double, 3> cartesian_array =
-      spherical->natural_to_cartesian_coordinates(
-          std::array<double, 3>{{std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0),
-                                 1.1071487178, 0.9302740141}});
+    spherical->natural_to_cartesian_coordinates(
+  std::array<double, 3> {{
+      std::sqrt(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0),
+      1.1071487178, 0.9302740141
+    }
+  });
   CHECK(cartesian_array[0] == Approx(1));
   CHECK(cartesian_array[1] == Approx(2));
   CHECK(cartesian_array[2] == Approx(3));
@@ -1021,17 +1064,17 @@ TEST_CASE("WorldBuilder Coordinate Systems: Spherical") {
                         CoordinateSystem::spherical);
 
   CHECK(spherical->distance_between_points_at_same_depth(
-            unit_point_1, unit_point_2) == Approx(dtr));
+          unit_point_1, unit_point_2) == Approx(dtr));
   CHECK(spherical->distance_between_points_at_same_depth(
-            unit_point_1, unit_point_3) == Approx(dtr));
+          unit_point_1, unit_point_3) == Approx(dtr));
   CHECK(spherical->distance_between_points_at_same_depth(unit_point_1,
                                                          unit_point_4) ==
         Approx(std::acos(std::sin(0) * std::sin(1 * dtr) +
                          std::cos(0) * std::cos(1 * dtr) * std::cos(1 * dtr))));
   CHECK(spherical->distance_between_points_at_same_depth(
-            unit_point_1, unit_point_5) == Approx(0.5 * Utilities::const_pi));
+          unit_point_1, unit_point_5) == Approx(0.5 * Utilities::const_pi));
   CHECK(spherical->distance_between_points_at_same_depth(
-            unit_point_6, unit_point_7) == Approx(Utilities::const_pi));
+          unit_point_6, unit_point_7) == Approx(Utilities::const_pi));
 
   // secondly check non-unit radius
   Point<3> point_1(10.0, 0.0 * dtr, 0.0 * dtr, CoordinateSystem::spherical);
@@ -1056,29 +1099,31 @@ TEST_CASE("WorldBuilder Coordinate Systems: Spherical") {
         Approx(10 * Utilities::const_pi));
 }
 
-TEST_CASE("WorldBuilder Features: Interface") {
+TEST_CASE("WorldBuilder Features: Interface")
+{
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/simple_wb1.json";
 
   WorldBuilder::World world(file_name);
   CHECK_THROWS_WITH(
-      Features::Interface::create("!not_implemented_feature!", &world),
-      Contains("Internal error: Plugin with name '!not_implemented_feature!' "
-               "is not found. "
-               "The size of factories is "));
+    Features::Interface::create("!not_implemented_feature!", &world),
+    Contains("Internal error: Plugin with name '!not_implemented_feature!' "
+             "is not found. "
+             "The size of factories is "));
 
   std::unique_ptr<Features::Interface> interface =
-      Features::Interface::create("continental plate", &world);
+    Features::Interface::create("continental plate", &world);
 }
 
-TEST_CASE("WorldBuilder Features: Continental Plate") {
+TEST_CASE("WorldBuilder Features: Continental Plate")
+{
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/continental_plate.wb";
   WorldBuilder::World world1(file_name);
 
   // Check continental plate directly
   std::unique_ptr<Features::Interface> continental_plate =
-      Features::Interface::create("continental plate", &world1);
+    Features::Interface::create("continental plate", &world1);
 
   // Check continental plate through the world
   std::array<double, 3> position = {{0, 0, 0}};
@@ -1119,17 +1164,25 @@ TEST_CASE("WorldBuilder Features: Continental Plate") {
   {
     WorldBuilder::grains grains = world1.grains(position, 0, 0, 3);
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 0, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {0.2, 0.2, 0.2});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1164,17 +1217,25 @@ TEST_CASE("WorldBuilder Features: Continental Plate") {
   {
     WorldBuilder::grains grains = world1.grains(position, 0, 0, 3);
     compare_vectors_approx(grains.sizes, {0.3, 0.3, 0.3});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 0, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1234,31 +1295,45 @@ TEST_CASE("WorldBuilder Features: Continental Plate") {
   {
     WorldBuilder::grains grains = world1.grains(position, 0, 0, 2);
     compare_vectors_approx(grains.sizes,
-                           {0.5, 0.5}); // was 0.2, but is normalized
+    {0.5, 0.5}); // was 0.2, but is normalized
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.9582241838, -0.07911030008, -0.2748599171}},
-         {{-0.1099528091, -0.7852541367, 0.6093326847}},
-         {{-0.2640393784, 0.6140989344, 0.7437511045}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-0.2124629855, 0.07025627985, 0.9746402079}},
-         {{0.06298075396, -0.9943536315, 0.08540655858}},
-         {{0.9751373772, 0.07952930755, 0.2068385477}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.9582241838, -0.07911030008, -0.2748599171}},
+        {{-0.1099528091, -0.7852541367, 0.6093326847}},
+        {{-0.2640393784, 0.6140989344, 0.7437511045}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{-0.2124629855, 0.07025627985, 0.9746402079}},
+        {{0.06298075396, -0.9943536315, 0.08540655858}},
+        {{0.9751373772, 0.07952930755, 0.2068385477}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
 
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
     grains = world1.grains(position, 0, 1, 2);
-    std::array<std::array<double, 3>, 3> array_3 = {
-        {{{-0.8434546455, -0.3219802991, -0.4300150555}},
-         {{-0.23850553, 0.9417033479, -0.2372971063}},
-         {{0.4813516106, -0.09758837799, -0.8710781454}}}};
-    std::array<std::array<double, 3>, 3> array_4 = {
-        {{{-0.3695282689, -0.1240881435, 0.9208968407}},
-         {{-0.9061330384, -0.1714186601, -0.3867021588}},
-         {{0.2058440555, -0.9773524316, -0.04909632573}}}};
+    std::array<std::array<double, 3>, 3> array_3 =
+    {
+      { {{-0.8434546455, -0.3219802991, -0.4300150555}},
+        {{-0.23850553, 0.9417033479, -0.2372971063}},
+        {{0.4813516106, -0.09758837799, -0.8710781454}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_4 =
+    {
+      { {{-0.3695282689, -0.1240881435, 0.9208968407}},
+        {{-0.9061330384, -0.1714186601, -0.3867021588}},
+        {{0.2058440555, -0.9773524316, -0.04909632573}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {array_3,
-                                                                  array_4};
+                                                                  array_4
+                                                                 };
 
     compare_vectors_approx(grains.sizes, {0.4434528938, 0.2295772202});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1270,16 +1345,23 @@ TEST_CASE("WorldBuilder Features: Continental Plate") {
     compare_vectors_approx(grains.sizes, {0.471427737, 0.528572263});
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{0.6535959261, 0.5566812833, -0.5127556087}},
-         {{0.3237701162, 0.4067148135, 0.8542575562}},
-         {{0.6840944944, -0.7243542016, 0.08559038145}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.937444582, 0.1583937415, -0.3100146421}},
-         {{0.3453462197, -0.5355813035, 0.7706417169}},
-         {{-0.04397322126, -0.8294962869, -0.5567784711}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{0.6535959261, 0.5566812833, -0.5127556087}},
+        {{0.3237701162, 0.4067148135, 0.8542575562}},
+        {{0.6840944944, -0.7243542016, 0.08559038145}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.937444582, 0.1583937415, -0.3100146421}},
+        {{0.3453462197, -0.5355813035, 0.7706417169}},
+        {{-0.04397322126, -0.8294962869, -0.5567784711}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -1356,14 +1438,15 @@ TEST_CASE("WorldBuilder Features: Continental Plate") {
   CHECK(world1.composition(position, 260e3, 8) == Approx(0.0));
 }
 
-TEST_CASE("WorldBuilder Features: Mantle layer") {
+TEST_CASE("WorldBuilder Features: Mantle layer")
+{
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/mantle_layer_cartesian.wb";
   WorldBuilder::World world1(file_name);
 
   // Check continental plate directly
   std::unique_ptr<Features::Interface> mantle_layer =
-      Features::Interface::create("mantle layer", &world1);
+    Features::Interface::create("mantle layer", &world1);
 
   // Check continental plate through the world
   std::array<double, 3> position = {{0, 0, 0}};
@@ -1398,17 +1481,25 @@ TEST_CASE("WorldBuilder Features: Mantle layer") {
   {
     WorldBuilder::grains grains = world1.grains(position, 200e3, 0, 3);
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 200e3, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {0.2, 0.2, 0.2});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1443,17 +1534,25 @@ TEST_CASE("WorldBuilder Features: Mantle layer") {
   {
     WorldBuilder::grains grains = world1.grains(position, 150e3, 0, 3);
     compare_vectors_approx(grains.sizes, {0.3, 0.3, 0.3});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 150e3, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1522,31 +1621,45 @@ TEST_CASE("WorldBuilder Features: Mantle layer") {
   {
     WorldBuilder::grains grains = world1.grains(position, 0 + 300e3, 0, 2);
     compare_vectors_approx(grains.sizes,
-                           {0.5, 0.5}); // was 0.2, but is normalized
+    {0.5, 0.5}); // was 0.2, but is normalized
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.9582241838, -0.07911030008, -0.2748599171}},
-         {{-0.1099528091, -0.7852541367, 0.6093326847}},
-         {{-0.2640393784, 0.6140989344, 0.7437511045}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-0.2124629855, 0.07025627985, 0.9746402079}},
-         {{0.06298075396, -0.9943536315, 0.08540655858}},
-         {{0.9751373772, 0.07952930755, 0.2068385477}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.9582241838, -0.07911030008, -0.2748599171}},
+        {{-0.1099528091, -0.7852541367, 0.6093326847}},
+        {{-0.2640393784, 0.6140989344, 0.7437511045}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{-0.2124629855, 0.07025627985, 0.9746402079}},
+        {{0.06298075396, -0.9943536315, 0.08540655858}},
+        {{0.9751373772, 0.07952930755, 0.2068385477}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 0 + 300e3, 1, 2);
-    std::array<std::array<double, 3>, 3> array_3 = {
-        {{{-0.8434546455, -0.3219802991, -0.4300150555}},
-         {{-0.23850553, 0.9417033479, -0.2372971063}},
-         {{0.4813516106, -0.09758837799, -0.8710781454}}}};
-    std::array<std::array<double, 3>, 3> array_4 = {
-        {{{-0.3695282689, -0.1240881435, 0.9208968407}},
-         {{-0.9061330384, -0.1714186601, -0.3867021588}},
-         {{0.2058440555, -0.9773524316, -0.04909632573}}}};
+    std::array<std::array<double, 3>, 3> array_3 =
+    {
+      { {{-0.8434546455, -0.3219802991, -0.4300150555}},
+        {{-0.23850553, 0.9417033479, -0.2372971063}},
+        {{0.4813516106, -0.09758837799, -0.8710781454}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_4 =
+    {
+      { {{-0.3695282689, -0.1240881435, 0.9208968407}},
+        {{-0.9061330384, -0.1714186601, -0.3867021588}},
+        {{0.2058440555, -0.9773524316, -0.04909632573}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {array_3,
-                                                                  array_4};
+                                                                  array_4
+                                                                 };
 
     compare_vectors_approx(grains.sizes, {0.4434528938, 0.2295772202});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1558,16 +1671,23 @@ TEST_CASE("WorldBuilder Features: Mantle layer") {
     compare_vectors_approx(grains.sizes, {0.471427737, 0.528572263});
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{0.6535959261, 0.5566812833, -0.5127556087}},
-         {{0.3237701162, 0.4067148135, 0.8542575562}},
-         {{0.6840944944, -0.7243542016, 0.08559038145}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.937444582, 0.1583937415, -0.3100146421}},
-         {{0.3453462197, -0.5355813035, 0.7706417169}},
-         {{-0.04397322126, -0.8294962869, -0.5567784711}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{0.6535959261, 0.5566812833, -0.5127556087}},
+        {{0.3237701162, 0.4067148135, 0.8542575562}},
+        {{0.6840944944, -0.7243542016, 0.08559038145}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.937444582, 0.1583937415, -0.3100146421}},
+        {{0.3453462197, -0.5355813035, 0.7706417169}},
+        {{-0.04397322126, -0.8294962869, -0.5567784711}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -1651,7 +1771,8 @@ TEST_CASE("WorldBuilder Features: Mantle layer") {
   CHECK(world1.composition(position, 260e3 + 350e3, 9) == Approx(0.0));
 }
 
-TEST_CASE("WorldBuilder Features: Oceanic Plate") {
+TEST_CASE("WorldBuilder Features: Oceanic Plate")
+{
   // Cartesian
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/oceanic_plate_cartesian.wb";
@@ -1659,7 +1780,7 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
 
   // Check continental plate directly
   std::unique_ptr<Features::Interface> continental_plate =
-      Features::Interface::create("oceanic plate", &world1);
+    Features::Interface::create("oceanic plate", &world1);
 
   // Check continental plate through the world
   // 2d
@@ -1858,12 +1979,12 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
 
   // Check continental plate directly
   std::unique_ptr<Features::Interface> oceanic_plate =
-      Features::Interface::create("oceanic plate", &world2);
+    Features::Interface::create("oceanic plate", &world2);
 
   // Check continental plate through the world
   double dtr = Utilities::const_pi / 180.0;
   std::unique_ptr<WorldBuilder::CoordinateSystems::Interface>
-      &coordinate_system = world2.parameters.coordinate_system;
+  &coordinate_system = world2.parameters.coordinate_system;
 
   // 2d
   position_2d = {{6371000, 0}};
@@ -1919,17 +2040,25 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
   {
     WorldBuilder::grains grains = world2.grains(position, 240e3, 0, 3);
     compare_vectors_approx(grains.sizes, {0.3, 0.3, 0.3});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{10, 20, 30}}, {{40, 50, 60}}, {{70, 80, 90}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world2.grains(position, 240e3, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{100, 110, 120}}, {{130, 140, 150}}, {{160, 170, 180}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1954,17 +2083,25 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
   {
     WorldBuilder::grains grains = world2.grains(position, 240e3, 0, 3);
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{1, 2, 3}}, {{4, 5, 6}}, {{7, 8, 9}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world2.grains(position, 240e3, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{10, 11, 12}}, {{13, 14, 15}}, {{16, 17, 18}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {0.2, 0.2, 0.2});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -1991,31 +2128,45 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
   {
     WorldBuilder::grains grains = world2.grains(position, 0, 0, 2);
     compare_vectors_approx(grains.sizes,
-                           {0.5, 0.5}); // was 0.2, but is normalized
+    {0.5, 0.5}); // was 0.2, but is normalized
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.9582241838, -0.07911030008, -0.2748599171}},
-         {{-0.1099528091, -0.7852541367, 0.6093326847}},
-         {{-0.2640393784, 0.6140989344, 0.7437511045}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-0.2124629855, 0.07025627985, 0.9746402079}},
-         {{0.06298075396, -0.9943536315, 0.08540655858}},
-         {{0.9751373772, 0.07952930755, 0.2068385477}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.9582241838, -0.07911030008, -0.2748599171}},
+        {{-0.1099528091, -0.7852541367, 0.6093326847}},
+        {{-0.2640393784, 0.6140989344, 0.7437511045}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{-0.2124629855, 0.07025627985, 0.9746402079}},
+        {{0.06298075396, -0.9943536315, 0.08540655858}},
+        {{0.9751373772, 0.07952930755, 0.2068385477}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
 
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
     grains = world2.grains(position, 0, 1, 2);
-    std::array<std::array<double, 3>, 3> array_3 = {
-        {{{-0.8434546455, -0.3219802991, -0.4300150555}},
-         {{-0.23850553, 0.9417033479, -0.2372971063}},
-         {{0.4813516106, -0.09758837799, -0.8710781454}}}};
-    std::array<std::array<double, 3>, 3> array_4 = {
-        {{{-0.3695282689, -0.1240881435, 0.9208968407}},
-         {{-0.9061330384, -0.1714186601, -0.3867021588}},
-         {{0.2058440555, -0.9773524316, -0.04909632573}}}};
+    std::array<std::array<double, 3>, 3> array_3 =
+    {
+      { {{-0.8434546455, -0.3219802991, -0.4300150555}},
+        {{-0.23850553, 0.9417033479, -0.2372971063}},
+        {{0.4813516106, -0.09758837799, -0.8710781454}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_4 =
+    {
+      { {{-0.3695282689, -0.1240881435, 0.9208968407}},
+        {{-0.9061330384, -0.1714186601, -0.3867021588}},
+        {{0.2058440555, -0.9773524316, -0.04909632573}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {array_3,
-                                                                  array_4};
+                                                                  array_4
+                                                                 };
 
     compare_vectors_approx(grains.sizes, {0.4434528938, 0.2295772202});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2027,16 +2178,23 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
     compare_vectors_approx(grains.sizes, {0.471427737, 0.528572263});
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{0.6535959261, 0.5566812833, -0.5127556087}},
-         {{0.3237701162, 0.4067148135, 0.8542575562}},
-         {{0.6840944944, -0.7243542016, 0.08559038145}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.937444582, 0.1583937415, -0.3100146421}},
-         {{0.3453462197, -0.5355813035, 0.7706417169}},
-         {{-0.04397322126, -0.8294962869, -0.5567784711}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{0.6535959261, 0.5566812833, -0.5127556087}},
+        {{0.3237701162, 0.4067148135, 0.8542575562}},
+        {{0.6840944944, -0.7243542016, 0.08559038145}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.937444582, 0.1583937415, -0.3100146421}},
+        {{0.3453462197, -0.5355813035, 0.7706417169}},
+        {{-0.04397322126, -0.8294962869, -0.5567784711}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -2080,17 +2238,18 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate") {
   CHECK(world2.temperature(position, 260e3, 10) == Approx(1720.8246597128));
 }
 
-TEST_CASE("WorldBuilder Features: Subducting Plate") {
+TEST_CASE("WorldBuilder Features: Subducting Plate")
+{
   // Cartesian
   std::string file_name =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-      "/tests/data/subducting_plate_constant_angles_cartesian.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+    "/tests/data/subducting_plate_constant_angles_cartesian.wb";
   WorldBuilder::World world1(file_name);
 
   // Check continental plate directly (upper case should automatically turn into
   // lower case).
   std::unique_ptr<Features::Interface> continental_plate =
-      Features::Interface::create("Subducting Plate", &world1);
+    Features::Interface::create("Subducting Plate", &world1);
 
   // Check continental plate through the world
   std::array<double, 3> position = {{0, 0, 800e3}};
@@ -2133,25 +2292,25 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
   CHECK(world1.temperature(position, 0, 10) == Approx(1599.9999999994));
   CHECK(world1.temperature(position, 1, 10) ==
         Approx(1590.6681048292)); // we are in the plate for sure (colder than
-                                  // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 5, 10) ==
         Approx(1554.3294579725)); // we are in the plate for sure (colder than
-                                  // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 10, 10) ==
         Approx(1511.0782994151)); // we are in the plate for sure (colder than
-                                  // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 100, 10) ==
         Approx(1050.2588653774)); // we are in the plate for sure (colder than
-                                  // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 500, 10) ==
         Approx(876.8996655758)); // we are in the plate for sure (colder than
-                                 // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 1000, 10) ==
         Approx(829.7878359145)); // we are in the plate for sure (colder than
-                                 // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 5000, 10) ==
         Approx(620.9373458573)); // we are in the plate for sure (colder than
-                                 // anywhere in the mantle)
+  // anywhere in the mantle)
   CHECK(world1.temperature(position, 10e3, 10) == Approx(526.1591705397));
   CHECK(world1.temperature(position, 25e3, 10) == Approx(539.5656824584));
   CHECK(world1.temperature(position, 50e3, 10) == Approx(754.7202618956));
@@ -2208,38 +2367,52 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
   // check grains layer 1
   {
     WorldBuilder::grains grains =
-        world1.grains(position, std::sqrt(2) * 33e3 - 1, 0, 2);
+      world1.grains(position, std::sqrt(2) * 33e3 - 1, 0, 2);
     compare_vectors_approx(grains.sizes,
-                           {0.5, 0.5}); // was 0.2, but is normalized
+    {0.5, 0.5}); // was 0.2, but is normalized
 
     // these are random numbers, but they should stay the same.
     // note that the values are different from for example the continental plate
     // since this performs a interpolation between segments of the slab.
 
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.8841073844, -0.1312960784, -0.4484589977}},
-         {{-0.4639013434, 0.3618800113, 0.8086027461}},
-         {{0.05612197756, 0.9229323904, -0.3808492174}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-0.2568202195, -0.0592025578, 0.9646441997}},
-         {{-0.5750059457, -0.7928848317, -0.2017468859}},
-         {{0.7767956856, -0.6064888299, 0.1695870338}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.8841073844, -0.1312960784, -0.4484589977}},
+        {{-0.4639013434, 0.3618800113, 0.8086027461}},
+        {{0.05612197756, 0.9229323904, -0.3808492174}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{-0.2568202195, -0.0592025578, 0.9646441997}},
+        {{-0.5750059457, -0.7928848317, -0.2017468859}},
+        {{0.7767956856, -0.6064888299, 0.1695870338}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, std::sqrt(2) * 33e3 - 1, 1, 2);
 
-    std::array<std::array<double, 3>, 3> array_3 = {
-        {{{0.6521279994, 0.6032912374, 0.459095584}},
-         {{-0.5017626042, 0.7974338311, -0.3351620115}},
-         {{-0.5682986551, -0.01178846375, 0.8227379113}}}};
-    std::array<std::array<double, 3>, 3> array_4 = {
-        {{{-0.7358966282, 0.4557371955, -0.5007591849}},
-         {{0.6726233448, 0.4071992867, -0.6178726219}},
-         {{-0.07767875296, -0.791512697, -0.6061960589}}}};
+    std::array<std::array<double, 3>, 3> array_3 =
+    {
+      { {{0.6521279994, 0.6032912374, 0.459095584}},
+        {{-0.5017626042, 0.7974338311, -0.3351620115}},
+        {{-0.5682986551, -0.01178846375, 0.8227379113}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_4 =
+    {
+      { {{-0.7358966282, 0.4557371955, -0.5007591849}},
+        {{0.6726233448, 0.4071992867, -0.6178726219}},
+        {{-0.07767875296, -0.791512697, -0.6061960589}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {array_3,
-                                                                  array_4};
+                                                                  array_4
+                                                                 };
 
     compare_vectors_approx(grains.sizes, {0.8843655798, 0.5257196065});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2248,21 +2421,28 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
   // check grains layer 2
   {
     WorldBuilder::grains grains =
-        world1.grains(position, std::sqrt(2) * 66e3 - 1, 0, 2);
+      world1.grains(position, std::sqrt(2) * 66e3 - 1, 0, 2);
 
     compare_vectors_approx(grains.sizes, {0.6692173347, 0.3307826653});
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.5791315939, 0.7367092885, -0.3490931411}},
-         {{-0.1853986251, -0.5360105647, -0.8236018603}},
-         {{-0.7938727522, -0.4122524697, 0.4470055419}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.6418405971, 0.7328740545, -0.2256906471}},
-         {{-0.6739597786, 0.3987178861, -0.6219342924}},
-         {{-0.3658126088, 0.5512890961, 0.7498409616}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.5791315939, 0.7367092885, -0.3490931411}},
+        {{-0.1853986251, -0.5360105647, -0.8236018603}},
+        {{-0.7938727522, -0.4122524697, 0.4470055419}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.6418405971, 0.7328740545, -0.2256906471}},
+        {{-0.6739597786, 0.3987178861, -0.6219342924}},
+        {{-0.3658126088, 0.5512890961, 0.7498409616}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -2450,18 +2630,22 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
       // layer 1
       WorldBuilder::grains grains = world1.grains(position, 80e3, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.4, 0.4, 0.4});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, 80e3, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2471,18 +2655,22 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
       // layer 2
       WorldBuilder::grains grains = world1.grains(position, 100e3, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(-10, -25, 35);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(-10, -25, 35);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.5, 0.5, 0.5});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, 100e3, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(45, -55, 65);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(45, -55, 65);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2492,18 +2680,22 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
       // layer 3
       WorldBuilder::grains grains = world1.grains(position, 250e3, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.6, 0.6, 0.6});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, 250e3, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(520, 620, 270);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(520, 620, 270);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2511,8 +2703,8 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
   }
 
   std::string file_name2 =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-      "/tests/data/subducting_plate_different_angles_cartesian.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+    "/tests/data/subducting_plate_different_angles_cartesian.wb";
   WorldBuilder::World world2(file_name2);
 
   position = {{250e3, 500e3, 800e3}};
@@ -2607,7 +2799,8 @@ TEST_CASE("WorldBuilder Features: Subducting Plate") {
   CHECK(world4.composition(position, 100e3, 3) == Approx(0.0));
 }
 
-TEST_CASE("WorldBuilder Features: Fault") {
+TEST_CASE("WorldBuilder Features: Fault")
+{
   // Cartesian
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                           "/tests/data/fault_constant_angles_cartesian.wb";
@@ -2616,7 +2809,7 @@ TEST_CASE("WorldBuilder Features: Fault") {
   // Check continental plate directly (upper case should automatically turn into
   // lower case).
   std::unique_ptr<Features::Interface> fault =
-      Features::Interface::create("fault", &world1);
+    Features::Interface::create("fault", &world1);
 
   // Check fault plate through the world
   std::array<double, 3> position = {{0, 0, 800e3}};
@@ -2664,16 +2857,20 @@ TEST_CASE("WorldBuilder Features: Fault") {
     WorldBuilder::grains grains = world1.grains(position, 10, 0, 3);
     compare_vectors_approx(grains.sizes, {0.3, 0.3, 0.3});
     std::array<std::array<double, 3>, 3> array_1 =
-        Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+      Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world1.grains(position, 10, 1, 3);
     std::array<std::array<double, 3>, 3> array_2 =
-        Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+      Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2766,20 +2963,24 @@ TEST_CASE("WorldBuilder Features: Fault") {
     {
       // layer 1
       WorldBuilder::grains grains =
-          world1.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 0, 3);
+        world1.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(10, 20, 30);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.4, 0.4, 0.4});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(40, 50, 60);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2788,20 +2989,24 @@ TEST_CASE("WorldBuilder Features: Fault") {
     {
       // layer 2
       WorldBuilder::grains grains =
-          world1.grains(position, std::sqrt(2) * 33e3 * 0.5 + 1, 0, 3);
+        world1.grains(position, std::sqrt(2) * 33e3 * 0.5 + 1, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(-10, -25, 35);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(-10, -25, 35);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.5, 0.5, 0.5});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, std::sqrt(2) * 33e3 * 0.5 + 1, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(45, -55, 65);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(45, -55, 65);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2810,20 +3015,24 @@ TEST_CASE("WorldBuilder Features: Fault") {
     {
       // layer 3
       WorldBuilder::grains grains =
-          world1.grains(position, std::sqrt(2) * 99e3 * 0.5 - 1, 0, 3);
+        world1.grains(position, std::sqrt(2) * 99e3 * 0.5 - 1, 0, 3);
       std::array<std::array<double, 3>, 3> array_1 =
-          Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-          array_1, array_1, array_1};
+        Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+      {
+        array_1, array_1, array_1
+      };
 
       compare_vectors_approx(grains.sizes, {0.6, 0.6, 0.6});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
       grains = world1.grains(position, std::sqrt(2) * 99e3 * 0.5 - 1, 1, 3);
       std::array<std::array<double, 3>, 3> array_2 =
-          Utilities::euler_angles_to_rotation_matrix(520, 620, 270);
-      std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-          array_2, array_2, array_2};
+        Utilities::euler_angles_to_rotation_matrix(520, 620, 270);
+      std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+      {
+        array_2, array_2, array_2
+      };
 
       compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
       compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -2849,8 +3058,8 @@ TEST_CASE("WorldBuilder Features: Fault") {
   CHECK(world1.composition(position, 1, 3) == Approx(0.75));
 
   std::string file_name2 =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-      "/tests/data/fault_constant_angles_cartesian_force_temp.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+    "/tests/data/fault_constant_angles_cartesian_force_temp.wb";
   WorldBuilder::World world2(file_name2);
 
   // Check fault plate through the world
@@ -2976,7 +3185,7 @@ TEST_CASE("WorldBuilder Features: Fault") {
   // Check fault directly (upper case should automatically turn into lower
   // case).
   std::unique_ptr<Features::Interface> continental_plate =
-      Features::Interface::create("Fault", &world3);
+    Features::Interface::create("Fault", &world3);
 
   // Check fault through the world
   position = {{0, 0, 800e3}};
@@ -3052,20 +3261,28 @@ TEST_CASE("WorldBuilder Features: Fault") {
 
   {
     WorldBuilder::grains grains =
-        world3.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 0, 3);
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+      world3.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 0, 3);
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
 
     compare_vectors_approx(grains.sizes, {0.4, 0.4, 0.4});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world3.grains(position, std::sqrt(2) * 33e3 * 0.5 - 1, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -3119,19 +3336,27 @@ TEST_CASE("WorldBuilder Features: Fault") {
 
   {
     WorldBuilder::grains grains = world3.grains(position, 101e3 + 1, 0, 3);
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
 
     compare_vectors_approx(grains.sizes, {0.4, 0.4, 0.4});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world3.grains(position, 101e3 + 1, 1, 3);
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}};
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      {{{-1, 0, 0}}, {{0, 1, 0}}, {{0, 0, -1}}}
+    };
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -3186,40 +3411,44 @@ TEST_CASE("WorldBuilder Features: Fault") {
   {
     WorldBuilder::grains grains = world3.grains(position, 100e3 + 1, 0, 3);
     std::array<std::array<double, 3>, 3> array_1 =
-        Utilities::euler_angles_to_rotation_matrix(180, 135.4473098406, 0);
-    std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {
-        array_1, array_1, array_1};
+      Utilities::euler_angles_to_rotation_matrix(180, 135.4473098406, 0);
+    std::vector<std::array<std::array<double, 3>, 3>> vector_1 =
+    {
+      array_1, array_1, array_1
+    };
 
     compare_vectors_approx(grains.sizes,
-                           {0.2718142157, 0.2718142157, 0.2718142157});
+    {0.2718142157, 0.2718142157, 0.2718142157});
     // compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[0]),
-                             {{180, 135.4473098406, 0}});
+                               grains.rotation_matrices[0]),
+    {{180, 135.4473098406, 0}});
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[1]),
-                             {{180, 135.4473098406, 0}});
+                               grains.rotation_matrices[1]),
+    {{180, 135.4473098406, 0}});
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[2]),
-                             {{180, 135.4473098406, 0}});
+                               grains.rotation_matrices[2]),
+    {{180, 135.4473098406, 0}});
 
     grains = world3.grains(position, 100e3 + 1, 1, 3);
     std::array<std::array<double, 3>, 3> array_2 =
-        Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
-    std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {
-        array_2, array_2, array_2};
+      Utilities::euler_angles_to_rotation_matrix(220, 320, 240);
+    std::vector<std::array<std::array<double, 3>, 3>> vector_2 =
+    {
+      array_2, array_2, array_2
+    };
 
     compare_vectors_approx(grains.sizes, {1. / 3., 1. / 3., 1. / 3.});
     // compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[0]),
-                             {{180, 153.4593755586, 0}});
+                               grains.rotation_matrices[0]),
+    {{180, 153.4593755586, 0}});
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[1]),
-                             {{180, 153.4593755586, 0}});
+                               grains.rotation_matrices[1]),
+    {{180, 153.4593755586, 0}});
     compare_3d_arrays_approx(Utilities::euler_angles_from_rotation_matrix(
-                                 grains.rotation_matrices[2]),
-                             {{180, 153.4593755586, 0}});
+                               grains.rotation_matrices[2]),
+    {{180, 153.4593755586, 0}});
   }
 
   position = {{700e3, 675e3, 800e3}};
@@ -3313,36 +3542,50 @@ TEST_CASE("WorldBuilder Features: Fault") {
   {
     WorldBuilder::grains grains = world3.grains(position, 95e3, 0, 2);
     compare_vectors_approx(grains.sizes,
-                           {0.5, 0.5}); // was 0.2, but is normalized
+    {0.5, 0.5}); // was 0.2, but is normalized
 
     // these are random numbers, but they should stay the same.
     // note that the values are different from for example the continental plate
     // since this performs a interpolation between segments of the slab.
 
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.8841073844, -0.1312960784, -0.4484589977}},
-         {{-0.4639013434, 0.3618800113, 0.8086027461}},
-         {{0.05612197756, 0.9229323904, -0.3808492174}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{-0.2568202195, -0.0592025578, 0.9646441997}},
-         {{-0.5750059457, -0.7928848317, -0.2017468859}},
-         {{0.7767956856, -0.6064888299, 0.1695870338}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.8841073844, -0.1312960784, -0.4484589977}},
+        {{-0.4639013434, 0.3618800113, 0.8086027461}},
+        {{0.05612197756, 0.9229323904, -0.3808492174}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{-0.2568202195, -0.0592025578, 0.9646441997}},
+        {{-0.5750059457, -0.7928848317, -0.2017468859}},
+        {{0.7767956856, -0.6064888299, 0.1695870338}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
 
     grains = world3.grains(position, 95e3, 1, 2);
 
-    std::array<std::array<double, 3>, 3> array_3 = {
-        {{{0.6521279994, 0.6032912374, 0.459095584}},
-         {{-0.5017626042, 0.7974338311, -0.3351620115}},
-         {{-0.5682986551, -0.01178846375, 0.8227379113}}}};
-    std::array<std::array<double, 3>, 3> array_4 = {
-        {{{-0.7358966282, 0.4557371955, -0.5007591849}},
-         {{0.6726233448, 0.4071992867, -0.6178726219}},
-         {{-0.07767875296, -0.791512697, -0.6061960589}}}};
+    std::array<std::array<double, 3>, 3> array_3 =
+    {
+      { {{0.6521279994, 0.6032912374, 0.459095584}},
+        {{-0.5017626042, 0.7974338311, -0.3351620115}},
+        {{-0.5682986551, -0.01178846375, 0.8227379113}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_4 =
+    {
+      { {{-0.7358966282, 0.4557371955, -0.5007591849}},
+        {{0.6726233448, 0.4071992867, -0.6178726219}},
+        {{-0.07767875296, -0.791512697, -0.6061960589}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_2 = {array_3,
-                                                                  array_4};
+                                                                  array_4
+                                                                 };
 
     compare_vectors_approx(grains.sizes, {0.8843655798, 0.5257196065});
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_2);
@@ -3356,16 +3599,23 @@ TEST_CASE("WorldBuilder Features: Fault") {
     compare_vectors_approx(grains.sizes, {0.6692173347, 0.3307826653});
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.5791315939, 0.7367092885, -0.3490931411}},
-         {{-0.1853986251, -0.5360105647, -0.8236018603}},
-         {{-0.7938727522, -0.4122524697, 0.4470055419}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.6418405971, 0.7328740545, -0.2256906471}},
-         {{-0.6739597786, 0.3987178861, -0.6219342924}},
-         {{-0.3658126088, 0.5512890961, 0.7498409616}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.5791315939, 0.7367092885, -0.3490931411}},
+        {{-0.1853986251, -0.5360105647, -0.8236018603}},
+        {{-0.7938727522, -0.4122524697, 0.4470055419}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.6418405971, 0.7328740545, -0.2256906471}},
+        {{-0.6739597786, 0.3987178861, -0.6219342924}},
+        {{-0.3658126088, 0.5512890961, 0.7498409616}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -3377,16 +3627,23 @@ TEST_CASE("WorldBuilder Features: Fault") {
     CHECK(grains.sizes[0] + grains.sizes[1] == Approx(1.0));
     // these are random numbers, but they should stay the same.
 
-    std::array<std::array<double, 3>, 3> array_1 = {
-        {{{-0.6634752307, -0.3450403529, 0.663888374}},
-         {{-0.2770374165, -0.7109563284, -0.646367828}},
-         {{0.6950186243, -0.6127709638, 0.376112826}}}};
-    std::array<std::array<double, 3>, 3> array_2 = {
-        {{{0.6976381754, -0.134849869, 0.7036451443}},
-         {{-0.1367834457, -0.9891309921, -0.05394598614}},
-         {{0.7032718288, -0.05861222805, -0.7085007703}}}};
+    std::array<std::array<double, 3>, 3> array_1 =
+    {
+      { {{-0.6634752307, -0.3450403529, 0.663888374}},
+        {{-0.2770374165, -0.7109563284, -0.646367828}},
+        {{0.6950186243, -0.6127709638, 0.376112826}}
+      }
+    };
+    std::array<std::array<double, 3>, 3> array_2 =
+    {
+      { {{0.6976381754, -0.134849869, 0.7036451443}},
+        {{-0.1367834457, -0.9891309921, -0.05394598614}},
+        {{0.7032718288, -0.05861222805, -0.7085007703}}
+      }
+    };
     std::vector<std::array<std::array<double, 3>, 3>> vector_1 = {array_1,
-                                                                  array_2};
+                                                                  array_2
+                                                                 };
     compare_vectors_array3_array3_approx(grains.rotation_matrices, vector_1);
   }
 
@@ -3423,7 +3680,8 @@ TEST_CASE("WorldBuilder Features: Fault") {
   CHECK(world4.composition(position, 100e3, 0) == Approx(0.0));
 }
 
-TEST_CASE("WorldBuilder Features: coordinate interpolation") {
+TEST_CASE("WorldBuilder Features: coordinate interpolation")
+{
   {
     std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                             "/tests/data/interpolation_none_cartesian.wb";
@@ -3484,7 +3742,7 @@ TEST_CASE("WorldBuilder Features: coordinate interpolation") {
     position = {{675e3, 150e3, 800e3}};
     CHECK(world1.temperature(position, 150e3, 10) ==
           Approx(1668.6311660012)); // This used to contain slab material, but
-                                    // not anymore.
+    // not anymore.
     CHECK(world1.composition(position, 150e3, 0) == Approx(0.0));
   }
 
@@ -3538,8 +3796,8 @@ TEST_CASE("WorldBuilder Features: coordinate interpolation") {
 
   {
     std::string file_name =
-        WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-        "/tests/data/interpolation_monotone_spline_cartesian.wb";
+      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+      "/tests/data/interpolation_monotone_spline_cartesian.wb";
     WorldBuilder::World world1(file_name);
 
     std::array<double, 3> position = {{374e3, 875e3, 800e3}};
@@ -3598,7 +3856,8 @@ TEST_CASE("WorldBuilder Features: coordinate interpolation") {
   }
 }
 
-TEST_CASE("WorldBuilder Types: Double") {
+TEST_CASE("WorldBuilder Types: Double")
+{
 #define TYPE Double
   Types::TYPE type(1);
   CHECK(type.default_value == Approx(1.0));
@@ -3614,7 +3873,7 @@ TEST_CASE("WorldBuilder Types: Double") {
 
   std::unique_ptr<Types::Interface> type_clone = type_explicit.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->default_value == Approx(3.0));
   CHECK(type_clone_natural->get_type() == Types::type::TYPE);
 #undef TYPE
@@ -3650,7 +3909,8 @@ TEST_CASE("WorldBuilder Types: Double") {
 #undef TYPE
 }*/
 
-TEST_CASE("WorldBuilder Types: String") {
+TEST_CASE("WorldBuilder Types: String")
+{
 #define TYPE String
   Types::TYPE type("1", "test");
   CHECK(type.default_value == "1");
@@ -3666,13 +3926,14 @@ TEST_CASE("WorldBuilder Types: String") {
 
   std::unique_ptr<Types::Interface> type_clone = type_explicit.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->default_value == "3");
   CHECK(type_clone_natural->get_type() == Types::type::TYPE);
 #undef TYPE
 }
 
-TEST_CASE("WorldBuilder Types: Point 2d") {
+TEST_CASE("WorldBuilder Types: Point 2d")
+{
 #define TYPE Point<2>
   Types::TYPE type(TYPE(1, 2, cartesian), "test");
   CHECK(type.value[0] == Approx(TYPE(1, 2, cartesian)[0]));
@@ -3701,7 +3962,7 @@ TEST_CASE("WorldBuilder Types: Point 2d") {
 
   std::unique_ptr<Types::Interface> type_clone = type_explicit.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->value[0] == Approx(TYPE(3, 4, cartesian)[0]));
   CHECK(type_clone_natural->value[1] == Approx(TYPE(3, 4, cartesian)[1]));
   CHECK(type_clone_natural->default_value[0] ==
@@ -3713,19 +3974,19 @@ TEST_CASE("WorldBuilder Types: Point 2d") {
 
   // Test Point operators
 
-  const TYPE point_array(std::array<double, 2>{{1, 2}}, cartesian);
+  const TYPE point_array(std::array<double, 2> {{1, 2}}, cartesian);
   const TYPE point_explicit(3, 4, cartesian);
 
   Types::TYPE type_point_array(point_array, point_array, "test array");
   Types::TYPE type_point_explicit(point_explicit, point_explicit, "test array");
 
-  CHECK(type_point_array.value.get_array() == std::array<double, 2>{{1, 2}});
-  CHECK(type_point_explicit.value.get_array() == std::array<double, 2>{{3, 4}});
+  CHECK(type_point_array.value.get_array() == std::array<double, 2> {{1, 2}});
+  CHECK(type_point_explicit.value.get_array() == std::array<double, 2> {{3, 4}});
 
   // Test multiply operator
   TYPE point = 2 * type_point_array * 1.0;
 
-  CHECK(point.get_array() == std::array<double, 2>{{2, 4}});
+  CHECK(point.get_array() == std::array<double, 2> {{2, 4}});
 
   // Test dot operator
   CHECK(type_point_array * type_point_explicit == Approx(11.0));
@@ -3733,12 +3994,12 @@ TEST_CASE("WorldBuilder Types: Point 2d") {
   // Test add operator
   point = type_point_array + type_point_explicit;
 
-  CHECK(point.get_array() == std::array<double, 2>{{4, 6}});
+  CHECK(point.get_array() == std::array<double, 2> {{4, 6}});
 
   // Test subtract operator
   point = type_point_explicit - type_point_array;
 
-  CHECK(point.get_array() == std::array<double, 2>{{2, 2}});
+  CHECK(point.get_array() == std::array<double, 2> {{2, 2}});
 
   // test the access operator
   CHECK(type_point_array[0] == Approx(1.0));
@@ -3754,7 +4015,8 @@ TEST_CASE("WorldBuilder Types: Point 2d") {
 #undef TYPE
 }
 
-TEST_CASE("WorldBuilder Types: Point 3d") {
+TEST_CASE("WorldBuilder Types: Point 3d")
+{
 #define TYPE Point<3>
   Types::TYPE type(TYPE(1, 2, 3, cartesian), "test");
   const double &value_0 = type.value[0];
@@ -3790,7 +4052,7 @@ TEST_CASE("WorldBuilder Types: Point 3d") {
 
   std::unique_ptr<Types::Interface> type_clone = type_explicit.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->value[0] == Approx(4.0));
   CHECK(type_clone_natural->value[1] == Approx(5.0));
   CHECK(type_clone_natural->value[2] == Approx(6.0));
@@ -3802,25 +4064,25 @@ TEST_CASE("WorldBuilder Types: Point 3d") {
 
   // Test Point operators
 
-  const TYPE point_array(std::array<double, 3>{{1, 2, 3}}, cartesian);
+  const TYPE point_array(std::array<double, 3> {{1, 2, 3}}, cartesian);
   const TYPE point_explicit(4, 5, 6, cartesian);
 
   Types::TYPE type_point_array(point_array, point_array, "test array");
   Types::TYPE type_point_explicit(point_explicit, point_explicit, "test array");
 
-  CHECK(type_point_array.value.get_array() == std::array<double, 3>{{1, 2, 3}});
+  CHECK(type_point_array.value.get_array() == std::array<double, 3> {{1, 2, 3}});
   CHECK(type_point_explicit.value.get_array() ==
-        std::array<double, 3>{{4, 5, 6}});
+  std::array<double, 3> {{4, 5, 6}});
 
   // Test multiply operator
   TYPE point = 2 * type_point_array;
 
-  CHECK(point.get_array() == std::array<double, 3>{{2, 4, 6}});
+  CHECK(point.get_array() == std::array<double, 3> {{2, 4, 6}});
 
   // Test multiply operator
   point = type_point_array * 2;
 
-  CHECK(point.get_array() == std::array<double, 3>{{2, 4, 6}});
+  CHECK(point.get_array() == std::array<double, 3> {{2, 4, 6}});
 
   // Test dot operator
   CHECK(type_point_array * type_point_explicit == Approx(32.0));
@@ -3828,12 +4090,12 @@ TEST_CASE("WorldBuilder Types: Point 3d") {
   // Test add operator
   point = type_point_array + type_point_explicit;
 
-  CHECK(point.get_array() == std::array<double, 3>{{5, 7, 9}});
+  CHECK(point.get_array() == std::array<double, 3> {{5, 7, 9}});
 
   // Test subtract operator
   point = type_point_explicit - type_point_array;
 
-  CHECK(point.get_array() == std::array<double, 3>{{3, 3, 3}});
+  CHECK(point.get_array() == std::array<double, 3> {{3, 3, 3}});
 
   // test the access operator
   CHECK(type_point_array[0] == Approx(1.0));
@@ -3876,10 +4138,11 @@ TEST_CASE("WorldBuilder Types: Coordinate System")
 }*/
 
 // not sure how to unit test this.
-TEST_CASE("WorldBuilder Types: PluginSystem") {
+TEST_CASE("WorldBuilder Types: PluginSystem")
+{
 #define TYPE PluginSystem
   Types::TYPE type("test", Features::ContinentalPlate::declare_entries,
-                   std::vector<std::string>{{"test required"}}, false);
+  std::vector<std::string> {{"test required"}}, false);
   CHECK(type.default_value == "test");
   CHECK(type.required_entries[0] == "test required");
   CHECK(type.allow_multiple == false);
@@ -3893,7 +4156,7 @@ TEST_CASE("WorldBuilder Types: PluginSystem") {
 
   std::unique_ptr<Types::Interface> type_clone = type_copy.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->default_value == "test");
   CHECK(type_clone_natural->required_entries[0] == "test required");
   CHECK(type_clone_natural->allow_multiple == false);
@@ -3903,22 +4166,23 @@ TEST_CASE("WorldBuilder Types: PluginSystem") {
 }
 
 // not sure how to unit test this.
-TEST_CASE("WorldBuilder Types: Segment Object") {
+TEST_CASE("WorldBuilder Types: Segment Object")
+{
 #define TYPE Segment
   WorldBuilder::Point<2> thickness(1, 2, invalid);
   WorldBuilder::Point<2> top_trucation(3, 4, invalid);
   WorldBuilder::Point<2> angle(5, 6, invalid);
   Objects::TYPE<Features::FaultModels::Temperature::Interface,
-                Features::FaultModels::Composition::Interface,
-                Features::FaultModels::Grains::Interface>
-      type(
-          1.0, thickness, top_trucation, angle,
-          std::vector<
-              std::shared_ptr<Features::FaultModels::Temperature::Interface>>(),
-          std::vector<
-              std::shared_ptr<Features::FaultModels::Composition::Interface>>(),
-          std::vector<
-              std::shared_ptr<Features::FaultModels::Grains::Interface>>());
+          Features::FaultModels::Composition::Interface,
+          Features::FaultModels::Grains::Interface>
+          type(
+            1.0, thickness, top_trucation, angle,
+            std::vector<
+            std::shared_ptr<Features::FaultModels::Temperature::Interface>>(),
+            std::vector<
+            std::shared_ptr<Features::FaultModels::Composition::Interface>>(),
+            std::vector<
+            std::shared_ptr<Features::FaultModels::Grains::Interface>>());
   CHECK(type.value_length == Approx(1.0));
   CHECK(type.value_thickness[0] == Approx(1.0));
   CHECK(type.value_thickness[1] == Approx(2.0));
@@ -3929,9 +4193,9 @@ TEST_CASE("WorldBuilder Types: Segment Object") {
   CHECK(type.get_type() == Types::type::TYPE);
 
   Objects::TYPE<Features::FaultModels::Temperature::Interface,
-                Features::FaultModels::Composition::Interface,
-                Features::FaultModels::Grains::Interface>
-      type_copy(type);
+          Features::FaultModels::Composition::Interface,
+          Features::FaultModels::Grains::Interface>
+          type_copy(type);
   const double &value_length = type_copy.value_length;
   CHECK(value_length == Approx(1.0));
   CHECK(type_copy.value_thickness[0] == Approx(1.0));
@@ -3944,12 +4208,12 @@ TEST_CASE("WorldBuilder Types: Segment Object") {
 
   std::unique_ptr<Types::Interface> type_clone = type_copy.clone();
   Objects::TYPE<Features::FaultModels::Temperature::Interface,
-                Features::FaultModels::Composition::Interface,
-                Features::FaultModels::Grains::Interface> *type_clone_natural =
-      dynamic_cast<Objects::TYPE<Features::FaultModels::Temperature::Interface,
-                                 Features::FaultModels::Composition::Interface,
-                                 Features::FaultModels::Grains::Interface> *>(
-          type_clone.get());
+          Features::FaultModels::Composition::Interface,
+          Features::FaultModels::Grains::Interface> *type_clone_natural =
+            dynamic_cast<Objects::TYPE<Features::FaultModels::Temperature::Interface,
+            Features::FaultModels::Composition::Interface,
+            Features::FaultModels::Grains::Interface> *>(
+              type_clone.get());
   CHECK(type_clone_natural->value_length == Approx(1.0));
   CHECK(type_clone_natural->value_thickness[0] == Approx(1.0));
   CHECK(type_clone_natural->value_thickness[1] == Approx(2.0));
@@ -3962,7 +4226,8 @@ TEST_CASE("WorldBuilder Types: Segment Object") {
 #undef TYPE
 }
 
-TEST_CASE("WorldBuilder Types: Array") {
+TEST_CASE("WorldBuilder Types: Array")
+{
 #define TYPE Array
   Types::TYPE type(Types::Double(0));
   CHECK(type.inner_type == Types::type::Double);
@@ -4002,9 +4267,10 @@ TEST_CASE("WorldBuilder Types: Array") {
 #undef TYPE
 }
 
-TEST_CASE("WorldBuilder Types: Object") {
+TEST_CASE("WorldBuilder Types: Object")
+{
 #define TYPE Object
-  Types::TYPE type(std::vector<std::string>{"test1", "test2"}, true);
+  Types::TYPE type(std::vector<std::string> {"test1", "test2"}, true);
   CHECK(type.required.size() == 2);
   CHECK(type.required[0] == "test1");
   CHECK(type.required[1] == "test2");
@@ -4020,7 +4286,7 @@ TEST_CASE("WorldBuilder Types: Object") {
 
   std::unique_ptr<Types::Interface> type_clone = type_copy.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->required.size() == 2);
   CHECK(type_clone_natural->required[0] == "test1");
   CHECK(type_clone_natural->required[1] == "test2");
@@ -4037,7 +4303,8 @@ TEST_CASE("WorldBuilder Types: Object") {
 #undef TYPE
 }
 
-TEST_CASE("WorldBuilder Types: Bool") {
+TEST_CASE("WorldBuilder Types: Bool")
+{
 #define TYPE Bool
   Types::TYPE type(true);
   CHECK(type.default_value == true);
@@ -4049,7 +4316,7 @@ TEST_CASE("WorldBuilder Types: Bool") {
 
   std::unique_ptr<Types::Interface> type_clone = type_copy.clone();
   Types::TYPE *type_clone_natural =
-      dynamic_cast<Types::TYPE *>(type_clone.get());
+    dynamic_cast<Types::TYPE *>(type_clone.get());
   CHECK(type_clone_natural->default_value == true);
   CHECK(type_clone_natural->get_type() == Types::type::TYPE);
 
@@ -4238,33 +4505,34 @@ json_input_stream(file_name.c_str());
   CHECK(Utilities::print_tree(tree, 0) == output.str());
 }*/
 
-TEST_CASE("WorldBuilder Parameters") {
+TEST_CASE("WorldBuilder Parameters")
+{
   // First test a world builder file with a cross section defined
   std::string file = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
                      "/tests/data/type_data.json";
   std::string file_name =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-      "/tests/data/subducting_plate_different_angles_spherical.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+    "/tests/data/subducting_plate_different_angles_spherical.wb";
   WorldBuilder::World world(file_name);
 
   Parameters prm(world);
   prm.initialize(file);
 
   CHECK_THROWS_WITH(
-      prm.get<unsigned int>("non existent unsigned int"),
-      Contains("internal error: could not retrieve the default value at"));
+    prm.get<unsigned int>("non existent unsigned int"),
+    Contains("internal error: could not retrieve the default value at"));
 
   CHECK(prm.get<unsigned int>("unsigned int") == Approx(4.0));
 
   CHECK_THROWS_WITH(
-      prm.get<size_t>("non existent unsigned int"),
-      Contains("internal error: could not retrieve the default value at"));
+    prm.get<size_t>("non existent unsigned int"),
+    Contains("internal error: could not retrieve the default value at"));
 
   CHECK(prm.get<size_t>("unsigned int") == Approx(4.0));
 
   CHECK_THROWS_WITH(
-      prm.get<double>("non existent double"),
-      Contains("internal error: could not retrieve the default value at"));
+    prm.get<double>("non existent double"),
+    Contains("internal error: could not retrieve the default value at"));
 
   CHECK(prm.get<double>("double") == Approx(1.23456e2));
 
@@ -4272,18 +4540,18 @@ TEST_CASE("WorldBuilder Parameters") {
                     Contains("Could not convert values of"));
 
   CHECK_THROWS_WITH(
-      prm.get<std::string>("non existent string"),
-      Contains("internal error: could not retrieve the default value at"));
+    prm.get<std::string>("non existent string"),
+    Contains("internal error: could not retrieve the default value at"));
 
   CHECK(prm.get<std::string>("string") == "mystring 0");
 
   CHECK_THROWS_WITH(
-      prm.get_vector<unsigned int>("non existent unsigned int vector"),
-      Contains("internal error: could not retrieve the minItems value at"));
+    prm.get_vector<unsigned int>("non existent unsigned int vector"),
+    Contains("internal error: could not retrieve the minItems value at"));
 
   CHECK_THROWS_WITH(
-      prm.get_vector<bool>("non existent bool vector"),
-      Contains("internal error: could not retrieve the minItems value at"));
+    prm.get_vector<bool>("non existent bool vector"),
+    Contains("internal error: could not retrieve the minItems value at"));
 
   typedef std::array<double, 3> array_3d;
   CHECK_THROWS_WITH(prm.get_vector<array_3d>("vector of 3d arrays nan"),
@@ -4314,7 +4582,7 @@ TEST_CASE("WorldBuilder Parameters") {
   prm.leave_subsection();
 
   std::vector<unsigned int> v_int =
-      prm.get_vector<unsigned int>("now existent unsigned int vector");
+    prm.get_vector<unsigned int>("now existent unsigned int vector");
   CHECK(v_int.size() == 2);
   CHECK(v_int[0] == Approx(1.0));
   CHECK(v_int[1] == Approx(1.0));
@@ -4326,11 +4594,11 @@ TEST_CASE("WorldBuilder Parameters") {
   CHECK(v_int[2] == Approx(27.0));
 
   CHECK_THROWS_WITH(
-      prm.get_vector<size_t>("non existent unsigned int vector"),
-      Contains("internal error: could not retrieve the minItems value"));
+    prm.get_vector<size_t>("non existent unsigned int vector"),
+    Contains("internal error: could not retrieve the minItems value"));
 
   std::vector<size_t> v_size_t =
-      prm.get_vector<size_t>("now existent unsigned int vector");
+    prm.get_vector<size_t>("now existent unsigned int vector");
   CHECK(v_size_t.size() == 2);
   CHECK(v_size_t[0] == Approx(1.0));
   CHECK(v_size_t[1] == Approx(1.0));
@@ -4342,8 +4610,8 @@ TEST_CASE("WorldBuilder Parameters") {
   CHECK(v_size_t[2] == Approx(27.0));
 
   CHECK_THROWS_WITH(
-      prm.get_vector<size_t>("non existent unsigned int vector"),
-      Contains("internal error: could not retrieve the minItems value"));
+    prm.get_vector<size_t>("non existent unsigned int vector"),
+    Contains("internal error: could not retrieve the minItems value"));
 
   prm.enter_subsection("properties");
   {
@@ -4371,8 +4639,8 @@ TEST_CASE("WorldBuilder Parameters") {
                     Contains("IsBool()"));
 
   CHECK_THROWS_WITH(
-      prm.get_vector<double>("non existent double vector"),
-      Contains("internal error: could not retrieve the minItems value at"));
+    prm.get_vector<double>("non existent double vector"),
+    Contains("internal error: could not retrieve the minItems value at"));
 
   prm.enter_subsection("properties");
   {
@@ -4384,15 +4652,15 @@ TEST_CASE("WorldBuilder Parameters") {
   prm.leave_subsection();
 
   std::vector<double> v_double =
-      prm.get_vector<double>("now existent double vector");
+    prm.get_vector<double>("now existent double vector");
   CHECK(v_double.size() == 2);
   CHECK(v_double[0] == Approx(2.4));
   CHECK(v_double[1] == Approx(2.4));
 
   CHECK_THROWS_WITH(
-      prm.get<Point<2>>("string array"),
-      Contains("Could not convert values of /string array into Point<2>, "
-               "because it could not convert the sub-elements into doubles."));
+    prm.get<Point<2>>("string array"),
+    Contains("Could not convert values of /string array into Point<2>, "
+             "because it could not convert the sub-elements into doubles."));
 
   v_double = prm.get_vector<double>("double array");
   CHECK(v_double.size() == 3);
@@ -4406,8 +4674,8 @@ TEST_CASE("WorldBuilder Parameters") {
                              "not convert the sub-elements into doubles."));
 
   std::vector<std::array<std::array<double, 3>, 3>> v_3x3_array =
-      prm.get_vector<std::array<std::array<double, 3>, 3>>(
-          "vector of 3x3 arrays");
+                                                   prm.get_vector<std::array<std::array<double, 3>, 3>>(
+                                                     "vector of 3x3 arrays");
   CHECK(v_3x3_array.size() == 2);
   CHECK(v_3x3_array[0][0][0] == Approx(0.0));
   CHECK(v_3x3_array[0][0][1] == Approx(1.0));
@@ -5170,7 +5438,8 @@ TEST_CASE("WorldBuilder Parameters") {
   // Todo: add tests for list,feature and coordinate system.
 }
 
-TEST_CASE("Euler angle functions") {
+TEST_CASE("Euler angle functions")
+{
   // note, this is only testing consitency (can it convert back and forth) and
   // it only works for rotation matrices which are defined in the same way
   // (z-x-z).
@@ -5178,24 +5447,24 @@ TEST_CASE("Euler angle functions") {
     auto rot1 = Utilities::euler_angles_to_rotation_matrix(-85, 340, 56);
     auto ea1 = Utilities::euler_angles_from_rotation_matrix(rot1);
     auto rot2 =
-        Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
     compare_rotation_matrices_approx(rot2, rot1);
     auto ea2 = Utilities::euler_angles_from_rotation_matrix(rot2);
     compare_3d_arrays_approx(ea2, ea1);
     auto rot3 =
-        Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
     compare_rotation_matrices_approx(rot3, rot2);
   }
   {
     auto rot1 = Utilities::euler_angles_to_rotation_matrix(90, 180, 270);
     auto ea1 = Utilities::euler_angles_from_rotation_matrix(rot1);
     auto rot2 =
-        Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
     compare_rotation_matrices_approx(rot2, rot1);
     auto ea2 = Utilities::euler_angles_from_rotation_matrix(rot2);
     compare_3d_arrays_approx(ea2, ea1);
     auto rot3 =
-        Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
     compare_rotation_matrices_approx(rot3, rot2);
   }
 
@@ -5205,20 +5474,21 @@ TEST_CASE("Euler angle functions") {
     auto ea1 = Utilities::euler_angles_from_rotation_matrix(rot0);
     compare_3d_arrays_approx(ea1, ea0);
     auto rot2 =
-        Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea1[0], ea1[1], ea1[2]);
     compare_rotation_matrices_approx(rot2, rot0);
     auto ea2 = Utilities::euler_angles_from_rotation_matrix(rot2);
     compare_3d_arrays_approx(ea2, ea1);
     auto rot3 =
-        Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
+      Utilities::euler_angles_to_rotation_matrix(ea2[0], ea2[1], ea2[2]);
     compare_rotation_matrices_approx(rot3, rot2);
   }
 }
 
 TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
-          "cartesian part 1") {
+          "cartesian part 1")
+{
   std::unique_ptr<CoordinateSystems::Interface> cartesian_system =
-      CoordinateSystems::Interface::create("cartesian", nullptr);
+    CoordinateSystems::Interface::create("cartesian", nullptr);
   ;
 
   // Todo:fix
@@ -5248,13 +5518,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   Utilities::interpolation x_spline;
   Utilities::interpolation y_spline;
   Utilities::InterpolationType interpolation_type =
-      Utilities::InterpolationType::None;
+    Utilities::InterpolationType::None;
 
   std::map<std::string, double> distance_from_planes =
-      Utilities::distance_point_from_curved_planes(
-          position, reference_point, coordinates, slab_segment_lengths,
-          slab_segment_angles, starting_radius, cartesian_system, false,
-          interpolation_type, x_spline, y_spline);
+    Utilities::distance_point_from_curved_planes(
+      position, reference_point, coordinates, slab_segment_lengths,
+      slab_segment_angles, starting_radius, cartesian_system, false,
+      interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -5269,9 +5539,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   reference_point[1] = 20;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(std::sqrt(10 * 10 + 10 * 10)));
@@ -5287,9 +5557,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[1] = 20;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -5304,9 +5574,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   reference_point[1] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(std::sqrt(10 * 10 + 10 * 10)));
@@ -5323,9 +5593,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5340,9 +5610,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[0] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5357,9 +5627,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[0] = 20;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5374,9 +5644,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[0] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -5390,9 +5660,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[0] = 25;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -5408,9 +5678,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 5;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == Approx(-3.5355339059));
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(10.6066017178));
@@ -5425,9 +5695,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 5;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, true,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, true,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == Approx(3.5355339059));
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(10.6066017178));
@@ -5442,9 +5712,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -5;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == Approx(3.5355339059));
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(17.6776695297));
@@ -5459,9 +5729,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -5;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, true,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, true,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == Approx(3.5355339059));
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(17.6776695297));
@@ -5486,9 +5756,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   slab_segment_angles[2].push_back(Point<2>(45 * dtr, 45 * dtr, cartesian));
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -5514,9 +5784,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 10 * tan(22.5 * dtr);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -5533,9 +5803,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 10 * tan((22.5 * 1.5) * dtr);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5551,9 +5821,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 10 * tan(45 * dtr);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5590,9 +5860,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 100;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5608,9 +5878,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 101;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5626,9 +5896,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 200;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(200.0));
@@ -5643,9 +5913,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 201;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -5661,9 +5931,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 75;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5679,9 +5949,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 76;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5697,9 +5967,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 150;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(150.0));
@@ -5714,9 +5984,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 151;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -5732,9 +6002,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 50;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5750,9 +6020,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 51;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] ==
@@ -5768,9 +6038,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 100;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) < 1e-14);
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(100.0));
@@ -5785,9 +6055,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 - 101;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -5798,9 +6068,10 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
 }
 
 TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
-          "cartesian part 2") {
+          "cartesian part 2")
+{
   std::unique_ptr<CoordinateSystems::Interface> cartesian_system =
-      CoordinateSystems::Interface::create("cartesian", nullptr);
+    CoordinateSystems::Interface::create("cartesian", nullptr);
   ;
 
   // todo: fix
@@ -5862,13 +6133,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   Utilities::interpolation x_spline;
   Utilities::interpolation y_spline;
   Utilities::InterpolationType interpolation_type =
-      Utilities::InterpolationType::None;
+    Utilities::InterpolationType::None;
 
   std::map<std::string, double> distance_from_planes =
-      Utilities::distance_point_from_curved_planes(
-          position, reference_point, coordinates, slab_segment_lengths,
-          slab_segment_angles, starting_radius, cartesian_system, false,
-          interpolation_type, x_spline, y_spline);
+    Utilities::distance_point_from_curved_planes(
+      position, reference_point, coordinates, slab_segment_lengths,
+      slab_segment_angles, starting_radius, cartesian_system, false,
+      interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -5885,9 +6156,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(5.0)); // checked that it should be about 5 this with a drawing
@@ -5904,9 +6175,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(-5.0)); // checked that it should be about -5 this with a drawing
@@ -5923,9 +6194,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -5942,13 +6213,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 * sqrt(2);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(
-      distance_from_planes["distanceFromPlane"] ==
-      Approx(-10.0)); // checked that it should be about -10 this with a drawing
+    distance_from_planes["distanceFromPlane"] ==
+    Approx(-10.0)); // checked that it should be about -10 this with a drawing
   CHECK(distance_from_planes["distanceAlongPlane"] ==
         Approx(45.0 * Utilities::const_pi / 180 * 10));
   CHECK(distance_from_planes["sectionFraction"] == Approx(0.5));
@@ -5962,9 +6233,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(10.0)); // checked that it should be about 10 this with a drawing
@@ -5985,9 +6256,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -1;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] == INFINITY);
   CHECK(distance_from_planes["distanceAlongPlane"] == INFINITY);
@@ -6007,9 +6278,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 5;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6026,9 +6297,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 5 + 5 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6059,9 +6330,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6078,9 +6349,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6097,9 +6368,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6116,9 +6387,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6149,9 +6420,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6168,9 +6439,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6187,9 +6458,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -11;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(-1.0)); // checked that it should be about -1 this with a drawing
@@ -6206,9 +6477,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -9;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(1.0)); // checked that it should be about -1 this with a drawing
@@ -6225,9 +6496,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6244,9 +6515,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(-1.0)); // checked that it should be about 1 this with a drawing
@@ -6263,9 +6534,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(1.0)); // checked that it should be about 1 this with a drawing
@@ -6296,9 +6567,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6315,9 +6586,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6334,9 +6605,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6350,14 +6621,14 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   // curve test 22
   position[0] = 10;
   position[1] =
-      10 + 1e-14 + 10 * sqrt(2) / 2; // somehow it doesn't get the exact value
-                                     // here, so adding an epsiolon of 1e-14.
+    10 + 1e-14 + 10 * sqrt(2) / 2; // somehow it doesn't get the exact value
+  // here, so adding an epsiolon of 1e-14.
   position[2] = 10 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6390,13 +6661,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(-7.3205080757)); // checked that it should be about -7.3 this
-                                // with a drawing
+  // with a drawing
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(9.5531661812));
   CHECK(distance_from_planes["sectionFraction"] == Approx(0.5));
   CHECK(distance_from_planes["section"] == Approx(0.0));
@@ -6412,9 +6683,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   // checked that distanceFromPlane should be infinity (it is on the other side
   // of the circle this with a drawing
@@ -6431,13 +6702,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(2.3463313527)); // checked that it should be about 2.3 this with
-                               // a drawing
+  // a drawing
   CHECK(distance_from_planes["distanceAlongPlane"] == Approx(11.780972451));
   CHECK(distance_from_planes["sectionFraction"] == Approx(0.5));
   CHECK(distance_from_planes["section"] == Approx(0.0));
@@ -6467,9 +6738,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6503,9 +6774,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 0;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6522,9 +6793,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6541,9 +6812,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10 * sqrt(2) / 2;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6564,9 +6835,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6583,9 +6854,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = -10 * std::sin(0.001 * Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6616,9 +6887,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 * std::sin(45.000 * Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6636,9 +6907,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6658,9 +6929,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6680,9 +6951,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6704,13 +6975,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(0.0697227738)); // checked that it should be small positive this
-                               // with a drawing
+  // with a drawing
   CHECK(distance_from_planes["distanceAlongPlane"] ==
         Approx((90 - 44.4093) * Utilities::const_pi / 180 * 10));
   CHECK(distance_from_planes["sectionFraction"] == Approx(0.5));
@@ -6729,13 +7000,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(-0.0692053058)); // checked that it should be small negative this
-                                // with a drawing
+  // with a drawing
   CHECK(distance_from_planes["distanceAlongPlane"] ==
         Approx((90 - 43.585) * Utilities::const_pi / 180 * 10));
   CHECK(distance_from_planes["sectionFraction"] == Approx(0.5));
@@ -6752,9 +7023,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
                 10 * std::sin((angle)*Utilities::const_pi / 180);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6772,9 +7043,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 1, 2});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 1, 2});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6790,9 +7061,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 0.5, 1});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 0.5, 1});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6808,9 +7079,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 0.5, 1});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 0.5, 1});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6826,9 +7097,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 0.5, 1});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 0.5, 1});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6843,9 +7114,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[1] = 10;
   position[2] = 10;
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 0.5, 1});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 0.5, 1});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6861,9 +7132,9 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   position[2] = 10;
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, cartesian_system, false,
-      interpolation_type, x_spline, y_spline, {0, 0.5, 1});
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, cartesian_system, false,
+                           interpolation_type, x_spline, y_spline, {0, 0.5, 1});
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // checked that it should be about 0 this with a drawing
@@ -6875,23 +7146,24 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
 }
 
 TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
-          "spherical") {
+          "spherical")
+{
   // Because most functionallity is already tested by the cartesian version
   // of this test case, the scope of this test case is only to test whether
   // the code which is different for the spherical case is correct.
 
   // spherical test 1
   std::string file_name =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-      "/tests/data/subducting_plate_different_angles_spherical.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+    "/tests/data/subducting_plate_different_angles_spherical.wb";
   WorldBuilder::World world(file_name);
 
   const double dtr = Utilities::const_pi / 180.0;
   Point<3> position(10, 0 * dtr, 10 * dtr, spherical);
   position = Point<3>(
-      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-          position.get_array()),
-      cartesian);
+               world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+                 position.get_array()),
+               cartesian);
 
   Point<2> reference_point(0, 0, spherical);
 
@@ -6916,14 +7188,14 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   Utilities::interpolation x_spline;
   Utilities::interpolation y_spline;
   Utilities::InterpolationType interpolation_type =
-      Utilities::InterpolationType::None;
+    Utilities::InterpolationType::None;
 
   std::map<std::string, double> distance_from_planes =
-      Utilities::distance_point_from_curved_planes(
-          position, reference_point, coordinates, slab_segment_lengths,
-          slab_segment_angles, starting_radius,
-          world.parameters.coordinate_system, false, interpolation_type,
-          x_spline, y_spline);
+    Utilities::distance_point_from_curved_planes(
+      position, reference_point, coordinates, slab_segment_lengths,
+      slab_segment_angles, starting_radius,
+      world.parameters.coordinate_system, false, interpolation_type,
+      x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -6936,14 +7208,14 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   // spherical test 2
   position = Point<3>(10, 10 * dtr, 10 * dtr, spherical);
   position = Point<3>(
-      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-          position.get_array()),
-      cartesian);
+               world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+                 position.get_array()),
+               cartesian);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, world.parameters.coordinate_system,
-      false, interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, world.parameters.coordinate_system,
+                           false, interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -6960,14 +7232,14 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   coordinates[1][1] = 45 * dtr;
   position = Point<3>(10, 0 * dtr, 45 * dtr, spherical);
   position = Point<3>(
-      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-          position.get_array()),
-      cartesian);
+               world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+                 position.get_array()),
+               cartesian);
 
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, world.parameters.coordinate_system,
-      false, interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, world.parameters.coordinate_system,
+                           false, interpolation_type, x_spline, y_spline);
 
   CHECK(std::fabs(distance_from_planes["distanceFromPlane"]) <
         1e-14); // practically zero
@@ -6980,13 +7252,13 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   // spherical test 3
   position = Point<3>(5, 0 * dtr, 45 * dtr, spherical);
   position = Point<3>(
-      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-          position.get_array()),
-      cartesian);
+               world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+                 position.get_array()),
+               cartesian);
   distance_from_planes = Utilities::distance_point_from_curved_planes(
-      position, reference_point, coordinates, slab_segment_lengths,
-      slab_segment_angles, starting_radius, world.parameters.coordinate_system,
-      false, interpolation_type, x_spline, y_spline);
+                           position, reference_point, coordinates, slab_segment_lengths,
+                           slab_segment_angles, starting_radius, world.parameters.coordinate_system,
+                           false, interpolation_type, x_spline, y_spline);
 
   CHECK(distance_from_planes["distanceFromPlane"] ==
         Approx(10 * sqrt(2) / 4)); // checked it with a geometric drawing
@@ -7109,13 +7381,14 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
 }
 
 TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
-          "spherical depth methods") {
+          "spherical depth methods")
+{
 
   {
     // starting point
     std::string file_name =
-        WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-        "/tests/data/spherical_depth_method_starting_point.wb";
+      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+      "/tests/data/spherical_depth_method_starting_point.wb";
     WorldBuilder::World world(file_name);
 
     const double dtr = Utilities::const_pi / 180.0;
@@ -7123,8 +7396,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // origin
     std::array<double, 3> position = {{6371000 - 0, 0 * dtr, 0 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(0));
     CHECK(world.temperature(position, 1, 10) == Approx(0.0));
     CHECK(world.temperature(position, 200e3, 10) == Approx(0.0));
@@ -7133,8 +7406,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~330 km
     position = {{6371000 - 0, 0 * dtr, -3 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 50e3, 10) == Approx(1622.5575343016));
     CHECK(world.temperature(position, 75e3, 10) == Approx(0.0));
@@ -7144,8 +7417,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~1100 km
     position = {{6371000 - 0, 0 * dtr, -10 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 95e3, 10) == Approx(1643.1311005134));
     CHECK(world.temperature(position, 100e3, 10) == Approx(1645.4330950743));
@@ -7155,8 +7428,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~2200 km
     position = {{6371000 - 0, 0 * dtr, -20 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 1, 10) == Approx(1600.0004480001));
     CHECK(world.temperature(position, 200e3, 10) == Approx(0.0));
@@ -7167,16 +7440,16 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   {
     // begin segment depth method
     std::string file_name =
-        WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
-        "/tests/data/spherical_depth_method_begin_segment.wb";
+      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR +
+      "/tests/data/spherical_depth_method_begin_segment.wb";
     WorldBuilder::World world(file_name);
 
     const double dtr = Utilities::const_pi / 180.0;
     // origin
     std::array<double, 3> position = {{6371000 - 0, 0 * dtr, 0 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(0.0));
     CHECK(world.temperature(position, 1, 10) == Approx(0.0));
     CHECK(world.temperature(position, 200e3, 10) == Approx(0.0));
@@ -7185,8 +7458,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~330 km
     position = {{6371000 - 0, 0 * dtr, -3 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 50e3, 10) == Approx(1622.5575343016));
     CHECK(world.temperature(position, 75e3, 10) == Approx(0.0));
@@ -7196,8 +7469,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~1100 km
     position = {{6371000 - 0, 0 * dtr, -10 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 150e3, 10) == Approx(1668.6311660012));
     CHECK(world.temperature(position, 175e3, 10) == Approx(1680.352561184));
@@ -7207,8 +7480,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
     // ~1100 km
     position = {{6371000 - 0, 0 * dtr, -20 * dtr}};
     position =
-        world.parameters.coordinate_system->natural_to_cartesian_coordinates(
-            position);
+      world.parameters.coordinate_system->natural_to_cartesian_coordinates(
+        position);
     CHECK(world.temperature(position, 0, 10) == Approx(1600.0));
     CHECK(world.temperature(position, 350e3, 10) == Approx(1764.7404561736));
     CHECK(world.temperature(position, 355e3, 10) == Approx(1767.2128230653));
@@ -7217,30 +7490,35 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes "
   }
 }
 
-TEST_CASE("WorldBuilder parameters: invalid 1") {
+TEST_CASE("WorldBuilder parameters: invalid 1")
+{
 
   std::string file_name =
-      WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR + "/tests/data/invalid_1.wb";
+    WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR + "/tests/data/invalid_1.wb";
   CHECK_THROWS_WITH(
-      WorldBuilder::World(file_name),
-      Contains("Invalid keyword: additionalPropertiesInvalid schema: #/test"));
+    WorldBuilder::World(file_name),
+    Contains("Invalid keyword: additionalPropertiesInvalid schema: #/test"));
 }
 
-TEST_CASE("Fast sin functions") {
-  for (int i = -400; i < 400; i++) {
-    const double angle =
+TEST_CASE("Fast sin functions")
+{
+  for (int i = -400; i < 400; i++)
+    {
+      const double angle =
         (WorldBuilder::Utilities::const_pi / 100.) * static_cast<double>(i);
-    CHECK(fabs(FT::sin(angle) - std::sin(angle)) < 1.2e-5);
-  }
+      CHECK(fabs(FT::sin(angle) - std::sin(angle)) < 1.2e-5);
+    }
 
-  for (int i = -400; i < 400; i++) {
-    const double angle =
+  for (int i = -400; i < 400; i++)
+    {
+      const double angle =
         (WorldBuilder::Utilities::const_pi / 100.) * static_cast<double>(i);
-    CHECK(fabs(FT::cos(angle) - std::cos(angle)) < 1.2e-5);
-  }
+      CHECK(fabs(FT::cos(angle) - std::cos(angle)) < 1.2e-5);
+    }
 }
 
-TEST_CASE("Fast vs slow distance function") {
+TEST_CASE("Fast vs slow distance function")
+{
   const Point<3> cartesian_1(1, 2, 3, cartesian);
   const Point<3> cartesian_2(2, 3, 4, cartesian);
   // Should be exactly the same.
@@ -7251,11 +7529,12 @@ TEST_CASE("Fast vs slow distance function") {
   const Point<3> spherical_2(2, 3, 4, spherical);
   // will have an error associated with the faster sin functions.
   CHECK(fabs(2.0 * asin(sqrt(
-                       (spherical_1.cheap_relative_distance(spherical_2)))) -
+                          (spherical_1.cheap_relative_distance(spherical_2)))) -
              spherical_1.distance(spherical_2)) < 3e-5);
 }
 
-TEST_CASE("Fast version of fmod") {
+TEST_CASE("Fast version of fmod")
+{
   CHECK(FT::fmod(0, 1) == Approx(std::fmod(0, 1)));
   CHECK(FT::fmod(0.2, 1) == Approx(std::fmod(0.2, 1)));
   CHECK(FT::fmod(1, 1) == Approx(std::fmod(1, 1)));

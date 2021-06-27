@@ -23,7 +23,10 @@ namespace WorldBuilder
 {
   namespace CoordinateSystems
   {
-    Cartesian::Cartesian(WorldBuilder::World *world_) { this->world = world_; }
+    Cartesian::Cartesian(WorldBuilder::World *world_)
+    {
+      this->world = world_;
+    }
 
     Cartesian::~Cartesian() = default;
 
@@ -32,24 +35,31 @@ namespace WorldBuilder
 
     void Cartesian::parse_entries(Parameters & /*prm*/) {}
 
-    CoordinateSystem Cartesian::natural_coordinate_system() const {
+    CoordinateSystem Cartesian::natural_coordinate_system() const
+    {
       return CoordinateSystem::cartesian;
     }
 
-    DepthMethod Cartesian::depth_method() const { return DepthMethod::none; }
+    DepthMethod Cartesian::depth_method() const
+    {
+      return DepthMethod::none;
+    }
 
     std::array<double, 3> Cartesian::cartesian_to_natural_coordinates(
-        const std::array<double, 3> &position) const {
+      const std::array<double, 3> &position) const
+    {
       return position;
     }
 
     std::array<double, 3> Cartesian::natural_to_cartesian_coordinates(
-        const std::array<double, 3> &position) const {
+      const std::array<double, 3> &position) const
+    {
       return position;
     }
 
     double Cartesian::distance_between_points_at_same_depth(
-        const Point<3> &point_1, const Point<3> &point_2) const {
+      const Point<3> &point_1, const Point<3> &point_2) const
+    {
       WBAssert(point_1.get_coordinate_system() == cartesian,
                "Can not convert non cartesian points through the cartesian "
                "coordinate system.");

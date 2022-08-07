@@ -410,6 +410,36 @@ namespace WorldBuilder
       return real_roots;
     }
 
+    double compute_quadratic_bezier_arc_length(const Point<2> &a, const Point<2>  &b, const Point<2> &c)
+    {
+
+      // compute the arc length of the Bezier curve
+      // see https://gamedev.stackexchange.com/questions/6009/bezier-curve-arc-length
+      Point<2> v = a;
+      Point<2> w = b;
+      v[0] = 2*(b[0] - a[0]);
+      v[1] = 2*(b[1] - a[1]);
+      w[0] = c[0] - 2*b[0] + a[0];
+      w[1] = c[1] - 2*b[1] + a[1];
+
+      const double uu = 4*(w[0]*w[0] + w[1]*w[1]);
+
+      if (uu < 0.00001)
+        {
+          return std::sqrt((c[0] - a[0])*(c[0] - a[0]) + (c[1] - a[1])*(c[1] - a[1]));
+        }
+
+      const double vv = 4*(v[0]*w[0] + v[1]*w[1]);
+      const double ww = v[0]*v[0] + v[1]*v[1];
+
+      const double t1 = (2*std::sqrt(uu*(uu + vv + ww)));
+      const double t2 = 2*uu+vv;
+      const double t3 = vv*vv - 4*uu*ww;
+      const double t4 = (2*std::sqrt(uu*ww));
+
+      return ((t1*t2 - t3*std::log(t2+t1) -(vv*t4 - t3*std::log(vv+t4))) / (8*std::pow(uu, 1.5)));
+    }
+
     /*{
       if( a == 0) {
         WBAssert(false, "a is zero. todo: use quadratic.");
@@ -515,6 +545,7 @@ namespace WorldBuilder
 
       // resize all vectors
       control_points.resize(n_points-1, p[0]);
+      lengths.resize(n_points-1,std::numeric_limits<double>::signaling_NaN());
       angles.resize(n_points,std::numeric_limits<double>::signaling_NaN());
       if (std::isnan(angle_constrains[0]))
         {
@@ -631,6 +662,9 @@ namespace WorldBuilder
               control_points[i][0] = x;
               control_points[i][1] = m0 * (x - x0) + y0;
 
+              // compute length of segment
+              lengths[i] = compute_quadratic_bezier_arc_length(p[i],control_points[i],p[i+1]);
+
               //// Based on http://geomalgorithms.com/a02-_lines.html.
               //// if the control point is doesn't project on the line
               //// rotate is 180 degrees.
@@ -676,6 +710,7 @@ namespace WorldBuilder
           // NOTE: start angle assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
           angles[n_points-2] = angle_constrains[n_points-2];
         }
+
       if (std::isnan(angle_constrains[n_points-1]))
         {
           const double value_x = x_spline.m[n_points-2][0] + x_spline.m[n_points-2][1] + x_spline.m[n_points-2][2] + x_spline.m[n_points-2][3];
@@ -755,6 +790,11 @@ namespace WorldBuilder
           //  }
         }
       std::cout << std::endl;
+
+      // compute length of segment
+      lengths[n_points-2] = compute_quadratic_bezier_arc_length(p[n_points-2],control_points[n_points-2],p[n_points-1]);
+      std::cout << p[n_points-2] << " - " << control_points[n_points-2] << " - " << p[n_points-1] << std::endl;
+
 
     }
 

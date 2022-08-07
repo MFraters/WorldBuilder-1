@@ -221,6 +221,16 @@ namespace WorldBuilder
     };
 
     /**
+     * @brief computes the arc length of a quadratic bezier curve segment
+     *
+     * @param a This is a point the curve goes through.
+     * @param b This is the control point.
+     * @param c This is a point the curve goes through.
+     * @return double
+     */
+    double compute_quadratic_bezier_arc_length(const Point<2> &a, const Point<2>  &b, const Point<2> &c);
+
+    /**
      * @brief Class for circle line/spline, including interpolation on it
      *
      */
@@ -236,6 +246,7 @@ namespace WorldBuilder
         //private:
         std::vector<Point<2> > points;
         std::vector<Point<2> > control_points;
+        std::vector<double> lengths;
         //SplineSet x_spline;
         //SplineSet y_spline;
 

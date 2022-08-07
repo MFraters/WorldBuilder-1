@@ -495,6 +495,7 @@ namespace WorldBuilder
 
     BezierCurve::BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains)
     {
+      points = p;
       // first compute the factors for a monotome spline
       const size_t n_points = p.size();
       std::vector<double> x(n_points);
@@ -505,9 +506,9 @@ namespace WorldBuilder
           y[i] = p[i][1];
           std::cout << i << ": (" << x[i] << ":" << y[i] << ")" << std::endl;
         }
-      SplineSet  x_spline = spline(x);
+      SplineSet x_spline = spline(x);
       std::cout << "flag 1.1" << std::endl;
-      SplineSet  y_spline = spline(y);
+      SplineSet y_spline = spline(y);
       std::cout << "flag 1.2" << std::endl;
       //x_spline.set_points(x);
       //y_spline.set_points(y);
@@ -755,6 +756,56 @@ namespace WorldBuilder
         }
       std::cout << std::endl;
 
+    }
+
+
+    Point<2>
+    BezierCurve::operator()(const size_t i, const double t) const
+    {
+      return (1-t)*(1-t)*points[i] + 2*t*(1-t)*control_points[i] + t*t*points[i+1];
+    }
+
+    ClosestPointOnCurve
+    BezierCurve::closest_point_on_curve(Point<2> &check_point) const
+    {
+      // go through each section and find all roots in domain 0 to 1 and choose the smallest
+      ClosestPointOnCurve closest_point_on_curve;
+      closest_point_on_curve.distance = std::numeric_limits<double>::infinity();
+      closest_point_on_curve.fraction = std::numeric_limits<double>::signaling_NaN();
+      for ( size_t i = 0; i < control_points.size(); ++i)
+        {
+          // compute a,b,c and d in the cubic equation describing the distance from point p to the local quadratic Bezier curve.
+          // using https://blog.gludion.com/2009/08/distance-to-quadratic-bezier-curve.html
+          const Point<2> A = control_points[i]-points[i];
+          const Point<2> B = points[i+1]-control_points[i]-A;
+          const double a = B*B;
+          const double b = 3*A*B;
+          const double c = 2.*A*A+(points[i]-check_point)*B;
+          const double d = (points[i]-check_point)*A;
+          const std::vector<double> real_roots = solve_cubic_equation_real(a,b,c,d);
+          std::cout << "real roots: ";
+          for (size_t root_i = 0; root_i < real_roots.size(); ++root_i)
+            {
+              if (real_roots[root_i] >= 0. && real_roots[root_i] <= 1.)
+                {
+                  const Point<2> point_on_curve = (*this)(i,real_roots[root_i]);
+                  std::cout << root_i << " = " << real_roots[root_i] << ", poc=" << point_on_curve << ", d = " << point_on_curve.distance(check_point) << "; ";
+                  if (point_on_curve.distance(check_point) < closest_point_on_curve.distance)
+                    {
+                      closest_point_on_curve.distance = point_on_curve.distance(check_point);
+                      closest_point_on_curve.fraction = real_roots[root_i];
+                      closest_point_on_curve.index = i;
+                      closest_point_on_curve.point = point_on_curve;
+                    }
+                }
+              else
+                {
+                  std::cout << root_i << " = " << real_roots[root_i] << "; ";
+                }
+            }
+          std::cout << std::endl;
+        }
+      return closest_point_on_curve;
     }
 
     CircleLine::CircleLine(const std::vector<Point<2> > &p, const double start_angle)

@@ -204,6 +204,22 @@ namespace WorldBuilder
     //}
 
 
+    struct ClosestPointOnCurve
+    {
+      ClosestPointOnCurve()
+        :
+        distance(std::numeric_limits<double>::infinity()),
+        fraction(std::numeric_limits<double>::signaling_NaN()),
+        index(0),
+        point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
+      {}
+
+      double distance;
+      double fraction;
+      size_t index;
+      Point<2> point;
+    };
+
     /**
      * @brief Class for circle line/spline, including interpolation on it
      *
@@ -213,9 +229,16 @@ namespace WorldBuilder
       public:
         BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains);
 
+        ClosestPointOnCurve closest_point_on_curve(Point<2> &p) const;
+
+        Point<2> operator()(const size_t i, const double) const;
 
         //private:
+        std::vector<Point<2> > points;
         std::vector<Point<2> > control_points;
+        //SplineSet x_spline;
+        //SplineSet y_spline;
+
         //std::vector<double> radii;
         std::vector<double> angles;
         //std::vector<double> lengths;

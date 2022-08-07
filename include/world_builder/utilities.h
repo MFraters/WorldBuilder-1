@@ -170,6 +170,88 @@ namespace WorldBuilder
       Invalid,
     };
 
+    struct SplineSet
+    {
+      std::vector<std::array<double,4>> m;
+      //double a;
+      //double b;
+      //double c;
+      //double d;
+    };
+
+    SplineSet spline(std::vector<double> &y);
+
+    std::vector<double>  solve_cubic_equation_real(const double a_original,const double b_original,const double c_original,const double d_original);
+
+    /**
+     * Evaluate at point @p x.
+     */
+    //inline
+    //double get_monotono_spline_from(const double a, const double b, const double c, const double d, const double x)
+    //{
+    //
+    //  //double a = -A / 2.0f + (3.0f*B) / 2.0f - (3.0f*C) / 2.0f + D / 2.0f;
+    //  //double b = A - (5.0f*B) / 2.0f + 2.0f*C - D / 2.0f;
+    //  //double c = -A / 2.0f + C / 2.0f;
+    //  //double d = B;
+    //
+    //return a*x*x*x + b*x*x + c*x + d;
+    //  return (x >= 0 && x <= mx_size_min)
+    //         ?
+    //         ((a*h + b)*h + c)*h + d
+    //         :
+    //         (a*h + b)*h + c;
+    //}
+
+
+    /**
+     * @brief Class for circle line/spline, including interpolation on it
+     *
+     */
+    class BezierCurve
+    {
+      public:
+        BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains);
+
+
+        //private:
+        std::vector<Point<2> > control_points;
+        //std::vector<double> radii;
+        std::vector<double> angles;
+        //std::vector<double> lengths;
+
+    };
+
+    /**
+     * @brief Struct to hold circle line data
+     *
+     */
+    struct CircleLineData
+    {
+      double signed_distance_to_line;
+      double fraction_along_circle;
+      double distance_along_circle;
+      Point<2> point_on_circle; // dim? or even just 3?
+    };
+
+    /**
+     * @brief Class for circle line/spline, including interpolation on it
+     *
+     */
+    class CircleLine
+    {
+      public:
+        CircleLine(const std::vector<Point<2> > &p, const double start_angle = std::numeric_limits<double>::infinity());
+
+
+        //private:
+        std::vector<Point<2> > circle_centers;
+        //std::vector<double> radii;
+        std::vector<double> angles;
+        //std::vector<double> lengths;
+
+    };
+
     /**
      * Class for linear and monotone spline interpolation
      */

@@ -19,8 +19,6 @@
 
 #include "world_builder/features/subducting_plate_models/composition/uniform.h"
 
-
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"

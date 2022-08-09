@@ -21,7 +21,6 @@
 
 #include <algorithm>
 
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/bool.h"
 #include "world_builder/types/double.h"
@@ -155,8 +154,8 @@ namespace WorldBuilder
                               double two = dist(world->get_random_number_engine());
                               double three = dist(world->get_random_number_engine());
 
-                              double theta = 2.0 * const_pi * one; // Rotation about the pole (Z)
-                              double phi = 2.0 * const_pi * two; // For direction of pole deflection.
+                              double theta = 2.0 * Consts::PI * one; // Rotation about the pole (Z)
+                              double phi = 2.0 * Consts::PI * two; // For direction of pole deflection.
                               double z = 2.0* three; //For magnitude of pole deflection.
 
                               // Compute a vector V used for distributing points over the sphere

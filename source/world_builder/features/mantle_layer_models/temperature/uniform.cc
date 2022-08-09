@@ -19,8 +19,6 @@
 
 #include "world_builder/features/mantle_layer_models/temperature/uniform.h"
 
-
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"

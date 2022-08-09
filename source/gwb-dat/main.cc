@@ -260,8 +260,8 @@ int main(int argc, char **argv)
                                 " on line " << i+1 << " of the data file (" << data_file << "). Dim is " << dim << '.');
                   std::array<double,3> coords = {{
                       string_to_double(data[i][0]), // x or R
-                      string_to_double(data[i][1]) *(convert_spherical ? (const_pi/180.): 1.), // y or long
-                      string_to_double(data[i][2]) *(convert_spherical ? (const_pi/180.): 1.) // z or lat
+                      string_to_double(data[i][1]) *(convert_spherical ? (Consts::PI/180.): 1.), // y or long
+                      string_to_double(data[i][2]) *(convert_spherical ? (Consts::PI/180.): 1.) // z or lat
                     }
                   };
 

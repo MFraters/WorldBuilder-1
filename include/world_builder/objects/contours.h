@@ -1,0 +1,178 @@
+/*
+Copyright (C) 2018 - 2022 by the authors of the World Builder code.
+
+This file is part of the World Builder.
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation, either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#ifndef WORLD_BUILDER_OBJECTS_CONTOURS_H
+#define WORLD_BUILDER_OBJECTS_CONTOURS_H
+
+//#include "world_builder/utilities.h"
+
+#include <memory>
+#include <vector>
+
+#include "world_builder/objects/bezier_curve.h"
+#include "world_builder/coordinate_systems/interface.h"
+#include "world_builder/objects/natural_coordinate.h"
+#include "world_builder/point.h"
+
+namespace WorldBuilder
+{
+  namespace Objects
+  {
+    struct DistanceInterpolationData
+    {
+
+      double signed_distance_from_plane;
+      double distance_along_surface;
+      size_t curve_above_index;
+      size_t curve_above_section_index;
+      double curve_above_section_fraction;
+    };
+
+    class Contours
+    {
+      public:
+        /**
+         * Constructor to create an empty contours.
+         */
+        Contours();
+
+        /**
+         * Constructor to create a contours from value at points object output.
+         */
+        Contours(std::vector<std::vector<Point<2> > > points,
+                 std::vector<double> depths,
+                 std::vector<std::vector<double> > angle_contraints,
+                 std::vector<std::vector<double> > thicknesses);
+
+        DistanceInterpolationData
+        distance_interpolation_data(const Point<3> &check_point_cartesian,
+                                    const Objects::NaturalCoordinate &check_point_natural,
+                                    const Point<2> &reference_point,
+                                    const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
+                                    const std::vector<std::vector<double> > &interpolation_properties,
+                                    const double start_radius,
+                                    const bool only_positive);
+
+        /**
+         * @brief Stores the splines for each depth contour
+         *
+         */
+        std::vector<WorldBuilder::Objects::BezierCurve> contour_curves;
+
+        std::vector<std::vector<Point<2> > > points; // todo: probably do no need to store this one.
+        std::vector<double> depths;
+        std::vector<std::vector<double> > angle_contraints;
+        std::vector<std::vector<double> > thicknesses;
+
+
+
+      private:
+    };
+
+
+//    class Contours
+//    {
+//      public:
+//        /**
+//         * Constructor to create an empty contours.
+//         */
+//        Contours();
+//
+//        /**
+//         * Constructor to create a contours from value at points object output.
+//         */
+//        Contours(std::vector<std::pair<double,std::vector<double>>> &contours);
+//
+//        /**
+//         * Returns the value of the contours at the check point.
+//         */
+//        double local_value(const Point<2> check_point) const;
+//
+//        /**
+//         * Wether the contours is a constant value or not. This is used for optimalization.
+//         */
+//        bool constant_value;
+//
+//        /**
+//         * The minimum value of all provided points.
+//         */
+//        double minimum;
+//
+//        /**
+//         * The maximum value of all provided points.
+//         */
+//        double maximum;
+//
+//        /**
+//         * The KD tree which stores the centroids of all triangles and an index to the triangle points
+//         * and values stored in the triangles member variable.
+//         */
+//        KDTree::KDTree tree;
+//
+//        /**
+//         * Stores the triangles as a list of three points.
+//         */
+//        std::vector<std::array<std::array<double,3>,3> > triangles;
+//
+//        /**
+//         * @brief A structure to store information on each element of the grid.
+//         *
+//         */
+//        struct GridPoint
+//        {
+//          double dip;
+//          double min_distance_along_slab;
+//        };
+//
+//        /**
+//         * @brief A variable to store the information on the grid.
+//         *
+//         */
+//        std::vector<std::vector<GridPoint> > grid;
+//
+//        /**
+//         * @brief Stores which grid points a single grid point connects to the contour below it.
+//         *
+//         * Example layout: [
+//         * contour1:[connections for point 1:[0,1], connections for point 2: [2]],
+//         * contour2:[connections for point 1:[0], connections for point 2: [1,2]]
+//         * ]
+//         */
+//        std::vector<std::vector<std::vector<unsigned int> > > connectivity;
+//
+//        /**
+//         * @brief Stores the splines for each depth contour
+//         *
+//         */
+//        std::vector<std::array<Utilities::interpolation,2> > contour_splines;
+//
+//      private:
+//        /**
+//         * Test whether a point is in a triangle. If that is the case is stores the interpolated
+//         * value of the tirangle into `interpolated_value` and returns true.
+//         */
+//        bool in_triangle(const std::array<std::array<double,3>,3> &points,
+//                         const Point<2> check_point,
+//                         double &interpolate_value) const;
+//    };
+  }
+
+}
+
+#endif

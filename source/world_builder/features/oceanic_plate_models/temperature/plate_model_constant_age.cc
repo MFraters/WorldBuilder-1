@@ -19,8 +19,6 @@
 
 #include "world_builder/features/oceanic_plate_models/temperature/plate_model_constant_age.h"
 
-
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
@@ -133,8 +131,8 @@ namespace WorldBuilder
                   for (int i = 1; i<sommation_number+1; ++i)
                     {
                       temperature = temperature + (bottom_temperature_local - top_temperature) *
-                                    ((2 / (double(i) * const_pi)) * std::sin((double(i) * const_pi * depth) / max_depth) *
-                                     std::exp(-1.0 * i * i * const_pi * const_pi * thermal_diffusivity * plate_age / (max_depth * max_depth)));
+                                    ((2 / (double(i) * Consts::PI)) * std::sin((double(i) * Consts::PI * depth) / max_depth) *
+                                     std::exp(-1.0 * i * i * Consts::PI * Consts::PI * thermal_diffusivity * plate_age / (max_depth * max_depth)));
                     }
 
                   WBAssert(!std::isnan(temperature), "Temparture inside plate model constant age is not a number: " << temperature

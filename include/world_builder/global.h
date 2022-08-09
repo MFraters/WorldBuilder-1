@@ -1,3 +1,4 @@
+
 /*
   Copyright (C) 2018-2021 by the authors of the World Builder code.
 
@@ -17,13 +18,19 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_BUILDER_NAN_H
-#define WORLD_BUILDER_NAN_H
+#ifndef WORLD_BUILDER_GLOBAL_H
+#define WORLD_BUILDER_GLOBAL_H
 
 #include <limits>
+#include <iostream>
 
 namespace WorldBuilder
 {
+  namespace Consts
+  {
+    constexpr double PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066;
+  } // namespace NaN
+
   namespace NaN
   {
     /**
@@ -45,6 +52,6 @@ namespace WorldBuilder
      */
     const unsigned int ISNAN = std::numeric_limits<unsigned int>::signaling_NaN();
   } // namespace NaN
-} // namespace WorldBuilder
+}
 
 #endif

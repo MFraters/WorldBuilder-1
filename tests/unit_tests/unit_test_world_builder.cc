@@ -989,7 +989,7 @@ TEST_CASE("WorldBuilder Coordinate Systems: Spherical")
   approval_tests.emplace_back(spherical->natural_coordinate_system());
 
   // distance between two points at the same depth
-  double dtr = Utilities::const_pi / 180.0;
+  double dtr = Consts::PI / 180.0;
   // first check unit radius, this the central angle
   Point<3> unit_point_1(1.0, 0.0 * dtr, 0.0 * dtr, CoordinateSystem::spherical);
   Point<3> unit_point_2(1.0, 1.0 * dtr, 0.0 * dtr, CoordinateSystem::spherical);
@@ -1756,7 +1756,7 @@ TEST_CASE("WorldBuilder Features: Oceanic Plate")
   std::unique_ptr<Features::Interface> oceanic_plate = Features::Interface::create("oceanic plate", &world2);
 
   // Check continental plate through the world
-  double dtr = Utilities::const_pi / 180.0;
+  double dtr = Consts::PI / 180.0;
   std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> &coordinate_system = world2.parameters.coordinate_system;
 
   // 2d
@@ -4622,7 +4622,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   slab_segment_lengths[1].push_back(std::sqrt(10*10+10*10));
   slab_segment_lengths[1].push_back(200);
 
-  double dtr = Utilities::const_pi/180;
+  double dtr = Consts::PI/180;
   std::vector<std::vector<Point<2> > > slab_segment_angles(2);
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
@@ -5575,7 +5575,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   slab_segment_lengths[2].push_back(std::sqrt(10*10+10*10));
   slab_segment_lengths[2].push_back(200);
 
-  double dtr = Utilities::const_pi/180;
+  double dtr = Consts::PI/180;
   std::vector<std::vector<Point<2> > > slab_segment_angles(3);
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
@@ -6553,8 +6553,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   position[0] = 10;
 
   double angle = 180+0.1;
-  position[1] = 10 - (20 * std::cos(0 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180));
-  position[2] = 0 * std::cos(0 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(0 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180));
+  position[2] = 0 * std::cos(0 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6580,8 +6580,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
 
   // curve test reverse angle 5
   position[0] = 10;
-  position[1] = 10 - (20 - 10 * std::cos(0.001 * Utilities::const_pi/180));
-  position[2] = - 10 * std::sin(0.001 * Utilities::const_pi/180);
+  position[1] = 10 - (20 - 10 * std::cos(0.001 * Consts::PI/180));
+  position[2] = - 10 * std::sin(0.001 * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6620,8 +6620,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   slab_segment_lengths[1][1] = 10 * 45 * dtr;
 
   position[0] = 10;
-  position[1] = 10 - 10 * std::cos(45.000 * Utilities::const_pi/180);
-  position[2] = 10 * std::sin(45.000 * Utilities::const_pi/180);
+  position[1] = 10 - 10 * std::cos(45.000 * Consts::PI/180);
+  position[2] = 10 * std::sin(45.000 * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6647,8 +6647,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 6
   position[0] = 10;
   angle = 45;
-  position[1] = 10 - (10 * std::cos((angle) * Utilities::const_pi/180));
-  position[2] = 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (10 * std::cos((angle) * Consts::PI/180));
+  position[2] = 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6674,8 +6674,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 6
   position[0] = 10;
   angle = 180+45;
-  position[1] = 10 - (20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180));
-  position[2] = 20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(45 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180));
+  position[2] = 20 * std::cos(45 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6702,8 +6702,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 7
   position[0] = 10;
   angle = 180+46;
-  position[1] = 10 - (20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180));
-  position[2] = 20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(45 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180));
+  position[2] = 20 * std::cos(45 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6731,8 +6731,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 8
   position[0] = 10;
   angle = 180+46;
-  position[1] = 10 - (20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180))+0.1;
-  position[2] = 20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(45 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180))+0.1;
+  position[2] = 20 * std::cos(45 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6758,8 +6758,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 9
   position[0] = 10;
   angle = 180+46;
-  position[1] = 10 - (20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180))-0.1;
-  position[2] = 20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(45 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180))-0.1;
+  position[2] = 20 * std::cos(45 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6785,8 +6785,8 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   // curve test reverse angle 10
   position[0] = 10;
   angle = 180+90;
-  position[1] = 10 - (20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::cos((angle) * Utilities::const_pi/180));
-  position[2] = 20 * std::cos(45 * Utilities::const_pi/180) + 10 * std::sin((angle) * Utilities::const_pi/180);
+  position[1] = 10 - (20 * std::cos(45 * Consts::PI/180) + 10 * std::cos((angle) * Consts::PI/180));
+  position[2] = 20 * std::cos(45 * Consts::PI/180) + 10 * std::sin((angle) * Consts::PI/180);
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   distance_from_planes =
@@ -6984,7 +6984,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
   std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR + "/tests/data/subducting_plate_different_angles_spherical.wb";
   WorldBuilder::World world(file_name);
 
-  const double dtr = Utilities::const_pi/180.0;
+  const double dtr = Consts::PI/180.0;
   Point<3> position(10,0 * dtr,10 * dtr,spherical);
   position = Point<3>(world.parameters.coordinate_system->natural_to_cartesian_coordinates(position.get_array()),cartesian);
 
@@ -7002,7 +7002,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
   slab_segment_lengths[1].push_back(std::sqrt(10*10+10*10));
   slab_segment_lengths[1].push_back(200);
 
-  //double dtr = Utilities::const_pi/180;
+  //double dtr = Consts::PI/180;
   std::vector<std::vector<Point<2> > > slab_segment_angles(2);
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
   slab_segment_angles[0].push_back(Point<2>(45 * dtr,45 * dtr,cartesian));
@@ -7234,7 +7234,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
     std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR + "/tests/data/spherical_depth_method_starting_point.wb";
     WorldBuilder::World world(file_name);
 
-    const double dtr = Utilities::const_pi/180.0;
+    const double dtr = Consts::PI/180.0;
     world.parse_entries(world.parameters);
     approval_tests.emplace_back(world.parameters.coordinate_system->max_model_depth());
     // slab goes down and up again
@@ -7281,7 +7281,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
     std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR + "/tests/data/spherical_depth_method_begin_segment.wb";
     WorldBuilder::World world(file_name);
 
-    const double dtr = Utilities::const_pi/180.0;
+    const double dtr = Consts::PI/180.0;
     // origin
     std::array<double,3> position = {{6371000 - 0, 0 * dtr, 0 * dtr}};
     position = world.parameters.coordinate_system->natural_to_cartesian_coordinates(position);
@@ -7334,13 +7334,13 @@ TEST_CASE("Fast sin functions")
 {
   for (int i = -400; i < 400; i++)
     {
-      const double angle = (WorldBuilder::Utilities::const_pi/100.)*static_cast<double>(i);
+      const double angle = (Consts::PI/100.)*static_cast<double>(i);
       CHECK(fabs(FT::sin(angle)-std::sin(angle)) < 1.2e-5);
     }
 
   for (int i = -400; i < 400; i++)
     {
-      const double angle = (WorldBuilder::Utilities::const_pi/100.)*static_cast<double>(i);
+      const double angle = (Consts::PI/100.)*static_cast<double>(i);
       CHECK(fabs(FT::cos(angle)-std::cos(angle)) < 1.2e-5);
     }
 }

@@ -19,8 +19,6 @@
 
 #include "world_builder/features/oceanic_plate_models/temperature/plate_model.h"
 
-
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
@@ -105,7 +103,7 @@ namespace WorldBuilder
           spreading_velocity = prm.get<double>("spreading velocity")/31557600;
 
           mid_oceanic_ridges = prm.get_vector<std::vector<Point<2>>>("ridge coordinates");
-          const double dtr = prm.coordinate_system->natural_coordinate_system() == spherical ? const_pi / 180.0 : 1.0;
+          const double dtr = prm.coordinate_system->natural_coordinate_system() == spherical ? Consts::PI / 180.0 : 1.0;
           for (auto &ridge_coordinates : mid_oceanic_ridges)
             for (auto &ridge_coordinate : ridge_coordinates)
               {
@@ -229,10 +227,10 @@ namespace WorldBuilder
                   for (int i = 1; i<sommation_number+1; ++i)
                     {
                       temperature = temperature + (bottom_temperature_local - top_temperature) *
-                                    ((2 / (double(i) * const_pi)) * std::sin((double(i) * const_pi * depth) / max_depth) *
+                                    ((2 / (double(i) * Consts::PI)) * std::sin((double(i) * Consts::PI * depth) / max_depth) *
                                      std::exp((((spreading_velocity * max_depth)/(2 * thermal_diffusivity)) -
                                                std::sqrt(((spreading_velocity*spreading_velocity*max_depth*max_depth) /
-                                                          (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * const_pi * const_pi)) *
+                                                          (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * Consts::PI * Consts::PI)) *
                                               ((spreading_velocity * age) / max_depth)));
 
                     }

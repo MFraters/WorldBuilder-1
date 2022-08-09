@@ -24,8 +24,8 @@
 #include <limits>
 #include <world_builder/coordinate_system.h>
 
-#include "world_builder/nan.h"
 #include "world_builder/utilities.h"
+#include "world_builder/objects/contours.h"
 
 
 namespace WorldBuilder
@@ -39,7 +39,7 @@ namespace WorldBuilder
       if (point.get_coordinate_system() == CoordinateSystem::spherical)
         {
           Point<2> other_point = point;
-          other_point[0] += point[0] < 0 ? 2.0 * const_pi : -2.0 * const_pi;
+          other_point[0] += point[0] < 0 ? 2.0 * Consts::PI : -2.0 * Consts::PI;
 
           return (polygon_contains_point_implementation(point_list, point) ||
                   polygon_contains_point_implementation(point_list, other_point));
@@ -223,11 +223,11 @@ namespace WorldBuilder
       scoord[0] = position.norm(); // R
       scoord[1] = std::atan2(position[1],position[0]); // Phi/long -> The result is always between -180 and 180 degrees: [-pi,pi]
       //if (scoord[1] < 0.0)
-      //scoord[1] += 2.0*const_pi; // correct phi to [0,2*pi]
+      //scoord[1] += 2.0*Consts::PI; // correct phi to [0,2*pi]
 
       //lat
       if (scoord[0] > std::numeric_limits<double>::min())
-        scoord[2] = 0.5 * const_pi - std::acos(position[2]/scoord[0]);
+        scoord[2] = 0.5 * Consts::PI - std::acos(position[2]/scoord[0]);
       else
         scoord[2] = 0.0;
 
@@ -237,11 +237,11 @@ namespace WorldBuilder
     Point<3>
     spherical_to_cartesian_coordinates(const std::array<double,3> &scoord)
     {
-      const double cos_long = scoord[0] * std::sin(0.5 * const_pi - scoord[2]);
+      const double cos_long = scoord[0] * std::sin(0.5 * Consts::PI - scoord[2]);
 
       return Point<3>(cos_long * std::cos(scoord[1]), // X
                       cos_long * std::sin(scoord[1]), // Y
-                      scoord[0] * std::cos(0.5 * const_pi - scoord[2]), // Z
+                      scoord[0] * std::cos(0.5 * Consts::PI - scoord[2]), // Z
                       cartesian);;
     }
 
@@ -340,105 +340,6 @@ namespace WorldBuilder
       return Point<3>(x,y,z,a.get_coordinate_system());
     }
 
-    std::vector<double>
-    solve_cubic_equation_real(const double a_original,const double b_original,const double c_original,const double d_original)
-    {
-
-      std::vector<double> real_roots;
-      if (std::abs(a_original) <= std::numeric_limits<double>::epsilon()*10.)
-        {
-          const double &a = b_original;
-          const double &b = c_original;
-          const double &c = d_original;
-          const double discriminant = b*b -4.*a*c;
-          if (std::abs(discriminant) <= std::numeric_limits<double>::epsilon()*10.)
-            {
-              real_roots.emplace_back((-b+sqrt(discriminant))/(2*a));
-              return real_roots;
-            }
-          else if (discriminant > 0)
-            {
-              real_roots.emplace_back((-b + sqrt(discriminant))/(2.*a));
-              real_roots.emplace_back((-b - sqrt(discriminant))/(2.*a));
-              return real_roots;
-            }
-          return real_roots;
-        }
-      else
-        {
-          // based on https://quarticequations.com/Cubic.pdf
-          // divide by a
-          const double b = b_original/a_original; // a_2
-          const double c = c_original/a_original; // a_1
-          const double d = d_original/a_original; //a_0
-
-          const double q = (c/3.)-(b*b/9.);
-          const double r = (c*b-3*d)/6. - b*b*b/27.;
-          const double discriminant = r*r+q*q*q;
-          if (discriminant > 0)
-            {
-              // only one real solution
-              const double A = std::pow(std::abs(r) + sqrt(discriminant),1./3.);
-              const double t = r >= 0 ? A-q/A : q/A-A;
-              real_roots.emplace_back(t-b/3.);
-            }
-          else
-            {
-              // three real solutions
-              const double theta = std::abs(q) <= std::numeric_limits<double>::epsilon()*10. ? 0 : acos(r/std::pow(-q,3./2.));
-              const double phi_1 = theta/3.;
-              const double phi_2 = phi_1 - 2.*const_pi/3.;
-              const double phi_3 = phi_1 + 2.*const_pi/3.;
-              const double sqrt_q_3 = 2*sqrt(-q);
-              const double value_1 = sqrt_q_3 *cos(phi_1)-b/3.;
-              const double value_2 = sqrt_q_3 *cos(phi_2)-b/3.;
-              const double value_3 = sqrt_q_3 *cos(phi_3)-b/3.;
-
-              real_roots.emplace_back(value_1);
-              if (std::abs(value_1 - value_2) > std::numeric_limits<double>::epsilon()*10.)
-                {
-                  real_roots.emplace_back(value_2);
-                }
-              // we don't have to check value 1 and 3 because z3 <= z2 <= z1
-              // so if z2 and z3 are not equal, z1 and z3 are not either.
-              if (std::abs(value_2 - value_3) > std::numeric_limits<double>::epsilon()*10.)
-                {
-                  real_roots.emplace_back(value_3);
-                }
-            }
-        }
-      return real_roots;
-    }
-
-    double compute_quadratic_bezier_arc_length(const Point<2> &a, const Point<2>  &b, const Point<2> &c)
-    {
-
-      // compute the arc length of the Bezier curve
-      // see https://gamedev.stackexchange.com/questions/6009/bezier-curve-arc-length
-      Point<2> v = a;
-      Point<2> w = b;
-      v[0] = 2*(b[0] - a[0]);
-      v[1] = 2*(b[1] - a[1]);
-      w[0] = c[0] - 2*b[0] + a[0];
-      w[1] = c[1] - 2*b[1] + a[1];
-
-      const double uu = 4*(w[0]*w[0] + w[1]*w[1]);
-
-      if (uu < 0.00001)
-        {
-          return std::sqrt((c[0] - a[0])*(c[0] - a[0]) + (c[1] - a[1])*(c[1] - a[1]));
-        }
-
-      const double vv = 4*(v[0]*w[0] + v[1]*w[1]);
-      const double ww = v[0]*v[0] + v[1]*v[1];
-
-      const double t1 = (2*std::sqrt(uu*(uu + vv + ww)));
-      const double t2 = 2*uu+vv;
-      const double t3 = vv*vv - 4*uu*ww;
-      const double t4 = (2*std::sqrt(uu*ww));
-
-      return ((t1*t2 - t3*std::log(t2+t1) -(vv*t4 - t3*std::log(vv+t4))) / (8*std::pow(uu, 1.5)));
-    }
 
     /*{
       if( a == 0) {
@@ -466,461 +367,48 @@ namespace WorldBuilder
       }
     }*/
 
-    using vec = std::vector<double>;
 
-
-
-    SplineSet spline(vec &y)
+    PointDistanceFromCurvedPlanes
+    distance_point_from_bezier_surface(const Point<3> &check_point_cartesian, // cartesian point in cartesian and spherical system
+                                       const Objects::NaturalCoordinate &check_point_natural, // cartesian point cartesian system, spherical point in spherical system
+                                       const Point<2> &reference_point, // in (rad) spherical coordinates in spherical system
+                                       const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
+                                       const std::vector<std::vector<double> > &interpolation_properties,
+                                       const Objects::Contours &contours,
+                                       const double start_radius,
+                                       const bool only_positive)
     {
-      int n = y.size()-1;
-      vec a;
-      a.insert(a.begin(), y.begin(), y.end());
-      vec b(n,std::numeric_limits<double>::signaling_NaN());
-      vec d(n,std::numeric_limits<double>::signaling_NaN());
+      // do some preparations
+      const CoordinateSystem natural_coordinate_system = coordinate_system->natural_coordinate_system();
+      const bool bool_cartesian = natural_coordinate_system == cartesian;
 
-      vec alpha;
-      alpha.push_back(0);
-      for (int i = 1; i < n; ++i)
-        alpha.push_back( 3*(a[i+1]-a[i]) - 3*(a[i]-a[i-1])  );
+      const std::array<double,3> &check_point_surface_2d_array = check_point_natural.get_coordinates();
+      const Point<3> check_point_surface(bool_cartesian ? check_point_surface_2d_array[0] : start_radius,
+                                         check_point_surface_2d_array[1],
+                                         bool_cartesian ? start_radius : check_point_surface_2d_array[2],
+                                         natural_coordinate_system);
+      const Point<2> check_point_surface_2d(check_point_natural.get_surface_coordinates(),
+                                            natural_coordinate_system);
 
-      vec c(n+1,std::numeric_limits<double>::signaling_NaN());
-      vec l(n+1,std::numeric_limits<double>::signaling_NaN());
-      vec mu(n+1,std::numeric_limits<double>::signaling_NaN());
-      vec z(n+1,std::numeric_limits<double>::signaling_NaN());
-      l[0] = 1;
-      mu[0] = 0;
-      z[0] = 0;
 
-      for (int i = 1; i < n; ++i)
+      const double check_point_depth = start_radius-check_point_natural.get_depth_coordinate();
+      const size_t n_contour_curves = contours.contour_curves.size();
+      //WBAssert(n_contour_curves == min_max_depth_per_bezier_curve.size(), "Todo");
+
+      // loop over all the Bezier curves for which the check point depth is between the
+      // curve top depth minus the max thickness and the curve bottom depth plus max thickness.
+      for (size_t bezier_curve_i = 0; bezier_curve_i < n_contour_curves; ++bezier_curve_i)
         {
-          l[i] = 4.-mu[i-1];
-          mu[i] = 1./l[i];
-          z[i] = (alpha[i]-z[i-1])/l[i];
-          std::cout << i << ": l = " << l[i] << ", mu = " << mu[i] << ", z = " << z[i] << std::endl;
-        }
-
-      l[n] = 1;
-      z[n] = 0;
-      c[n] = 0;
-
-      for (int j = n-1; j >= 0; --j)
-        {
-          c[j] = z [j] - mu[j] * c[j+1];
-          b[j] = (a[j+1]-a[j])-(c[j+1]+2*c[j])/3.;
-          d[j] = (c[j+1]-c[j])/3.;
-        }
-
-      SplineSet output_set;
-      output_set.m.resize(n, {std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN()});
-      std::cout << "n = " << n << std::endl;
-      for (int i = 0; i < n; ++i)
-        {
-          output_set.m[i][3] = a[i];
-          output_set.m[i][2] = b[i];
-          output_set.m[i][1] = c[i];
-          output_set.m[i][0] = d[i];
-        }
-      return output_set;
-    }
-
-    BezierCurve::BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains)
-    {
-      points = p;
-      // first compute the factors for a monotome spline
-      const size_t n_points = p.size();
-      std::vector<double> x(n_points);
-      std::vector<double> y(n_points);
-      for (size_t i = 0; i < n_points; ++i)
-        {
-          x[i] = p[i][0];
-          y[i] = p[i][1];
-          std::cout << i << ": (" << x[i] << ":" << y[i] << ")" << std::endl;
-        }
-      SplineSet x_spline = spline(x);
-      std::cout << "flag 1.1" << std::endl;
-      SplineSet y_spline = spline(y);
-      std::cout << "flag 1.2" << std::endl;
-      //x_spline.set_points(x);
-      //y_spline.set_points(y);
-
-      // resize all vectors
-      control_points.resize(n_points-1, p[0]);
-      lengths.resize(n_points-1,std::numeric_limits<double>::signaling_NaN());
-      angles.resize(n_points,std::numeric_limits<double>::signaling_NaN());
-      if (std::isnan(angle_constrains[0]))
-        {
-          const double value_x = x_spline.m[0][3];
-          const double value_y = y_spline.m[0][3];
-          const double derivative_x = x_spline.m[0][2];
-          const double derivative_y = y_spline.m[0][2];
-          const double value_x_h = x_spline.m[0][0]*0.5*0.5*0.5 + x_spline.m[0][1]*0.5*0.5 + x_spline.m[0][2]*0.5 + x_spline.m[0][3];
-          const double value_y_h = y_spline.m[0][0]*0.5*0.5*0.5 + y_spline.m[0][1]*0.5*0.5 + y_spline.m[0][2]*0.5 + y_spline.m[0][3];
-          angles[0] = std::atan2(value_y_h-value_y,value_x_h-value_x);//std::atan2(derivative_y,derivative_x);
-          std::cout << "0" << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[0] << " (" << angles[0] *180./M_PI << ")" << ", derivative_x = " << derivative_x
-                    << ", x a:b:c:d = " << x_spline.m[0][0] << ":" << x_spline.m[0][1] << ":" << x_spline.m[0][2]  << ":" << x_spline.m[0][1]
-                    << ", derivative_y = " << derivative_y
-                    << ", y a:b:c:d = " << y_spline.m[0][0] << ":" << y_spline.m[0][1] << ":" << y_spline.m[0][2]  << ":" << y_spline.m[0][1]
-                    << std::endl;
-          // compute p1 and p2 relative to p0 to compute the angles.
-          //angles[0] = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p1 = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p2 = std::atan2(p[2][1]-p[0][1],p[2][0]-p[0][0]);
-          //angles[0] = angle_p0p1-0.5*(angle_p0p2-angle_p0p1); //2.*angle_p0p1-angle_p0p2;//
-          //std::cout << "angles[0] = " << angles[0] << " (" << angles[0] *180./M_PI << ")" << ", angle_p0p1 = " << angle_p0p1  << "(" << angle_p0p1 *180./M_PI << ")"<< ", angle_p0p2 = " << angle_p0p2  << "(" << angle_p0p2 *180./M_PI << ")"<< std::endl;
-        }
-      else
-        {
-          // NOTE: start angle assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
-          angles[0] = angle_constrains[0];
-        }
-
-      for (size_t i = 0; i < n_points-2; ++i)
-        {
-          // first compute next angle:
-          if (std::isnan(angle_constrains[i+1]))
-            {
-              const double value_x = x_spline.m[i+1][3];
-              const double value_y = y_spline.m[i+1][3];
-              const double derivative_x = x_spline.m[i+1][2];
-              const double derivative_y = y_spline.m[i+1][2];
-              const double value_x_h = x_spline.m[i+1][0]*0.5*0.5*0.5 + x_spline.m[i+1][1]*0.5*0.5 + x_spline.m[i+1][2]*0.5 + x_spline.m[i+1][3];
-              const double value_y_h = y_spline.m[i+1][0]*0.5*0.5*0.5 + y_spline.m[i+1][1]*0.5*0.5 + y_spline.m[i+1][2]*0.5 + y_spline.m[i+1][3];
-              //const double value_x = x_spline.m[i+1][0]*(i+1)*(i+1)*(i+1) + x_spline.m[i+1][1]*(i+1)*(i+1) + x_spline.m[i+1][2]*(i+1) + x_spline.m[i+1][3];
-              //const double value_y = y_spline.m[i+1][0]*(i+1)*(i+1)*(i+1) + y_spline.m[i+1][1]*(i+1)*(i+1) + y_spline.m[i+1][2]*(i+1) + y_spline.m[i+1][3];
-              //const double derivative_x = 3*x_spline.m[i+1][0]*(i+1)*(i+1) + 2*x_spline.m[i+1][1]*(i+1) + x_spline.m[i+1][2];
-              //const double derivative_y = 3*y_spline.m[i+1][0]*(i+1)*(i+1) + 2*y_spline.m[i+1][1]*(i+1) + y_spline.m[i+1][2];
-              angles[i+1] = std::atan2(value_y_h-value_y,value_x_h-value_x);
-              std::cout << i+1 << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[i+1] << " (" << angles[i+1] *180./M_PI << ")" << ", derivative_x = " << derivative_x
-                        << ", x a:b:c:d = " << x_spline.m[i+1][0] << ":" << x_spline.m[i+1][1] << ":" << x_spline.m[i+1][2]  << ":" << x_spline.m[i+1][1]
-                        << ", derivative_y = " << derivative_y
-                        << ", y a:b:c:d = " << y_spline.m[i+1][0] << ":" << y_spline.m[i+1][1] << ":" << y_spline.m[i+1][2]  << ":" << y_spline.m[i+1][1]
-                        << std::endl;
-              //const double &x = p[0][0];
-              //const double derivative = 3*m[0][0]*x*x + 2*m[0][1]*x + m[0][2];
-              //angles[i] = std::atan2(derivative,1.);
-              // compute p1 and p2 relative to p0 to compute the angles.
-              //if ( i < n_points-2)
-              //  {
-              //    //angles[i+1] = std::atan2(p[i+2][1]-p[i][1],p[i+2][0]-p[i][0]);
-              //
-              //    const double angle_p0p1 = std::atan2(p[i+2][1]-p[i+1][1],p[i+2][0]-p[i+1][0]);
-              //    const double angle_p0p2 = std::atan2(p[i+3][1]-p[i+1][1],p[i+3][0]-p[i+1][0]);
-              //    angles[i+1] = angle_p0p1-0.5*(angle_p0p2-angle_p0p1);//2.*angle_p0p1-angle_p0p2;
-              //    std::cout << "angles[i+1] = " << angles[i+1] << " (" << angles[i+1] *180./M_PI << ")" << ", angle_p0p1 = " << angle_p0p1  << "(" << angle_p0p1 *180./M_PI << ")"<< ", angle_p0p2 = " << angle_p0p2  << "(" << angle_p0p2 *180./M_PI << ")"<< std::endl;
-              //  }
-              //else
-              //  {
-              //    //angles[i+1] = std::atan2(p[i+1][1]-p[i][1],p[i+1][0]-p[i][0]);
-              //    const double angle_p0p1 = std::atan2(p[i][1]-p[i+1][1],p[i][0]-p[i+1][0]);
-              //    const double angle_p0p2 = std::atan2(p[i-1][1]-p[i+1][1],p[i-1][0]-p[i+1][0]);
-              //    angles[i+1] = 2.*angle_p0p1-angle_p0p2;
-              //    std::cout << "angles[i+1] = " << angles[i+1] << " (" << angles[i+1] *180./M_PI << ")" << ", angle_p0p1 = " << angle_p0p1  << "(" << angle_p0p1 *180./M_PI << ")"<< ", angle_p0p2 = " << angle_p0p2  << "(" << angle_p0p2 *180./M_PI << ")"<< std::endl;
-              //  }
-            }
-          else
-            {
-              // NOTE: start angle doesn't assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
-              angles[i+1] = angle_constrains[i+1];
-            }
-
-          // now find the controll point: where the two lines intersect:
-          // p0.x
-          // if angles are the same, the control point is either on the line or at infinity. Put it at P[i] for now
-          //WBAssert((angles[i]-angles[i+1]) < std::numeric_limits<double>::epsilon()*10., "angles are the same, so the lines are parallel. Can't find a ")
-          std::cout << i << ": ";
-          if (std::abs(fmod((fmod(angles[i]-angles[i+1],180.) + 180.), 180.)) < std::numeric_limits<double>::epsilon()*10.)
-            {
-              control_points[i] = p[i];
-              std::cout << ", flag 1: "<< angles[i] << " (" << angles[i] *180./M_PI << "), "<< angles[i+1] << " (" << angles[i+1] *180./M_PI << ")";
-            }
-          else
-            {
-              std::cout << ", flag 2";
-              const double &x0 = p[i][0];
-              const double &y0 = p[i][1];
-              const double &x1 = p[i+1][0];
-              const double &y1 = p[i+1][1];
-              if (std::abs(fmod((fmod(angles[i], 180.) + 180.), 180.) - 90.) < std::numeric_limits<double>::epsilon()*10.)
-                {
-                  std::cout << ", flag 2.1";
-                  // vertical line at x = x0
-                  control_points[i][0] = x0;
-                  control_points[i][1] = std::tan(angles[i+1]) * (x0-x1) + y1;
-                }
-              else if (std::abs(fmod((fmod(angles[i+1], 180.) + 180.), 180.) - 90.) < std::numeric_limits<double>::epsilon()*10.)
-                {
-                  std::cout << ", flag 2.2";
-                  // vertical line at x = x0
-                  control_points[i][0] = x1;
-                  control_points[i][1] = std::tan(angles[i]) * (x1-x0) + y0;
-                }
-              std::cout << ", flag 2.3: angles i: " << angles[i] << " (" << angles[i]*180./M_PI  << "), angles i+1: " << angles[i+1] << " (" << angles[i+1]*180./M_PI  << ")";
-              const double m0 = std::tan(angles[i]); // Line 0: y = m0 (x - x0) + y0
-              const double m1 = std::tan(angles[i+1]); // Line 1: y = m1 (x - x1) + y1
-              const double x = ((m0 * x0 - m1 * x1) - (y0 - y1)) / (m0 - m1);
-              std::cout << ", m0 = " << m0 << ", m1 = " << m1 << ", m0 - m1 = " << m0 - m1 << ", control point = " << x << ":" << m0 * (x - x0) + y0;
-              control_points[i][0] = x;
-              control_points[i][1] = m0 * (x - x0) + y0;
-
-              // compute length of segment
-              lengths[i] = compute_quadratic_bezier_arc_length(p[i],control_points[i],p[i+1]);
-
-              //// Based on http://geomalgorithms.com/a02-_lines.html.
-              //// if the control point is doesn't project on the line
-              //// rotate is 180 degrees.
-              //const Point<2> BSP_ESP = p[i+1] - p[i];
-              //const Point<2> BSP_CP = control_points[i] - p[i];
-//
-              //const double c1 = BSP_ESP * BSP_CP;
-              //const double c2 = BSP_ESP * BSP_ESP;
-//
-              //if (c1 < 0 || c2 < c1)
-              //  {
-              //      control_points[i][0] = 2 * x1 - control_points[i][0];
-              //      control_points[i][1] = 2.*y1 - control_points[i][1];
-              //  }
-            }
-          std::cout << std::endl;
-        }
-      std::cout << "-----" << x_spline.m.size() << " -- " << n_points-1 << std::endl;
-      if (std::isnan(angle_constrains[n_points-2]))
-        {
-          const double value_x = x_spline.m[n_points-2][3];
-          const double value_y = y_spline.m[n_points-2][3];
-          const double derivative_x = x_spline.m[n_points-2][2];
-          const double derivative_y = y_spline.m[n_points-2][3];
-          // have the angle be pointing the the previous halfpoint instead of the next one
-          const double value_x_h = x_spline.m[n_points-2][0]*0.5*0.5*0.5 + x_spline.m[n_points-2][1]*0.5*0.5 + x_spline.m[n_points-2][2]*0.5 + x_spline.m[n_points-2][3];
-          const double value_y_h = y_spline.m[n_points-2][0]*0.5*0.5*0.5 + y_spline.m[n_points-2][1]*0.5*0.5 + y_spline.m[n_points-2][2]*0.5 + y_spline.m[n_points-2][3];
-          angles[n_points-2] = std::atan2(value_y_h-value_y,value_x_h-value_x);//std::atan2(derivative_y,derivative_x);
-          std::cout << n_points-1 << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[n_points-1] << " (" << angles[n_points-1] *180./M_PI << ")" << ", derivative_x = " << derivative_x
-                    << ", x a:b:c:d = " << x_spline.m[n_points-2][0] << ":" << x_spline.m[n_points-2][1] << ":" << x_spline.m[n_points-2][2]  << ":" << x_spline.m[n_points-2][1]
-                    << ", derivative_y = " << derivative_y
-                    << ", y a:b:c:d = " << y_spline.m[n_points-2][0] << ":" << y_spline.m[n_points-2][1] << ":" << y_spline.m[n_points-2][2]  << ":" << y_spline.m[n_points-2][1]
-                    << std::endl;
-          // compute p1 and p2 relative to p0 to compute the angles.
-          //angles[0] = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p1 = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p2 = std::atan2(p[2][1]-p[0][1],p[2][0]-p[0][0]);
-          //angles[0] = angle_p0p1-0.5*(angle_p0p2-angle_p0p1); //2.*angle_p0p1-angle_p0p2;//
-          //std::cout << "angles[0] = " << angles[0] << " (" << angles[0] *180./M_PI << ")" << ", angle_p0p1 = " << angle_p0p1  << "(" << angle_p0p1 *180./M_PI << ")"<< ", angle_p0p2 = " << angle_p0p2  << "(" << angle_p0p2 *180./M_PI << ")"<< std::endl;
-        }
-      else
-        {
-          // NOTE: start angle assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
-          angles[n_points-2] = angle_constrains[n_points-2];
-        }
-
-      if (std::isnan(angle_constrains[n_points-1]))
-        {
-          const double value_x = x_spline.m[n_points-2][0] + x_spline.m[n_points-2][1] + x_spline.m[n_points-2][2] + x_spline.m[n_points-2][3];
-          const double value_y = y_spline.m[n_points-2][0] + y_spline.m[n_points-2][1] + y_spline.m[n_points-2][2] + y_spline.m[n_points-2][3];
-          const double derivative_x = x_spline.m[n_points-2][0] + x_spline.m[n_points-2][1] + x_spline.m[n_points-2][2];
-          const double derivative_y = y_spline.m[n_points-2][0] + y_spline.m[n_points-2][1] + y_spline.m[n_points-2][3];
-          // have the angle be pointing the the previous halfpoint instead of the next one
-          const double value_x_h = x_spline.m[n_points-2][0]*0.5*0.5*0.5 + x_spline.m[n_points-2][1]*0.5*0.5 + x_spline.m[n_points-2][2]*0.5 + x_spline.m[n_points-2][3];
-          const double value_y_h = y_spline.m[n_points-2][0]*0.5*0.5*0.5 + y_spline.m[n_points-2][1]*0.5*0.5 + y_spline.m[n_points-2][2]*0.5 + y_spline.m[n_points-2][3];
-          angles[n_points-1] = std::atan2(value_y_h-value_y,value_x_h-value_x);//std::atan2(derivative_y,derivative_x);
-          std::cout << n_points << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[n_points-1] << " (" << angles[n_points-1] *180./M_PI << ")" << ", derivative_x = " << derivative_x
-                    << ", x a:b:c:d = " << x_spline.m[n_points-2][0] << ":" << x_spline.m[n_points-2][1] << ":" << x_spline.m[n_points-2][2]  << ":" << x_spline.m[n_points-2][1]
-                    << ", derivative_y = " << derivative_y
-                    << ", y a:b:c:d = " << y_spline.m[n_points-2][0] << ":" << y_spline.m[n_points-2][1] << ":" << y_spline.m[n_points-2][2]  << ":" << y_spline.m[n_points-2][1]
-                    << std::endl;
-          // compute p1 and p2 relative to p0 to compute the angles.
-          //angles[0] = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p1 = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          //const double angle_p0p2 = std::atan2(p[2][1]-p[0][1],p[2][0]-p[0][0]);
-          //angles[0] = angle_p0p1-0.5*(angle_p0p2-angle_p0p1); //2.*angle_p0p1-angle_p0p2;//
-          //std::cout << "angles[0] = " << angles[0] << " (" << angles[0] *180./M_PI << ")" << ", angle_p0p1 = " << angle_p0p1  << "(" << angle_p0p1 *180./M_PI << ")"<< ", angle_p0p2 = " << angle_p0p2  << "(" << angle_p0p2 *180./M_PI << ")"<< std::endl;
-        }
-      else
-        {
-          // NOTE: start angle assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
-          angles[n_points-1] = angle_constrains[n_points-1];
-        }
-      size_t i = n_points-2;
-      std::cout << i << ": ";
-      if (std::abs(fmod((fmod(angles[i]-angles[i+1],180.) + 180.), 180.)) < std::numeric_limits<double>::epsilon()*10.)
-        {
-          control_points[i] = p[i];
-          std::cout << ", flag 1: "<< angles[i] << " (" << angles[i] *180./M_PI << "), "<< angles[i+1] << " (" << angles[i+1] *180./M_PI << ")";
-        }
-      else
-        {
-          std::cout << ", flag 2";
-          const double &x0 = p[i][0];
-          const double &y0 = p[i][1];
-          const double &x1 = p[i+1][0];
-          const double &y1 = p[i+1][1];
-          if (std::abs(fmod((fmod(angles[i], 180.) + 180.), 180.) - 90.) < std::numeric_limits<double>::epsilon()*10.)
-            {
-              std::cout << ", flag 2.1";
-              // vertical line at x = x0
-              control_points[i][0] = x0;
-              control_points[i][1] = std::tan(angles[i+1]) * (x0-x1) + y1;
-            }
-          else if (std::abs(fmod((fmod(angles[i+1], 180.) + 180.), 180.) - 90.) < std::numeric_limits<double>::epsilon()*10.)
-            {
-              std::cout << ", flag 2.2";
-              // vertical line at x = x0
-              control_points[i][0] = x1;
-              control_points[i][1] = std::tan(angles[i]) * (x1-x0) + y0;
-            }
-          std::cout << ", flag 2.3: angles i: " << angles[i] << " (" << angles[i]*180./M_PI  << "), angles i+1: " << angles[i+1] << " (" << angles[i+1]*180./M_PI  << ")";
-          const double m0 = std::tan(angles[i]); // Line 0: y = m0 (x - x0) + y0
-          const double m1 = std::tan(angles[i+1]); // Line 1: y = m1 (x - x1) + y1
-          const double x = ((m0 * x0 - m1 * x1) - (y0 - y1)) / (m0 - m1);
-          std::cout << ", m0 = " << m0 << ", m1 = " << m1 << ", m0 - m1 = " << m0 - m1 << ", control point = " << x << ":" << m0 * (x - x0) + y0;
-          control_points[i][0] = x;
-          control_points[i][1] = m0 * (x - x0) + y0;
-
-          //// Based on http://geomalgorithms.com/a02-_lines.html.
-          //// if the control point is doesn't project on the line
-          //// rotate is 180 degrees.
-          //const Point<2> BSP_ESP = p[i+1] - p[i];
-          //const Point<2> BSP_CP = control_points[i] - p[i];
-//
-          //const double c1 = BSP_ESP * BSP_CP;
-          //const double c2 = BSP_ESP * BSP_ESP;
-//
-          //if (c1 < 0 || c2 < c1)
+          //if (check_point_depth > min_max_depth_per_bezier_curve[bezier_curve_i].first
+          //    && check_point_depth > min_max_depth_per_bezier_curve[bezier_curve_i+1].second)
           //  {
-          //      control_points[i][0] = 2 * x1 - control_points[i][0];
-          //      control_points[i][1] = 2.*y1 - control_points[i][1];
+          //    // This bezier curve falls within the depth segment.
+          //    // Now check the location on this and the curve below.
+          //    //ClosestPointOnCurve above = contours.contour_curves[bezier_curve_i].closest_point_on_curve(check_point_surface_2d);
+          //    //ClosestPointOnCurve below = contours.contour_curves[bezier_curve_i+1].closest_point_on_curve(check_point_surface_2d);
           //  }
         }
-      std::cout << std::endl;
 
-      // compute length of segment
-      lengths[n_points-2] = compute_quadratic_bezier_arc_length(p[n_points-2],control_points[n_points-2],p[n_points-1]);
-      std::cout << p[n_points-2] << " - " << control_points[n_points-2] << " - " << p[n_points-1] << std::endl;
-
-
-    }
-
-
-    Point<2>
-    BezierCurve::operator()(const size_t i, const double t) const
-    {
-      return (1-t)*(1-t)*points[i] + 2*t*(1-t)*control_points[i] + t*t*points[i+1];
-    }
-
-    ClosestPointOnCurve
-    BezierCurve::closest_point_on_curve(Point<2> &check_point) const
-    {
-      // go through each section and find all roots in domain 0 to 1 and choose the smallest
-      ClosestPointOnCurve closest_point_on_curve;
-      closest_point_on_curve.distance = std::numeric_limits<double>::infinity();
-      closest_point_on_curve.fraction = std::numeric_limits<double>::signaling_NaN();
-      for ( size_t i = 0; i < control_points.size(); ++i)
-        {
-          // compute a,b,c and d in the cubic equation describing the distance from point p to the local quadratic Bezier curve.
-          // using https://blog.gludion.com/2009/08/distance-to-quadratic-bezier-curve.html
-          const Point<2> A = control_points[i]-points[i];
-          const Point<2> B = points[i+1]-control_points[i]-A;
-          const double a = B*B;
-          const double b = 3*A*B;
-          const double c = 2.*A*A+(points[i]-check_point)*B;
-          const double d = (points[i]-check_point)*A;
-          const std::vector<double> real_roots = solve_cubic_equation_real(a,b,c,d);
-          std::cout << "real roots: ";
-          for (size_t root_i = 0; root_i < real_roots.size(); ++root_i)
-            {
-              if (real_roots[root_i] >= 0. && real_roots[root_i] <= 1.)
-                {
-                  const Point<2> point_on_curve = (*this)(i,real_roots[root_i]);
-                  std::cout << root_i << " = " << real_roots[root_i] << ", poc=" << point_on_curve << ", d = " << point_on_curve.distance(check_point) << "; ";
-                  if (point_on_curve.distance(check_point) < closest_point_on_curve.distance)
-                    {
-                      closest_point_on_curve.distance = point_on_curve.distance(check_point);
-                      closest_point_on_curve.fraction = real_roots[root_i];
-                      closest_point_on_curve.index = i;
-                      closest_point_on_curve.point = point_on_curve;
-                    }
-                }
-              else
-                {
-                  std::cout << root_i << " = " << real_roots[root_i] << "; ";
-                }
-            }
-          std::cout << std::endl;
-        }
-      return closest_point_on_curve;
-    }
-
-    CircleLine::CircleLine(const std::vector<Point<2> > &p, const double start_angle)
-    {
-      // resize all vectors
-      const size_t n_points = p.size();
-      circle_centers.resize(n_points-1, p[0]);
-      //radii.resize(n_points-1);
-      //lengths.resize(n_points-1);
-      angles.resize(n_points);
-      // if angle is not infinite, use that angle, otherwise compute it.
-      // Todo: compute the first angle, if angle is set to initinite, which is set
-      //       based on the derivative between the first and third point:
-      if (std::isinf(start_angle))
-        {
-          // compute p1 and p2 relative to p0 to compute the angles.
-          const double angle_p0p1 = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
-          const double angle_p0p2 = std::atan2(p[2][1]-p[0][1],p[2][0]-p[0][0]);
-          angles[0] = 2.*angle_p0p1-angle_p0p2;
-          std::cout << "angle_p0p1 = " << angle_p0p1 << ", angle_p0p2 = " << angle_p0p2 << std::endl;
-        }
-      else
-        {
-          // NOTE: start angle assumes slabs or faults going down, which means they should provide a negative angle to get expected behavoir
-          angles[0] = start_angle;
-        }
-      double previous_slope = std::tan(angles[0]);
-      std::cout << "starting angle = " << angles[0]  << "(" << angles[0] *180/const_pi << "), previous_slope = " << previous_slope << std::endl;
-
-      // now compute the info for all points
-      for (size_t i = 0; i < n_points-1; ++i)
-        {
-          // This computes the circle center, radius and length belonging to i
-          // and the next angle (belongin to i+1)
-
-          // start with computing the circle center
-          // based on: https://math.stackexchange.com/a/996614
-          // substituting x_c from equation 1 into equation 2, then solve for yc (called x here):
-          // https://www.wolframalpha.com/input?i=%28x1-x2%29*%28x1%2By1-x%29%2B%28y1-y2%29*x%3D0.5*%28x1%5E2%2By1%5E2-x2%5E2-y2%5E2%29
-          const double &x1 = p[i][0];
-          const double &y1 = p[i][1];
-          const double &x2 = p[i+1][0];
-          const double &y2 = p[i+1][1];
-          std::cout << "i: " << i << ", x1:" << x1 << ", x2:" << x2 << ", y1:" << y1 << ", y2:" << y2 << ", -x1+x2+y1-y2 = " << -x1+x2+y1-y2 << std::endl;
-          const double a = previous_slope;
-          const double b = (x2-x1)/(y2-y1);
-          std::cout << "a = " << a << ", ao = " << (-2./3.) << ", b = " << b << ", bo = " << ((0.-1.)/(4.-3.)) << ", y_old=" << (b*x1+y1)/(1.+(b*(a*x1+y1))/a) << ", y_new = " << (b*0.5*(x1+x2)+0.5*(y1+y2))/(1.+(b*(a*x1+y1))/a) << std::endl;
-          //-b*x+0.5*(y1+y2)+b*0.5*(x1+x2)=-a*x+a*x1+y1
-          std::cout << "1: "  << -((0.-1.)/(4.-3.))*-2.+0.5*(4.+3.)+((0.-1.)/(4.-3.))*0.5*(0.+1.) << " = " << -(-2./3.)*-2.+(-2./3.)*1.+3. << std::endl;
-          std::cout << "2: "  << -b                *-2.+0.5*(4.+3.)+b                *0.5*(0.+1.) << " = " << -a       *-2.+a       *1.+3. << std::endl;
-          std::cout << "e: "  << -b*-2.+0.5*(y1+y2)+b*0.5*(x1+x2) << " = " << -a*-2.+a *x2+y2 << std::endl;
-          WBAssert(std::fabs(-b+a) > 0., "x1:" << x1 << ", x2:" << x2 << ", y1:" << y1 << ", y2:" << y2 << ", -x1+x2+y1-y2 = " << -x1+x2+y1-y2);
-
-          circle_centers[i][0] = (-0.5*(y1+y2)-b*0.5*(x1+x2)+a*x2+y2)/(-b+a);
-          circle_centers[i][1] = -a*circle_centers[i][0]+a*x2+y2;
-          //circle_centers[i][1] = (b*0.5*(x1+x2)+0.5*(y1+y2))/(1.+(b*(a*x1+y1))/a);
-          //circle_centers[i][1] = (b*x1+y1)/(1.+((b*a*x1+y1))/a);
-          //circle_centers[i][0] = ((a*x1+y1)/a)*circle_centers[i][1];
-          //circle_centers[i][1] = ((x1*(x1-x2)+y1*(x1-x2))/(previous_slope*(y1-y2))+(-(x1-x2)/(y1-y2))*0.5*(x1+x2)+0.5*(y1+y2))/(((x1-x2)/(previous_slope*(y1-y2)))+1);
-          //circle_centers[i][0] = (-circle_centers[i][1] + x1 +y1)/(-previous_slope);
-          //circle_centers[i][1] = (-x1*(x1-x2)+((x1-x2)*y1)/previous_slope + 0.5*(x1*x1-x2*x2+y1*y1-y2*y2))/((x1-x2)/previous_slope+y1-y2);
-          //circle_centers[i][1] = (-x1*(x1-x2)-previous_slope*(x1-x2)*y1 + 0.5*(x1*x1-x2*x2+y1*y1-y2*y2))/(-previous_slope*(x1-x2)+y1-y2);
-          //circle_centers[i][0] = (-previous_slope*x1 + y1 + circle_centers[i][1])/(-previous_slope);
-          //circle_centers[i][1] = (-x1*(x1-x2) - (x1-x2)*y1 + 0.5*(x1*x1-x2*x2+y1*y1-y2*y2))/(-x1+x2+y1-y2);
-          //circle_centers[i][0] = x1 + y1 - circle_centers[i][1];
-          // now compute the angle between p1 and p2 when rotating around c:
-          double angle_center_P1 = std::atan2(-previous_slope,1.);
-          previous_slope = -(y2-circle_centers[i][1])/(x2-circle_centers[i][0]);
-          double angle_center_P2 = std::atan2(-(y2-circle_centers[i][1]),(x2-circle_centers[i][0]));//std::atan(previous_slope);//std::atan2((y2-circle_centers[i][1]),(x2-circle_centers[i][0]));
-          angles[i+1] = angles[i] - angle_center_P1 + angle_center_P2;
-          //angles[i+1] = angles[i+1] - 2.*const_pi*std::floor(angles[i+1]/(2.*const_pi));
-          //double diff_angle =
-          std::cout << "angle_center_P1: " << angle_center_P1 << "(" << angle_center_P1 *180/const_pi << "), angle_center_P2: " << angle_center_P2 << "(" << angle_center_P2 *180/const_pi << "),, cc: " << circle_centers[i] << ", angle = " << angles[i+1] << "(" << angles[i+1] *180/const_pi << "), previous_slope = " << previous_slope << std::endl;
-          //circle_centers[i][1] =  (x1*x1-2.*x1*x2+2.*x1*y1-x2*x2-2.*x2*y1-y1*y1-2.*y2*y2)/(2.*(x1-x2-y1+y2));
-        }
     }
 
     PointDistanceFromCurvedPlanes
@@ -1578,17 +1066,17 @@ namespace WorldBuilder
               if (!bool_cartesian)
                 {
                   double normal = std::fabs(point_list[i_section_min_distance+(int)(std::round(fraction_CPL_P1P2))][0]-check_point_surface_2d[0]);
-                  double plus   = std::fabs(point_list[i_section_min_distance+(int)(std::round(fraction_CPL_P1P2))][0]-(check_point_surface_2d[0]+2*const_pi));
-                  double min    = std::fabs(point_list[i_section_min_distance+(int)(std::round(fraction_CPL_P1P2))][0]-(check_point_surface_2d[0]-2*const_pi));
+                  double plus   = std::fabs(point_list[i_section_min_distance+(int)(std::round(fraction_CPL_P1P2))][0]-(check_point_surface_2d[0]+2*Consts::PI));
+                  double min    = std::fabs(point_list[i_section_min_distance+(int)(std::round(fraction_CPL_P1P2))][0]-(check_point_surface_2d[0]-2*Consts::PI));
 
                   // find out whether the check point, checkpoint + 2pi or check point -2 pi is closest to the point list.
                   if (plus < normal)
                     {
-                      check_point_surface_2d_temp[0]+= 2*const_pi;
+                      check_point_surface_2d_temp[0]+= 2*Consts::PI;
                     }
                   else if (min < normal)
                     {
-                      check_point_surface_2d_temp[0]-= 2*const_pi;
+                      check_point_surface_2d_temp[0]-= 2*Consts::PI;
                     }
                 }
 
@@ -1707,7 +1195,7 @@ namespace WorldBuilder
 
               // This interpolates different properties between P1 and P2 (the
               // points of the plane at the surface)
-              const double degree_90_to_rad = 0.5 * const_pi;
+              const double degree_90_to_rad = 0.5 * Consts::PI;
 
               WBAssert(plane_segment_angles.size() > original_next_section,
                        "Error: original_next_section = " << original_next_section
@@ -1811,7 +1299,7 @@ namespace WorldBuilder
                            << ". interpolated_angle_top = " << interpolated_angle_top);
 
                   Point<2> center_circle(cartesian);
-                  if (std::fabs(interpolated_angle_top - 0.5 * const_pi) < 1e-8)
+                  if (std::fabs(interpolated_angle_top - 0.5 * Consts::PI) < 1e-8)
                     {
                       // if interpolated_angle_top is 90 degrees, the tan function
                       // is undefined (1/0). What we really want in this case is
@@ -1820,7 +1308,7 @@ namespace WorldBuilder
                       center_circle[0] = difference_in_angle_along_segment > 0 ? begin_segment[0] + radius_angle_circle : begin_segment[0] - radius_angle_circle;
                       center_circle[1] = begin_segment[1];
                     }
-                  else if (std::fabs(interpolated_angle_top - 1.5 * const_pi) < 1e-8)
+                  else if (std::fabs(interpolated_angle_top - 1.5 * Consts::PI) < 1e-8)
                     {
                       // if interpolated_angle_top is 270 degrees, the tan function
                       // is undefined (-1/0). What we really want in this case is
@@ -1907,13 +1395,13 @@ namespace WorldBuilder
                   // Furthermore, when the check point is at the same location as
                   // the center of the circle, we count that point as belonging
                   // to the top of the top segment (0 degree).
-                  double check_point_angle = std::fabs(CPCR_norm) < std::numeric_limits<double>::epsilon() ? 2.0 * const_pi : (check_point_2d[0] <= center_circle[0]
+                  double check_point_angle = std::fabs(CPCR_norm) < std::numeric_limits<double>::epsilon() ? 2.0 * Consts::PI : (check_point_2d[0] <= center_circle[0]
                                              ? std::acos(dot_product/(CPCR_norm * radius_angle_circle))
-                                             : 2.0 * const_pi - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
-                  check_point_angle = difference_in_angle_along_segment >= 0 ? const_pi - check_point_angle : 2.0 * const_pi - check_point_angle;
+                                             : 2.0 * Consts::PI - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
+                  check_point_angle = difference_in_angle_along_segment >= 0 ? Consts::PI - check_point_angle : 2.0 * Consts::PI - check_point_angle;
 
                   // In the case that it is exactly 2 * pi, bring it back to zero
-                  check_point_angle = (std::fabs(check_point_angle - 2 * const_pi) < 1e-14 ? 0 : check_point_angle);
+                  check_point_angle = (std::fabs(check_point_angle - 2 * Consts::PI) < 1e-14 ? 0 : check_point_angle);
 
                   if ((difference_in_angle_along_segment > 0 && (check_point_angle <= interpolated_angle_top || std::fabs(check_point_angle - interpolated_angle_top) < 1e-12)
                        && (check_point_angle >= interpolated_angle_bottom || std::fabs(check_point_angle - interpolated_angle_bottom) < 1e-12))
@@ -2037,7 +1525,7 @@ namespace WorldBuilder
     std::array<double,3>
     euler_angles_from_rotation_matrix(const std::array<std::array<double,3>,3> &rotation_matrix)
     {
-      const double rad_to_degree = 180.0/const_pi;
+      const double rad_to_degree = 180.0/Consts::PI;
       std::array<double,3> euler_angles;
       //const double s2 = std::sqrt(rotation_matrix[2][1] * rotation_matrix[2][1] + rotation_matrix[2][0] * rotation_matrix[2][0]);
       std::ostringstream os;
@@ -2066,7 +1554,7 @@ namespace WorldBuilder
     euler_angles_to_rotation_matrix(double phi1_d, double theta_d, double phi2_d)
     {
 
-      const double degree_to_rad = const_pi/180.0;
+      const double degree_to_rad = Consts::PI/180.0;
       const double phi1 = phi1_d * degree_to_rad;
       const double theta = theta_d * degree_to_rad;
       const double phi2 = phi2_d * degree_to_rad;

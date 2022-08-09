@@ -21,7 +21,7 @@
 #define WORLD_BUILDER_COORDINATE_SYSTEMS_INVALID_H
 
 #include "world_builder/coordinate_systems/interface.h"
-#include "world_builder/nan.h"
+#include "world_builder/global.h"
 
 
 namespace WorldBuilder

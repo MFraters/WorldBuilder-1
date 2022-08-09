@@ -21,9 +21,9 @@
 #define WORLD_BUILDER_UTILITIES_H
 
 
-#include "world_builder/nan.h"
 #include "world_builder/coordinate_systems/interface.h"
 #include "world_builder/objects/natural_coordinate.h"
+#include "world_builder/objects/contours.h"
 #include <iostream>
 
 
@@ -36,11 +36,6 @@ namespace WorldBuilder
   } // namespace CoordinateSystems
   namespace Utilities
   {
-
-    // define pi. Directly defining it seems to be
-    // the safest option.
-    constexpr double const_pi = 3.141592653589793238462643383279502884;
-
     /**
      * provide a short way to test if two doubles are equal.
      * Based on https://stackoverflow.com/a/4010279.
@@ -170,18 +165,6 @@ namespace WorldBuilder
       Invalid,
     };
 
-    struct SplineSet
-    {
-      std::vector<std::array<double,4>> m;
-      //double a;
-      //double b;
-      //double c;
-      //double d;
-    };
-
-    SplineSet spline(std::vector<double> &y);
-
-    std::vector<double>  solve_cubic_equation_real(const double a_original,const double b_original,const double c_original,const double d_original);
 
     /**
      * Evaluate at point @p x.
@@ -203,88 +186,6 @@ namespace WorldBuilder
     //         (a*h + b)*h + c;
     //}
 
-
-    struct ClosestPointOnCurve
-    {
-      ClosestPointOnCurve()
-        :
-        distance(std::numeric_limits<double>::infinity()),
-        fraction(std::numeric_limits<double>::signaling_NaN()),
-        index(0),
-        point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
-      {}
-
-      double distance;
-      double fraction;
-      size_t index;
-      Point<2> point;
-    };
-
-    /**
-     * @brief computes the arc length of a quadratic bezier curve segment
-     *
-     * @param a This is a point the curve goes through.
-     * @param b This is the control point.
-     * @param c This is a point the curve goes through.
-     * @return double
-     */
-    double compute_quadratic_bezier_arc_length(const Point<2> &a, const Point<2>  &b, const Point<2> &c);
-
-    /**
-     * @brief Class for circle line/spline, including interpolation on it
-     *
-     */
-    class BezierCurve
-    {
-      public:
-        BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains);
-
-        ClosestPointOnCurve closest_point_on_curve(Point<2> &p) const;
-
-        Point<2> operator()(const size_t i, const double) const;
-
-        //private:
-        std::vector<Point<2> > points;
-        std::vector<Point<2> > control_points;
-        std::vector<double> lengths;
-        //SplineSet x_spline;
-        //SplineSet y_spline;
-
-        //std::vector<double> radii;
-        std::vector<double> angles;
-        //std::vector<double> lengths;
-
-    };
-
-    /**
-     * @brief Struct to hold circle line data
-     *
-     */
-    struct CircleLineData
-    {
-      double signed_distance_to_line;
-      double fraction_along_circle;
-      double distance_along_circle;
-      Point<2> point_on_circle; // dim? or even just 3?
-    };
-
-    /**
-     * @brief Class for circle line/spline, including interpolation on it
-     *
-     */
-    class CircleLine
-    {
-      public:
-        CircleLine(const std::vector<Point<2> > &p, const double start_angle = std::numeric_limits<double>::infinity());
-
-
-        //private:
-        std::vector<Point<2> > circle_centers;
-        //std::vector<double> radii;
-        std::vector<double> angles;
-        //std::vector<double> lengths;
-
-    };
 
     /**
      * Class for linear and monotone spline interpolation
@@ -455,6 +356,30 @@ namespace WorldBuilder
        */
       Point<3> closest_trench_point;
     };
+
+    /**
+     * @brief Todo;
+     *
+     * @param check_point_cartesian
+     * @param check_point_natural
+     * @param reference_point
+     * @param bezier_curves
+     * @param min_max_depth_per_bezier_curve
+     * @param interpolation_properties
+     * @param coordinate_system
+     * @param start_radius
+     * @param only_positive
+     * @return PointDistanceFromCurvedPlanes
+     */
+    PointDistanceFromCurvedPlanes
+    distance_point_from_bezier_surface(const Point<3> &check_point_cartesian, // cartesian point in cartesian and spherical system
+                                       const Objects::NaturalCoordinate &check_point_natural, // cartesian point cartesian system, spherical point in spherical system
+                                       const Point<2> &reference_point, // in (rad) spherical coordinates in spherical system
+                                       const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
+                                       const std::vector<std::vector<double> > &interpolation_properties,
+                                       const Objects::Contours &contours,
+                                       const double start_radius,
+                                       const bool only_positive);
 
     /**
      * Computes the distance of a point to a curved plane.

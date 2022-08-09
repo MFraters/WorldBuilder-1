@@ -19,7 +19,9 @@
 
 #include "world_builder/coordinate_systems/invalid.h"
 #include "world_builder/types/object.h"
+#include "world_builder/global.h"
 
+using namespace WorldBuilder;
 
 namespace WorldBuilder
 {

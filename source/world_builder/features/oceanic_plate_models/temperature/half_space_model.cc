@@ -19,8 +19,6 @@
 
 #include "world_builder/features/oceanic_plate_models/temperature/half_space_model.h"
 
-
-#include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
@@ -108,7 +106,7 @@ namespace WorldBuilder
           spreading_velocity = prm.get<double>("spreading velocity")/31557600;  // m/seconds
 
           mid_oceanic_ridges = prm.get_vector<std::vector<Point<2>>>("ridge coordinates");
-          const double dtr = prm.coordinate_system->natural_coordinate_system() == spherical ? const_pi / 180.0 : 1.0;
+          const double dtr = prm.coordinate_system->natural_coordinate_system() == spherical ? Consts::PI / 180.0 : 1.0;
           for (auto &ridge_coordinates : mid_oceanic_ridges)
             for (auto &ridge_coordinate : ridge_coordinates)
               {

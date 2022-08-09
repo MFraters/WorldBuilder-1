@@ -21,7 +21,6 @@
 
 #include <world_builder/utilities.h>
 #include <world_builder/assert.h>
-#include <world_builder/nan.h>
 #include <world_builder/parameters.h>
 
 #include <world_builder/types/double.h>

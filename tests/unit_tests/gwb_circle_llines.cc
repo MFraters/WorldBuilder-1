@@ -202,47 +202,47 @@ TEST_CASE("Bezier curves")
 
   // now compute closest point on line
   Point<2> test_point(0.1,4,CoordinateSystem::cartesian);
-  Objects::ClosestPointOnCurve result = b1.closest_point_on_curve(test_point);
+  Objects::ClosestPointOnCurve result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance<< std::endl << std::endl;
 
   test_point = Point<2>(0.2,4,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(0.5,3.75,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(1,3.1,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(1,1,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(2,2,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(6,2.5,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(4,2.5,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(6,1.5,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(6,1.85,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 
   test_point = Point<2>(6,1.8,CoordinateSystem::cartesian);
-  result = b1.closest_point_on_curve(test_point);
+  result = b1.closest_point_on_curve_segment(test_point);
   std::cout << "closest point on curve to " << test_point << " = " << result.point << ", distance = " << result.distance << std::endl << std::endl;
 }
 /*

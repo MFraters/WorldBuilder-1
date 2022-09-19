@@ -37,11 +37,17 @@ namespace WorldBuilder
     struct DistanceInterpolationData
     {
 
-      double signed_distance_from_plane;
+      double signed_distance_from_bezier_surface;
       double distance_along_surface;
       size_t curve_above_index;
       size_t curve_above_section_index;
       double curve_above_section_fraction;
+      size_t curve_below_index;
+      size_t curve_below_section_index;
+      double curve_below_section_fraction;
+      size_t curve_local_index;
+      size_t curve_local_section_index;
+      double curve_local_section_fraction;
     };
 
     class Contours
@@ -55,10 +61,17 @@ namespace WorldBuilder
         /**
          * Constructor to create a contours from value at points object output.
          */
-        Contours(std::vector<std::vector<Point<2> > > points,
-                 std::vector<double> depths,
-                 std::vector<std::vector<double> > angle_contraints,
-                 std::vector<std::vector<double> > thicknesses);
+        Contours(const std::vector<std::vector<Point<2> > > &points,
+                 const std::vector<double> depths,
+                 const std::vector<std::vector<double> > &thicknesses,
+                 const double start_radius,
+                 const std::vector<std::vector<double> > &angle_contraints = {},
+                 const std::vector<std::vector<Point<2> > > &directions = {});
+
+        std::pair<Point<3>,Point<3> >
+        compute_cross_section_axes(Point<3> origin,
+                                   Point<3> x_direction,
+                                   Point<3> y_direction) const;
 
         DistanceInterpolationData
         distance_interpolation_data(const Point<3> &check_point_cartesian,
@@ -79,6 +92,38 @@ namespace WorldBuilder
         std::vector<double> depths;
         std::vector<std::vector<double> > angle_contraints;
         std::vector<std::vector<double> > thicknesses;
+        std::vector<std::vector<Point<2> > > directions;
+        double start_radius;
+
+        /**
+         * @brief Store the max thickness on each curve.
+         *
+         */
+        std::vector<double> max_thickness_on_curve;
+
+        /**
+         * @brief stores the distance along the Bezier surface to reach this point.
+         *
+         */
+        std::vector<std::vector<double> > distance_along_surface;
+        /**
+         * @brief stores the starting and ending depth range of each contour interval
+         *
+         * This means that the first entry is the depth[i]-thickness[i] and
+         * the second entry is depth[i+1]+thickness[i+1]
+         */
+        //std::vector<std::pair<double,double> > depth_ranges;
+
+
+        /**
+         * @brief Stores which grid points a single grid point connects to the contour below it.
+         *
+         * Example layout: [
+         * contour1:[connections for point 1:[0,1], connections for point 2: [2]],
+         * contour2:[connections for point 1:[0], connections for point 2: [1,2]]
+         * ]
+         */
+        //std::vector<std::vector<std::vector<unsigned int> > > connectivity;
 
 
 

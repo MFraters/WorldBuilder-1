@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "world_builder/objects/bezier_curve.h"
 #include "world_builder/objects/cubic_spline.h"
+#include "world_builder/assert.h"
 
 using namespace WorldBuilder;
 
@@ -40,8 +41,9 @@ namespace WorldBuilder
       w[1] = c[1] - 2*b[1] + a[1];
 
       const double uu = 4*(w[0]*w[0] + w[1]*w[1]);
+      //std::cout << ", uu = " << uu << std::endl;
 
-      if (uu < 0.00001)
+      if (uu < 0.00001 || a == b || b == c)
         {
           return std::sqrt((c[0] - a[0])*(c[0] - a[0]) + (c[1] - a[1])*(c[1] - a[1]));
         }
@@ -57,60 +59,28 @@ namespace WorldBuilder
       return ((t1*t2 - t3*std::log(t2+t1) -(vv*t4 - t3*std::log(vv+t4))) / (8*std::pow(uu, 1.5)));
     }
 
-    /*double blen()
-    {
-      const double p0x = 0.;
-      const double p0y = 4.;
-      const double p1x = 0.787577;
-      const double p1y = 3.49613;
-      const double p2x = 1.;
-      const double p2y = 3.;
-      const double ax = p0x - 2*p1x + p2x;
-      const double ay = p0y - 2*p1y + p2y;
-      const double bx = 2*p1x - 2*p0x;
-      const double by = 2*p1y - 2*p0y;
-      double A = 4*(ax*ax + ay*ay);
-      double B = 4*(ax*bx + ay*by);
-      double C = bx*bx + by*by;
-
-      std::cout << "a: " << ax << " " << ay << ", b: " << bx << " " << by
-                << ", A: " << A << ", B: " << B << ", C: " << C << ", ";
-
-      double Sabc = 2*sqrt(A+B+C);
-      double A_2 = sqrt(A);
-      double A_32 = 2*A*A_2;
-      double C_2 = 2*sqrt(C);
-      double BA = B/A_2;
-
-      return ( A_32*Sabc +
-               A_2*B*(Sabc-C_2) +
-               (4*C*A-B*B)*log( (2*A_2+BA+Sabc)/(BA+C_2) )
-             )/(4*A_32);
-    };*/
 
     double
-    BezierCurve::arc_length(const Point<2> &P0, const Point<2>  &Pc, const Point<2> &P1, const double t) const
+    BezierCurve::arc_length(const size_t index, const double t) const//const Point<2> &P0, const Point<2>  &Pc, const Point<2> &P1, const double t) const
     {
-
-      //std::cout << "blen = " << blen() << std::endl;
-
       // This method uses a similair approach as https://malczak.info/blog/quadratic-bezier-curve-length
       // but instead of the full length, we integrate the full equaion (https://www.wolframalpha.com/input?i=integrate+sqrt%28A*t%5E2%2BB*t%2Bc%29+dt)
       // leaving t in there. Then we compute the integration constant by stating that the length at t=0 should
       // be zero.
-      auto dt = P0-2.*Pc+P1;
-      auto ddt = 2.*Pc-2.*P0;
+      auto dt = points[index]-2.*control_points[index]+points[index+1];
+      auto ddt = 2.*control_points[index]-2.*points[index];
       //std::cout << "P0: " << P0 << ", Pc: " << Pc << ", P1: " << P1 << ", dt: " << dt << ", ddt: " << ddt << std::endl;
       const double a = 4*(dt[0]*dt[0]+dt[1]*dt[1]);//dt*dt;//
       const double c = ddt[0]*ddt[0]+ddt[1]*ddt[1];//ddt*ddt;//
 
-      if (a < 5e-4 * c)//(c < 0.0000001)
+      //std::cout << "a: " << a << ", c: " << c << ", t: " << t << std::endl;
+      if (a < 5e-4 * c || points[index] == control_points[index] || control_points[index] == points[index+1])//(c < 0.0000001)
         {
           // all points are on a line
           // todo: chec that this is actually correct
-          WBAssert(false,"todo");
-          std::cout << "everyting in a line!" << std::endl;
-          return -1;//std::sqrt((P0[0] + dx1*t)*(P0[0] + dx1*t) + (P0[1] + dy1*t)*(P0[1] + dy1*t));
+          WBAssert(false,"todo: length = " << sqrt(((points[index+1]-points[index])*t)*((points[index+1]-points[index])*t)));
+          //std::cout << "everyting in a line!" << std::endl;
+          return sqrt(((points[index+1]-points[index])*t)*((points[index+1]-points[index])*t));//std::sqrt((points[index][0] + dx1*t)*(points[index][0] + dx1*t) + (points[index][1] + dy1*t)*(points[index][1] + dy1*t));
         }
 
       const double b = 4*(dt[0]*ddt[0]+dt[1]*ddt[1]);//2*ddt*dt;////at*bt;
@@ -119,70 +89,17 @@ namespace WorldBuilder
       const double k = (4*a*c-b*b)/(4*a);
       double x = t*sqrt(a)+sqrt(u);
 
-      //std::cout << " with a=" << a << ", b=" << b << ", c=" << c << ", k = " << k << ", u = " << u << ", x = " << x << std::endl;
-
+      // todo: optimize
       const double integral = ((b+2.*a*t)*sqrt(c+t*(b+a*t)))/(4*a) - ((b*b-4.*a*c)*log(b+2.*a*t+2.*sqrt(a)*sqrt(c+t*(b+a*t))))/(8.*pow(a,(3./2.)));
-      //const double integral = ((2.*a*t+b)*sqrt(t*(a*t+b)+c))/(4*a) - ((b*b-4.*a*c)*log(2.*sqrt(a)*sqrt(t*(a*t+b)+c)+2.*a*t+b))/(8*pow(a,1.5));
-      //const double integral = 0.5 * (x * sqrt(k + x*x) + k * log(x + sqrt(k + x*x)));//0.5*(x*sqrt(x*x+k)+k*log(x+sqrt(x*x+k)));
-      //// set the constant so that t=0 returns length zero
-//
-      //const double x0 = 0.*sqrt(a)+sqrt(u);
-      //const double integral0 = 0.5*(x0*sqrt(x0*x0+k)+k*log(x0+sqrt(x0*x0+k)));
-      //const double constant = k*log(sqrt(k));
-      //x = sqrt(u);
-      //const double constant =  0.5 * (x * sqrt(k + x*x) + k * log(x + sqrt(k + x*x)));//((b+2.*a*z)*sqrt(c+z*(b+a*z)))/(4*a) - ((b*b-4.*a*c)*log(b + 2.*a*z + 2.*sqrt(a)*sqrt(c + z*(b + a*z))))/(8.*pow(a,(3./2.)));
-      const double z = 0.;
-      const double constant = ((b+2.*a*z)*sqrt(c+z*(b+a*z)))/(4*a) - ((b*b-4.*a*c)*log(b+2.*a*z+2.*sqrt(a)*sqrt(c+z*(b+a*z))))/(8.*pow(a,(3./2.)));
-      //const double constant = (b*sqrt(c))/(4*a) - (b*b-4*a*c*log(2*sqrt(a)*sqrt(c)+b))/(8*pow(a,1.5));
-
+      const double constant = (b*sqrt(c))/(4*a) - ((b*b-4.*a*c)*log(b+2.*sqrt(a)*sqrt(c)))/(8.*pow(a,(3./2.)));
       //std::cout << "integral = " << integral << ", constant = " << constant << ", min = " << integral-constant << std::endl;
 
       return integral-constant;
-
-
-      /*
-            const double sabc = sqrt(a+b+c);
-            const double a2 = pow(a,-0.5);
-            const double a32 = a2*a2*a2;
-            const double c2 = 2.*sqrt(c);
-            const double ba_c2 = b* a2 + c2;
-
-            const double v0 = 0.25*a2*a2*b*(2.*sabc - c2) + sabc;
-
-            return v0 + 0.25* a32 * (4.0 * c * a - b*b)
-                    *std::log(((2.0*a+b)*a2 + 2.0*sabc)/ba_c2);*/
-      /*
-      // todo: catch case all points are on a line
-      const double dx1 = Pc[0]-P0[0];
-      const double dx2 = P1[0]-Pc[0];
-      const double dy1 = Pc[1]-P0[1];
-      const double dy2 = P1[1]-Pc[1];
-
-      const double a = (dx2-dx1)*(dx2-dx1)+(dy2-dy1)*(dy2-dy1);
-
-      if (a < 0.0000001)
-        {
-          // all points are on a line
-          // todo: chec that this is actually correct
-          std::cout << "everyting in a line!" << std::endl;
-          return std::sqrt((P0[0] + dx1*t)*(P0[0] + dx1*t) + (P0[1] + dy1*t)*(P0[1] + dy1*t));
-        }
-      const double b = dx1*(dx2-dx1)+(dy1*(dy2-dy1));
-      const double c = dx1*dx1+dy1*dy1;
-      std::cout << std::endl << "P0[0]: "  << P0[0] << ", Pc[0]: " << Pc[0]
-                << ", dx1: " << dx1 << ", dy1: " << dy1
-                << ", dx2: " << dx2 << ", dy2: " << dy2
-                << ", c: " << c << ", b: " << b << ", a: " << a << ", b/a: " << b/a
-                << ", part 1:" << (t+(b/a))*sqrt(c+2*b*t+a*t*t) << ", part 2: " << ((a*c-b*b)/std::pow(a,1.5))*asinh((a*t+b)/sqrt(a*c-b*b))
-                << ", r:";
-
-      return (t+(b/a))*sqrt(c+2*b*t+a*t*t)+((a*c-b*b)/std::pow(a,1.5))*asinh((a*t+b)/sqrt(a*c-b*b));
-      */
     }
 
 
 
-    BezierCurve::BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains)
+    BezierCurve::BezierCurve(const std::vector<Point<2> > &p, const std::vector<double> &angle_constrains)
     {
       points = p;
       // first compute the factors for a monotome spline
@@ -204,8 +121,8 @@ namespace WorldBuilder
 
       // resize all vectors
       control_points.resize(n_points-1, p[0]);
-      lengths.resize(n_points-1,std::numeric_limits<double>::signaling_NaN());
-      angles.resize(n_points,std::numeric_limits<double>::signaling_NaN());
+      lengths.resize(n_points-1,NaN::DSNAN);
+      angles.resize(n_points,NaN::DSNAN);
       if (std::isnan(angle_constrains[0]))
         {
           const double value_x = x_spline.m[0][3];
@@ -224,6 +141,7 @@ namespace WorldBuilder
                     << ", derivative_y = " << derivative_y
                     << ", y a:b:c:d = " << y_spline.m[0][0] << ":" << y_spline.m[0][1] << ":" << y_spline.m[0][2]  << ":" << y_spline.m[0][1]
                     << std::endl;
+
           // compute p1 and p2 relative to p0 to compute the angles.
           //angles[0] = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
           //const double angle_p0p1 = std::atan2(p[1][1]-p[0][1],p[1][0]-p[0][0]);
@@ -258,6 +176,7 @@ namespace WorldBuilder
                         << ", derivative_y = " << derivative_y
                         << ", y a:b:c:d = " << y_spline.m[i+1][0] << ":" << y_spline.m[i+1][1] << ":" << y_spline.m[i+1][2]  << ":" << y_spline.m[i+1][1]
                         << std::endl;
+
               //const double &x = p[0][0];
               //const double derivative = 3*m[0][0]*x*x + 2*m[0][1]*x + m[0][2];
               //angles[i] = std::atan2(derivative,1.);
@@ -325,6 +244,8 @@ namespace WorldBuilder
               control_points[i][0] = control_x;
               control_points[i][1] = m0 * (control_x - x0) + y0;
 
+              std::cout << "control_points[" << i << "]: " << control_points[i] << std::endl;
+
               double t = 0.25;
               auto pq = (1-t)*(1-t)*p[i] + 2*t*(1-t)*control_points[i] + t*t*p[i+1];
               t = 0.5;
@@ -339,11 +260,12 @@ namespace WorldBuilder
 
               // compute length of segment
               lengths[i] = arc_length(p[i],control_points[i],p[i+1]);
+              WBAssert(!std::isnan(lengths[i]),"");
 
-              std::cout << std::endl << " --> total arc length = " << arc_length(p[i],control_points[i],p[i+1])
-                        << ", t=1 arc length = " << arc_length(p[i],control_points[i],p[i+1],1.)
-                        << ", t=0.5 arc length = " << arc_length(p[i],control_points[i],p[i+1],0.5)
-                        << ", t=0 arc length = " << arc_length(p[i],control_points[i],p[i+1],0.) << std::endl;
+              //std::cout << std::endl << " --> total arc length = " << arc_length(p[i],control_points[i],p[i+1])
+              //          << ", t=1 arc length = " << arc_length(i, 1.)
+              //          << ", t=0.5 arc length = " << arc_length(i, 0.5)
+              //          << ", t=0 arc length = " << arc_length(i, 0.) << std::endl;
 
               //// Based on http://geomalgorithms.com/a02-_lines.html.
               //// if the control point is doesn't project on the line
@@ -373,7 +295,7 @@ namespace WorldBuilder
           const double value_x_h = x_spline.m[n_points-2][0]*0.5*0.5*0.5 + x_spline.m[n_points-2][1]*0.5*0.5 + x_spline.m[n_points-2][2]*0.5 + x_spline.m[n_points-2][3];
           const double value_y_h = y_spline.m[n_points-2][0]*0.5*0.5*0.5 + y_spline.m[n_points-2][1]*0.5*0.5 + y_spline.m[n_points-2][2]*0.5 + y_spline.m[n_points-2][3];
           angles[n_points-2] = std::atan2(value_y_h-value_y,value_x_h-value_x);//std::atan2(derivative_y,derivative_x);
-          std::cout << n_points-1 << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[n_points-1] << " (" << angles[n_points-1] *180./M_PI << ")" << ", derivative_x = " << derivative_x
+          std::cout << n_points-2 << ": value_x:y = " << value_x << ":" << value_y << ",  value_h x:y = " << value_x_h << ":" << value_y_h << ", angle = " << angles[n_points-2] << " (" << angles[n_points-2] *180./M_PI << ")" << ", derivative_x = " << derivative_x
                     << ", x a:b:c:d = " << x_spline.m[n_points-2][0] << ":" << x_spline.m[n_points-2][1] << ":" << x_spline.m[n_points-2][2]  << ":" << x_spline.m[n_points-2][1]
                     << ", derivative_y = " << derivative_y
                     << ", y a:b:c:d = " << y_spline.m[n_points-2][0] << ":" << y_spline.m[n_points-2][1] << ":" << y_spline.m[n_points-2][2]  << ":" << y_spline.m[n_points-2][1]
@@ -473,6 +395,12 @@ namespace WorldBuilder
 
       // compute length of segment
       lengths[n_points-2] = arc_length(p[n_points-2],control_points[n_points-2],p[n_points-1]);
+
+      std::cout << " lengths.size() = " << lengths.size() << ", n_points = " << n_points << ", n_points-2:" << n_points-2 << std::endl;
+      for (size_t j = 0; j < lengths.size(); ++j)
+        std::cout << lengths[j] << std::endl;
+
+      WBAssert(!std::isnan(lengths[n_points-2]), "n_points:" << n_points << ", p[n_points-2]: " << p[n_points-2] << ", control_points[n_points-2]: "<< control_points[n_points-2]<< ", p[n_points-1]: " << p[n_points-1]);
       std::cout << p[n_points-2] << " - " << control_points[n_points-2] << " - " << p[n_points-1] << std::endl;
 
 
@@ -486,24 +414,78 @@ namespace WorldBuilder
     }
 
     ClosestPointOnCurve
-    BezierCurve::closest_point_on_curve(const Point<2> &check_point) const
+    BezierCurve::closest_point_on_curve_segment(const Point<2> &check_point) const
     {
       // go through each section and find all roots in domain 0 to 1 and choose the smallest
       ClosestPointOnCurve closest_point_on_curve;
-      closest_point_on_curve.distance = std::numeric_limits<double>::infinity();
-      closest_point_on_curve.fraction = std::numeric_limits<double>::signaling_NaN();
       for ( size_t i = 0; i < control_points.size(); ++i)
         {
-          // compute a,b,c and d in the cubic equation describing the distance from point p to the local quadratic Bezier curve.
-          // using https://blog.gludion.com/2009/08/distance-to-quadratic-bezier-curve.html
-          // todo: I should also take a look at: https://iquilezles.org/articles/distfunctions2d/
-          const Point<2> A = control_points[i]-points[i];
-          const Point<2> B = points[i+1]-control_points[i]-A;
-          const double a = B*B;
-          const double b = 3*A*B;
-          const double c = 2.*A*A+(points[i]-check_point)*B;
-          const double d = (points[i]-check_point)*A;
-          const std::vector<double> real_roots = this->solve_cubic_equation_real(a,b,c,d);
+
+          std::vector<double> real_roots;
+          if (points[i] == control_points[i] || control_points[i] == points[i+1])
+            {
+              std::cout << "closest_point_on_curve LINEAR!!: " << std::endl;//<< -d/c << ", c = " << c << ", d = " << d << std::endl;
+              // y = ax-a*x1-y1 = ax-b; x = -y1/a + x1
+              const Point<2> point_a = control_points[i]-points[i];
+              if (std::abs(points[i][1]) < std::numeric_limits<double>::epsilon()*10 )
+                {
+                  // point i is on zero, so set the root to the x of point i
+                  real_roots.emplace_back(points[i][0]);
+                  std::cout << "flag 1: root = " << points[i][0]<< std::endl;
+                }
+              else if (std::abs(point_a[0]) < std::numeric_limits<double>::epsilon()*10)
+                {
+                  // vertical line going through x.
+                  real_roots.emplace_back(points[i][0]);
+                  std::cout << "flag 2: root = " << points[i][0]<< std::endl;
+                }
+              else if (std::abs(point_a[1]) < std::numeric_limits<double>::epsilon()*10)
+                {
+                  // horizontal line, so there is no root x (unless x=0, but then there
+                  // are infinite roots).
+                  // We can just compute what we are interested in in a different way and
+                  // continue to the next curve.
+                  const double fraction = check_point[0]-points[i][0];
+                  if (fraction >= 0. && fraction <= 1.)
+                    {
+                      //The closest point on the line has a y of point[i] and a x of the check point
+                      const Point<2> point_on_curve = Point<2>(check_point[0],points[i][1],cartesian);
+
+                      if (point_on_curve.distance(check_point) < std::abs(closest_point_on_curve.distance))
+                        {
+                          // base the sign (like the other methods) on the direction of the points.
+                          const double sign = (points[i+1][0]-points[i][0])*(check_point[1]-points[i][1]);//dot_product < 0. ? -1. : 1.;
+
+                          closest_point_on_curve.distance = sign*point_on_curve.distance(check_point); //todo: checkpoint natural?
+                          closest_point_on_curve.parametric_fraction = fraction;
+                          closest_point_on_curve.interpolation_fraction = fraction;
+                          closest_point_on_curve.index = i;
+                          closest_point_on_curve.point = point_on_curve;
+                        }
+                    }
+                  continue;
+                }
+              else
+                {
+                  const double a = point_a[1]/point_a[0];
+                  real_roots.emplace_back((-points[i][1]/a)+points[i][0]);
+                  std::cout << "flag 3: root = " << (-points[i][1]/a)+points[i][0] << ", point_a[0] = " << point_a[0] << ", point_a[1] = "<< point_a[1] << std::endl;
+                }
+              //real_roots.emplace_back(points[i+1]-points[i]);
+            }
+          else
+            {
+              // compute a,b,c and d in the cubic equation describing the distance from point p to the local quadratic Bezier curve.
+              // using https://blog.gludion.com/2009/08/distance-to-quadratic-bezier-curve.html
+              // todo: I should also take a look at: https://iquilezles.org/articles/distfunctions2d/
+              const Point<2> A = control_points[i]-points[i];
+              const Point<2> B = points[i+1]-control_points[i]-A;
+              const double a = B*B;
+              const double b = 3*A*B;
+              const double c = 2.*A*A+(points[i]-check_point)*B;
+              const double d = (points[i]-check_point)*A;
+              real_roots = this->solve_cubic_equation_real(a,b,c,d);
+            }
           //std::cout << "real roots: ";
           for (size_t root_i = 0; root_i < real_roots.size(); ++root_i)
             {
@@ -526,7 +508,10 @@ namespace WorldBuilder
                       //std::cout << "derivative point = " <<  derivative_point  << ", velocity: " << derivative_point.norm() << ", second_derivative_point = " << second_derivative_point
                       //          << ", tangent point? = " << tangent_point << " -- " << tangent_point+point_on_curve << ", sign = " << sign << ", dot product = " << dot_product << ",  distance before: " << point_on_curve.distance(check_point) << std::endl;
                       closest_point_on_curve.distance = sign*point_on_curve.distance(check_point);
-                      closest_point_on_curve.fraction = real_roots[root_i];
+                      closest_point_on_curve.parametric_fraction = real_roots[root_i];
+                      //std::cout << "i: " << i << ", real_roots[root_i] = " << real_roots[root_i]  << ", real roots: " << real_roots[0] << ":" << real_roots[1] << ":" << real_roots[2] << std::endl;
+                      closest_point_on_curve.interpolation_fraction = arc_length(i,real_roots[root_i])/lengths[i];
+                      std::cout << "closest_point_on_curve.interpolation_fraction = " << closest_point_on_curve.interpolation_fraction << ", lengths[i] = " << lengths[i]  << ", arc_length(i,real_roots[root_i]): " << arc_length(i,real_roots[root_i]) << std::endl;
                       closest_point_on_curve.index = i;
                       closest_point_on_curve.point = point_on_curve;
                     }
@@ -542,13 +527,54 @@ namespace WorldBuilder
     }
 
 
+    ClosestPointOnCurve
+    BezierCurve::closest_point_on_curve(const Point<2> &check_point) const
+    {
+      ClosestPointOnCurve closest_point_on_curve = this->closest_point_on_curve_segment(check_point);
+      if (std::isnan(closest_point_on_curve.point[0]))
+        {
+          // The closest point is one of the edges, find which one
+          const double distance_to_first_point = (points[0]-check_point).norm();
+          const double distance_to_last_point = (points[points.size()-1]-check_point).norm();
+          if (distance_to_first_point < distance_to_last_point)
+            {
+              closest_point_on_curve.distance = NaN::DSNAN; // the distance computed above is not following the curve. Could be computed if needed.
+              closest_point_on_curve.index = 0;
+              closest_point_on_curve.parametric_fraction = 0;
+              closest_point_on_curve.interpolation_fraction = 0;
+              closest_point_on_curve.point = points[0];
+            }
+          else
+            {
+              closest_point_on_curve.distance = NaN::DSNAN; // the distance computed above is not following the curve. Could be computed if needed.
+              closest_point_on_curve.index = points.size()-1;
+              closest_point_on_curve.parametric_fraction = 0;
+              closest_point_on_curve.interpolation_fraction = 0;
+              closest_point_on_curve.point = points[points.size()-1];
+            }
+        }
+      return closest_point_on_curve;
+    }
+
+
     std::vector<double>
     BezierCurve::solve_cubic_equation_real(const double a_original,const double b_original,const double c_original,const double d_original)
     {
 
       std::vector<double> real_roots;
+      //std::cout << "a_original = " << a_original << ", b_original: " << b_original << ", c_original:" << c_original << ", d_original: " << d_original << std::endl;
       if (std::abs(a_original) <= std::numeric_limits<double>::epsilon()*10.)
         {
+          if (std::abs(b_original) <= std::numeric_limits<double>::epsilon()*10.)
+            {
+              // linear equation
+              std::cout << "LINEAR EQUATION!!" << std::endl;
+              const double &a = c_original;
+              const double &b = d_original;
+              real_roots.emplace_back(-b/a);
+              return real_roots;
+            }
+          // quadratic equation
           const double &a = b_original;
           const double &b = c_original;
           const double &c = d_original;

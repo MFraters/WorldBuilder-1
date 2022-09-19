@@ -36,13 +36,15 @@ namespace WorldBuilder
       ClosestPointOnCurve()
         :
         distance(std::numeric_limits<double>::infinity()),
-        fraction(std::numeric_limits<double>::signaling_NaN()),
+        parametric_fraction(std::numeric_limits<double>::signaling_NaN()),
+        interpolation_fraction(std::numeric_limits<double>::signaling_NaN()),
         index(0),
         point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
       {}
 
       double distance;
-      double fraction;
+      double parametric_fraction;
+      double interpolation_fraction;
       size_t index;
       Point<2> point;
     };

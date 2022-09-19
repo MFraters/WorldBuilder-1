@@ -44,10 +44,20 @@ namespace WorldBuilder
          * @param p
          * @param angle_constrains
          */
-        BezierCurve(const std::vector<Point<2> > &p, std::vector<double> &angle_constrains);
+        BezierCurve(const std::vector<Point<2> > &p, const std::vector<double> &angle_constrains);
 
         /**
-         * @brief
+         * @brief Finds the closest point on the curve. If the the closest point
+         *        doesn't fall on the segment, return a point with x and y being nan.
+         *
+         * @param p
+         * @return ClosestPointOnCurve
+         */
+        ClosestPointOnCurve closest_point_on_curve_segment(const Point<2> &p) const;
+
+
+        /**
+         * @brief Finds the closest point on the curve.
          *
          * @param p
          * @return ClosestPointOnCurve
@@ -82,7 +92,7 @@ namespace WorldBuilder
          * @param c This is a point the curve goes through.
          * @return double
          */
-        double arc_length(const Point<2> &a, const Point<2>  &b, const Point<2> &c, const double t) const;
+        double arc_length(const size_t index, const double t) const;
 
         //private:
         std::vector<Point<2> > points;

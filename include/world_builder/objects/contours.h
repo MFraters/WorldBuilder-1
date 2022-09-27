@@ -36,18 +36,41 @@ namespace WorldBuilder
   {
     struct DistanceInterpolationData
     {
-
+      /**
+       * @brief A distance to the Bezier surface. If only_positive is false, the distance is signed
+       *        Up is negative and down is postive. It emulates a local depth system.
+       */
       double signed_distance_from_bezier_surface;
+
+      /**
+       * @brief A distance along the Bezier surface to the first contour.
+       */
       double distance_along_surface;
+
       size_t curve_above_index;
       size_t curve_above_section_index;
-      double curve_above_section_fraction;
+      double curve_above_interplation_fraction;
       size_t curve_below_index;
       size_t curve_below_section_index;
-      double curve_below_section_fraction;
-      size_t curve_local_index;
-      size_t curve_local_section_index;
-      double curve_local_section_fraction;
+      double curve_below_interplation_fraction;
+      double curve_local_interpolation_fraction;
+
+      //double curve_above_interpolation_fraction;
+      //double curve_below_interpolation_fraction;
+      //double curve_local_interpolation_fraction;
+      ///**
+      // * @brief
+      // *
+      // */
+      //size_t curve_above_index;
+      //size_t curve_above_section_index;
+      ////double curve_above_section_fraction;
+      //size_t curve_below_index;
+      //size_t curve_below_section_index;
+      //double curve_below_section_fraction;
+      ////size_t curve_local_index;
+      ////size_t curve_local_section_index;
+      //double curve_local_section_fraction;
     };
 
     class Contours
@@ -80,7 +103,7 @@ namespace WorldBuilder
                                     const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
                                     const std::vector<std::vector<double> > &interpolation_properties,
                                     const double start_radius,
-                                    const bool only_positive);
+                                    const bool only_positive) const;
 
         /**
          * @brief Stores the splines for each depth contour

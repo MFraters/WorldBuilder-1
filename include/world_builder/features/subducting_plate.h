@@ -24,6 +24,7 @@
 #include "world_builder/features/subducting_plate_models/composition/interface.h"
 #include "world_builder/features/subducting_plate_models/grains/interface.h"
 #include "world_builder/features/subducting_plate_models/temperature/interface.h"
+#include "world_builder/objects/contours.h"
 #include "world_builder/types/segment.h"
 #include "world_builder/bounding_box.h"
 
@@ -130,6 +131,9 @@ namespace WorldBuilder
                    std::vector<double> &output) const override final;
 
       private:
+        bool using_contours;
+        Objects::Contours contours;
+
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > default_temperature_models;
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface>  > default_composition_models;
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface>  > default_grains_models;

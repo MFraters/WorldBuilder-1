@@ -658,8 +658,8 @@ namespace WorldBuilder
                                           const Point<2> &reference_point,
                                           const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
                                           const std::vector<std::vector<double> > &interpolation_properties,
-                                          const double start_radius,
-                                          const bool only_positive)
+                                          const double /*start_radius*/,
+                                          const bool only_positive) const
     {
       // do some preparations
       const CoordinateSystem natural_coordinate_system = coordinate_system->natural_coordinate_system();
@@ -769,6 +769,15 @@ namespace WorldBuilder
                   // the distance values on the nearest points on the curve
                   return_distance_interpolation_data.distance_along_surface = closest_point_local.distance + (distance_along_surface[curve_i][closest_point_local.index]+distance_along_surface[curve_i][closest_point_local.index+1]*closest_point_local.interpolation_fraction);
                   return_distance_interpolation_data.signed_distance_from_bezier_surface = final_distance;
+
+                  return_distance_interpolation_data.curve_above_index = curve_i;
+                  return_distance_interpolation_data.curve_above_section_index = closest_point_above.index;
+                  return_distance_interpolation_data.curve_above_interplation_fraction = closest_point_above.interpolation_fraction;
+                  return_distance_interpolation_data.curve_below_index = curve_i+1;
+                  return_distance_interpolation_data.curve_below_section_index = closest_point_below.index;
+                  return_distance_interpolation_data.curve_below_interplation_fraction = closest_point_below.interpolation_fraction;
+
+                  return_distance_interpolation_data.curve_local_interpolation_fraction = closest_point_local.interpolation_fraction;
                   //return_distance_interpolation_data.
                 }
 

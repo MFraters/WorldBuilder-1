@@ -146,6 +146,11 @@ namespace WorldBuilder
             Features::SubductingPlateModels::Composition::Interface,
             Features::SubductingPlateModels::Grains::Interface> > > sections_segment_vector;
 
+
+        std::vector< std::vector<Objects::Segment<Features::SubductingPlateModels::Temperature::Interface,
+            Features::SubductingPlateModels::Composition::Interface,
+            Features::SubductingPlateModels::Grains::Interface> > > property_nodes;
+
         // This vector stores segments to this coordiante/section.
         //First used (raw) pointers to the segment relevant to this coordinate/section,
         // but I do not trust it won't fail when memory is moved. So storing the all the data now.

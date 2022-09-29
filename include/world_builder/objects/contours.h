@@ -115,6 +115,7 @@ namespace WorldBuilder
         std::vector<double> depths;
         std::vector<std::vector<double> > angle_contraints;
         std::vector<std::vector<double> > thicknesses;
+        std::vector<std::vector<double> > top_truncation;
         std::vector<std::vector<Point<2> > > directions;
         double start_radius;
 

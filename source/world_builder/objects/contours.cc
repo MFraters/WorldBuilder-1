@@ -27,8 +27,8 @@ namespace WorldBuilder
 {
   namespace Objects
   {
-    //Contours::Contours()
-    //{}
+    Contours::Contours()
+    {}
 
     Contours::Contours(const std::vector<std::vector<Point<2> > > &points_,
                        const std::vector<double> depths_,

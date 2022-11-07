@@ -4693,8 +4693,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   std::vector<double> y_list = {10.,10.};
   std::vector<Point<2> > coordinate_list_local = coordinates;
 
-  x_spline.set_points(x_list);
-  y_spline.set_points(y_list);
+  Objects::BezierCurve bezier_curve(coordinate_list_local);
 
 
   WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
@@ -4707,8 +4706,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -4732,8 +4730,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-4); // practically zero
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -4759,8 +4756,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -4787,8 +4783,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -4814,8 +4809,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -4843,8 +4837,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -4871,8 +4864,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -4898,8 +4890,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -4926,8 +4917,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -4951,8 +4941,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -4978,8 +4967,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -5003,8 +4991,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -5034,8 +5021,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5064,8 +5050,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  true,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5091,8 +5076,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5118,8 +5102,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  true,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5135,13 +5118,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   natural_coordinate = Objects::NaturalCoordinate(position,
                                                   *cartesian_system);
   coordinates.emplace_back(30,10,cartesian);
-
-
-  x_list = {0.,20.,30.};
-  y_list = {10.,10.,10.};
-
-  x_spline.set_points(x_list);
-  y_spline.set_points(y_list);
+  bezier_curve = Objects::BezierCurve(coordinates);
 
   slab_segment_lengths.resize(3);
   slab_segment_lengths[2].push_back(std::sqrt(10*10+10*10));
@@ -5161,8 +5138,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14); // practically zero
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5196,8 +5172,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)<1e-10);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5222,8 +5197,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5248,8 +5222,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5295,8 +5268,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5321,8 +5293,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5347,8 +5318,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5375,8 +5345,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -5404,8 +5373,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5430,8 +5398,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5456,8 +5423,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5484,8 +5450,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5511,8 +5476,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5537,8 +5501,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // practically zero
@@ -5563,8 +5526,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5591,8 +5553,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5678,9 +5639,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
   std::vector<double> x_list = {0.,20., 30.};
   std::vector<double> y_list = {10.,10., 10.};
   std::vector<Point<2> > coordinate_list_local = coordinates;
-
-  x_spline.set_points(x_list);
-  y_spline.set_points(y_list);
+  const Objects::BezierCurve bezier_curve(coordinates);
 
   WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
     Utilities::distance_point_from_curved_planes(position,
@@ -5692,8 +5651,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-10);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5719,8 +5677,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about 5 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5746,8 +5703,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about -5 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5774,8 +5730,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5801,8 +5756,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about -10 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5828,8 +5782,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane)); // checked that it should be about 10 this with a drawing
   // This is a special case where the point coincides with the center of the circle.
@@ -5860,8 +5813,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -5892,8 +5844,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5919,8 +5870,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5960,8 +5910,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -5986,8 +5935,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6012,8 +5960,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6040,8 +5987,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -6080,8 +6026,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6106,8 +6051,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6132,8 +6076,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about -1 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6158,8 +6101,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about -1 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6184,8 +6126,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6211,8 +6152,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about 1 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6237,8 +6177,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about 1 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6278,8 +6217,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6304,8 +6242,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6330,8 +6267,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6356,8 +6292,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6399,8 +6334,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about -7.3 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6428,8 +6362,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   // checked that distanceFromPlane should be infinity (it is on the other side of the circle this with a drawing
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
@@ -6455,8 +6388,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be about 2.3 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6499,8 +6431,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6542,8 +6473,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6568,8 +6498,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -6594,8 +6523,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6622,8 +6550,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) ); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6649,8 +6576,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6689,8 +6615,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-10); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6716,8 +6641,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-10);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6743,8 +6667,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-10);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6771,8 +6694,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane)< 1e-10);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6800,8 +6722,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(fabs(distance_from_planes.distance_from_plane)); // checked that it should be small positive this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6827,8 +6748,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked that it should be small negative this with a drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -6854,8 +6774,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -6882,8 +6801,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -6908,8 +6826,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -6934,8 +6851,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_along_plane) < 1e-14);
@@ -6960,8 +6876,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_along_plane) < 1e-14);
@@ -6986,8 +6901,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane)); // checked that it should be about 0 this with a drawing
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -7014,8 +6928,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
                                                  starting_radius,
                                                  cartesian_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -7073,9 +6986,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
   std::vector<double> x_list = {0.,10 * dtr};
   std::vector<double> y_list = {10 * dtr,10 * dtr};
   std::vector<Point<2> > coordinate_list_local = coordinates;
-
-  x_spline.set_points(x_list);
-  y_spline.set_points(y_list);
+  const Objects::BezierCurve bezier_curve(coordinates);
 
   WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
     Utilities::distance_point_from_curved_planes(position,
@@ -7087,8 +6998,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -7114,8 +7024,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14); // practically zero
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_along_plane) < 1e-14);
@@ -7145,8 +7054,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_from_plane));
   approval_tests.emplace_back(std::isinf(distance_from_planes.distance_along_plane));
@@ -7171,8 +7079,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);
   approval_tests.emplace_back(distance_from_planes.distance_along_plane);
@@ -7206,8 +7113,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane); // checked it with a geometric drawing
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_along_plane) < 1e-14); // checked it with a geometric drawing
@@ -7231,8 +7137,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(std::fabs(distance_from_planes.distance_from_plane) < 1e-14);  // checked it with a geometric drawing
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // checked it with a geometric drawing
@@ -7268,8 +7173,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes sp
                                                  starting_radius,
                                                  world.parameters.coordinate_system,
                                                  false,
-                                                 x_spline,
-                                                 y_spline);
+                                                 bezier_curve);
 
   approval_tests.emplace_back(distance_from_planes.distance_from_plane);  // see comment at the top of the test
   approval_tests.emplace_back(distance_from_planes.distance_along_plane); // see comment at the top of the test

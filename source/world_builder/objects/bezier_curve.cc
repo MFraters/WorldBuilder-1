@@ -307,7 +307,7 @@ namespace WorldBuilder
                 }
             }*/
 
-          double root_start_zero = 0.25;
+          /*double root_start_zero = 0.25;
           bool newton_failed = false;
           for (size_t iteration_i = 0; iteration_i < 200; iteration_i++)
             {
@@ -407,9 +407,9 @@ namespace WorldBuilder
 
           // if the Newton iteration didn't work, fall back on a more robust method.
           this->solve_cubic_equation_real(a,b,c,d,real_roots);
-          }
+          }*/
           
-          //this->solve_cubic_equation_real(a,b,c,d,real_roots);
+          this->solve_cubic_equation_real(a,b,c,d,real_roots);
 
 
           for (size_t root_i = 0; root_i < real_roots[3]; ++root_i)

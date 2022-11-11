@@ -283,7 +283,134 @@ namespace WorldBuilder
           const double b = 3*A*B;
           const double c = 2.*A*A+(points[i]-check_point)*B;
           const double d = (points[i]-check_point)*A;
+
+          // first try to solve it with a Newton iteration
+          // at^3+bt^2+ct+d = 0 and t >= 0. && t <= 1.
+          // x_{n+1} = x_n - f(x)/f'(x)
+          // f(x) = ax^3+bx^2+cx+d
+          // f'(x) = 3ax^2+2bx+c
+
+          //real_roots[0] = 0.5;
+          //std::cout << "update 1 = " << (a*real_roots[0]*real_roots[0]*real_roots[0] + b*real_roots[0]*real_roots[0] + c*real_roots[0]+d)
+          ///(3.*a*real_roots[0]*real_roots[0] + 2.*b*real_roots[0] + c)<< std::endl;
+          /*for (size_t iteration_i = 0; iteration_i < 200; iteration_i++)
+            {
+              const double update = (a*real_roots[0]*real_roots[0]*real_roots[0] + b*real_roots[0]*real_roots[0] + c*real_roots[0]+d)
+                                    /(3.*a*real_roots[0]*real_roots[0] + 2.*b*real_roots[0] + c);
+              real_roots[0] = real_roots[0] - update;
+
+              if (std::abs(update) < 1e-16)
+                {
+                  //if(real_roots[0] > 0. && real_roots[0] < 1.)
+                  //  std::cout << "update size = " << update << ", iteration_i = " << iteration_i << "newton root = " << real_roots[0] << std::endl;
+                  break;
+                }
+            }*/
+
+          double root_start_zero = 0.25;
+          bool newton_failed = false;
+          for (size_t iteration_i = 0; iteration_i < 200; iteration_i++)
+            {
+            double update = 0;
+              //const double update = (a*root_start_zero*root_start_zero*root_start_zero + b*root_start_zero*root_start_zero + c*root_start_zero+d)
+              //                      /(3.*a*root_start_zero*root_start_zero + 2.*b*root_start_zero + c);
+
+              update = (root_start_zero*(root_start_zero*(a*root_start_zero + b) + c)+d)/(root_start_zero*(3.*a*root_start_zero + 2.*b) + c);
+              root_start_zero = root_start_zero - update;
+
+              //const double update_2 = (a*root_start_zero*root_start_zero*root_start_zero + b*root_start_zero*root_start_zero + c*root_start_zero+d)
+              //                      /(3.*a*root_start_zero*root_start_zero + 2.*b*root_start_zero + c);
+              //root_start_zero = root_start_zero - update_1;
+
+                  //if(iteration_i > 10 && update > 1e-3){
+                  //  newton_failed = true;
+                  //  break;
+                  //  }
+                    //std::cout << "0: update size = " << update_1 << ", iteration_i = " << iteration_i << ", root = " << root_start_zero << std::endl;
+              if (std::abs(update) < 1e-12)// || root_start_zero < -0.25 || root_start_zero > 1.25)
+                {
+                  //if(root_start_zero > 0. && root_start_zero < 1.)
+                  //if(iteration_i > 100)
+                  //  std::cout << "0: update size = " << update_1 << ", iteration_i = " << iteration_i << ", root = " << root_start_zero << std::endl;
+                  break;
+                }
+                if(iteration_i > 199){
+                  newton_failed = true;
+                  break;
+                }
+            }
+          double root_start_half = 0.5;
+          if(!newton_failed)
+          for (size_t iteration_i = 0; iteration_i < 200; iteration_i++)
+            {
+
+            double update = 0;
+          for (size_t iteration_j = 0; iteration_j < 3; iteration_j++){
+              update = (root_start_half*(root_start_half*(a*root_start_half + b) + c)+d)/(root_start_half*(3.*a*root_start_half + 2.*b) + c);
+              root_start_half = root_start_half - update;
+              }
+
+                 //if(iteration_i > 2 && update > 1e-3){
+                 //  newton_failed = true;
+                 //  break;
+                 //  }
+              if (std::abs(update) < 1e-12)// || root_start_half < -1.5 || root_start_half > 2.5)
+                {
+                  //if(root_start_half > 0. && root_start_half < 1.)
+                  //if(iteration_i > 100)
+                  //  std::cout << "0.5: update size = " << update << ", iteration_i = " << iteration_i << ", root = " << root_start_half << std::endl;
+                  break;
+                }
+                if(iteration_i > 199){
+                  newton_failed = true;
+                  break;
+                }
+            }
+          double root_start_one = 0.75;
+
+          if(!newton_failed){
+          for (size_t iteration_i = 0; iteration_i < 200; iteration_i++)
+            {
+            double update = 0;
+              //const double update = (a*root_start_one*root_start_one*root_start_one + b*root_start_one*root_start_one + c*root_start_one+d)
+              //                      /(3.*a*root_start_one*root_start_one + 2.*b*root_start_one + c);
+
+              update = (root_start_zero*(root_start_zero*(a*root_start_zero + b) + c)+d)/(root_start_zero*(3.*a*root_start_zero + 2.*b) + c);
+              root_start_one = root_start_one - update;
+
+                  //if(iteration_i > 10 && update > 1e-3){
+                  //  newton_failed = true;
+                  //  break;
+                  //  }
+              if (std::abs(update) < 1e-12)// || root_start_one < -0.25 || root_start_one > 1.25)
+                {
+                  //if(root_start_one > 0. && root_start_one < 1.)
+                  //if(iteration_i > 100)
+                  //  std::cout << "1: update size = " << update << ", iteration_i = " << iteration_i  << ", root = " << root_start_one << std::endl;
+                  break;
+                }
+                if(iteration_i > 199){
+                  newton_failed = true;
+                  break;
+                }
+            }
+
+            //std::cout << root_start_zero << ":" << root_start_half << ":" << root_start_one << ", real_roots[0] = " << real_roots[0] << std::endl;
+
+          //const double newton_root = real_roots[0];
+          real_roots[0] = root_start_zero;
+          real_roots[1] = root_start_half;
+          real_roots[2] = root_start_one;
+          real_roots[3] = 3;
+          }
+          else {
+
+          // if the Newton iteration didn't work, fall back on a more robust method.
           this->solve_cubic_equation_real(a,b,c,d,real_roots);
+          }
+          
+          //this->solve_cubic_equation_real(a,b,c,d,real_roots);
+
 
           for (size_t root_i = 0; root_i < real_roots[3]; ++root_i)
             {
@@ -294,6 +421,8 @@ namespace WorldBuilder
 
                   if (point_on_curve.distance(check_point) < std::abs(closest_point_on_curve.distance))
                     {
+                      //if (std::abs(newton_root-real_roots[root_i]) > 1e-5)
+                      //  std::cout << "newton_root = " << newton_root << ", real_roots = " << real_roots[root_i] << ", diff = " << newton_root-real_roots[root_i] << std::endl;
                       // the sign is rotating the derivative by 90 degrees.
                       // When moving in the direction of increasing t, left is positve and right is negative.
                       const double &t = real_roots[root_i];
@@ -351,6 +480,7 @@ namespace WorldBuilder
     double *
     BezierCurve::solve_cubic_equation_real(const double a_original,const double b_original,const double c_original,const double d_original, double real_roots[4])
     {
+      // todo: look at https://stackoverflow.com/questions/2003465/fastest-numerical-solution-of-a-real-cubic-polynomial
       //real_roots = {NaN::DSNAN,NaN::DSNAN,NaN::DSNAN,0.};
       //real_roots.reserve(3);
       //constexpr double one_third = 1./3.;

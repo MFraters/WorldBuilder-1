@@ -527,7 +527,17 @@ namespace WorldBuilder
                                     cartesian);
 
                   // see on what side the line P1P2 reference point is. This is based on the determinant
-                  const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+
+                  bool on_left = true;
+                  //const double reference_on_side_of_line =  (closest_point_on_curve.normal).norm_square() < (check_point_surface_2d-closest_point_on_line_2d-closest_point_on_curve.normal).norm_square() ? -1 : 1;
+                  //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+                  //const double reference_on_side_of_line =  (closest_point_on_line_2d-closest_point_on_curve.normal).norm_square() < (check_point_surface_2d-closest_point_on_curve.normal).norm_square() ? 1 : -1;
+              const Point<2> reference_p = ((closest_point_on_curve.normal-closest_point_on_line_2d)*1e2)+closest_point_on_line_2d;
+              const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_p).norm_square() < (check_point_surface_2d-reference_p).norm_square() ? -1 : 1;
+              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+
+          if (std::fabs(check_point_surface_2d[0]-139500) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)
+              std::cout << "reference_p = " << reference_p << std::endl;
 
                   WBAssert(!std::isnan(x_axis[0]),
                            "Internal error: The x_axis variable is not a number: " << x_axis[0]);
@@ -608,7 +618,13 @@ namespace WorldBuilder
                 }
 
               // check whether the check point and the reference point are on the same side, if not, change the side.
-              const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+              const Point<2> reference_p = ((closest_point_on_curve.normal-closest_point_on_line_2d)*1e2)+closest_point_on_line_2d;
+              const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_p).norm_square() < (check_point_surface_2d-reference_p).norm_square() ? -1 : 1;
+              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
+
+          if (std::fabs(check_point_surface_2d[0]-139500) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)
+              std::cout << "reference_p = " << reference_p << std::endl;
               WBAssert(!std::isnan(x_axis[0]),
                        "Internal error: The x_axis variable is not a number: " << x_axis[0]);
               WBAssert(!std::isnan(x_axis[1]),

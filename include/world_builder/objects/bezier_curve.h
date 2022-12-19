@@ -22,6 +22,7 @@ This file is part of the World Builder.
 
 #include "world_builder/objects/closest_point_on_curve.h"
 #include "world_builder/point.h"
+#include <array>
 #include <vector>
 
 using namespace WorldBuilder;
@@ -104,7 +105,7 @@ namespace WorldBuilder
 
         //private:
         std::vector<Point<2> > points;
-        std::vector<Point<2> > control_points;
+        std::vector<std::array<Point<2>,2 > > control_points;
         std::vector<double> lengths;
         //SplineSet x_spline;
         //SplineSet y_spline;

@@ -39,7 +39,8 @@ namespace WorldBuilder
         parametric_fraction(std::numeric_limits<double>::signaling_NaN()),
         interpolation_fraction(std::numeric_limits<double>::signaling_NaN()),
         index(0),
-        point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
+        point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid)),
+        normal(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
       {}
 
       double distance;
@@ -47,6 +48,7 @@ namespace WorldBuilder
       double interpolation_fraction;
       size_t index;
       Point<2> point;
+      Point<2> normal;
     };
   }
 }

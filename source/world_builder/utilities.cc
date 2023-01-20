@@ -618,12 +618,7 @@ namespace WorldBuilder
                 }
 
               // check whether the check point and the reference point are on the same side, if not, change the side.
-              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
-              //const Point<2> reference_p = ((closest_point_on_curve.normal-closest_point_on_line_2d)*1e2)+closest_point_on_line_2d;
-              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_p).norm_square() < (check_point_surface_2d-reference_p).norm_square() ? -1 : 1;
-              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
               const Point<2> reference_normal = closest_point_on_curve.normal*10e3+closest_point_on_line_2d;
-              //(Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax)
               Point<2> A = point_list[closest_point_on_curve.index];
               Point<2> B = (closest_point_on_curve.index+2 < point_list.size() ? point_list[closest_point_on_curve.index+2] : point_list[closest_point_on_curve.index+1]);
               Point<2> AB = A-B;
@@ -631,16 +626,11 @@ namespace WorldBuilder
               AB_normal[0] = AB[1];
               AB_normal[1] = -AB[0];
               AB_normal = closest_point_on_curve.normal*AB.norm();
-              //const bool normal_on_left = (B[0] - A[0]) * (reference_normal[1] - A[1]) - (B[1]-A[1]) * (reference_normal[0] - A[0]) > 0;
               const Point<2> local_reference_point = AB_normal*1.+closest_point_on_line_2d;
-              const bool normal_on_left = (B[0] - A[0]) * (check_point_surface_2d[1] - A[1]) - (B[1]-A[1]) * (check_point_surface_2d[0] - A[0]) > 0;
-              const bool reference_on_left = false;//(B[0] - A[0]) * (reference_normal[1] - A[1]) - (B[1]-A[1]) * (reference_normal[0] - A[0]) > 0;;
-              const double reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d-local_reference_point).norm_square() ? -1 : 1;
-              const double reference_point_on_side_of_line =  1;//(closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? -1 : 1;
-              //const Point<2> reference_p = ((closest_point_on_curve.normal-closest_point_on_line_2d)*1e2)+closest_point_on_line_2d;
-              //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_p).norm_square() < (check_point_surface_2d-reference_p).norm_square() ? -1 : 1;
+              const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d-local_reference_point).norm_square();
+              const bool reference_point_on_side_of_line =  (point_list[0]-reference_point).norm_square() < (point_list[1]-reference_point).norm_square();
               const double reference_on_side_of_line =  reference_normal_on_side_of_line == reference_point_on_side_of_line ? 1 : -1;
-              //const double reference_on_side_of_line =  normal_on_left == reference_on_left ? 1 : -1;
+
 
               if ((
                     std::fabs(check_point_surface_2d[0]-139500) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)

@@ -1,7 +1,7 @@
 # ouput variables
 grid_type = cartesian
 dim = 3
-compositions = 2
+compositions = 0
 
 # domain of the grid
 x_min = -450e3
@@ -12,6 +12,6 @@ z_min = 0
 z_max = 200e3 
 
 # grid properties
-n_cell_x = 200
-n_cell_y = 160 #80 
+n_cell_x = 800 #200
+n_cell_y = 640 #160 #80 
 n_cell_z = 80 #40

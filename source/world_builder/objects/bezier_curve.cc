@@ -1285,14 +1285,14 @@ namespace WorldBuilder
           const Point<2> &p2 = points[cp_i+1];
           // first check if one of the points or control points is closer than the current closest point
           {
-            if (!((check_point-p1).norm_square() <= min_squared_distance
-                  && (check_point-p2).norm_square() <= min_squared_distance
-                  && (check_point-control_points[cp_i][0]).norm_square() <= min_squared_distance
-                  && (check_point-control_points[cp_i][1]).norm_square() <= min_squared_distance))
-              {
-                min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
-                continue;
-              }
+            //if (!((check_point-p1).norm_square() <= min_squared_distance
+            //      && (check_point-p2).norm_square() <= min_squared_distance
+            //      && (check_point-control_points[cp_i][0]).norm_square() <= min_squared_distance
+            //      && (check_point-control_points[cp_i][1]).norm_square() <= min_squared_distance))
+            //  {
+            //    min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
+            //    continue;
+            //  }
 
             min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
           }
@@ -1304,7 +1304,7 @@ namespace WorldBuilder
           double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))); // est=estimate of solution
           bool found = false;
           std::stringstream output;
-          output << "init est = " << est << ", min_squared_distance = " << min_squared_distance << std::endl;
+          output << "cp_i=" << cp_i << ", init est = " << est << ", min_squared_distance = " << min_squared_distance << std::endl;
           for (size_t newton_i = 0; newton_i < 250; newton_i++)
             {
               // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
@@ -1338,8 +1338,11 @@ namespace WorldBuilder
                   found = true;
                   if (est >= -1e-8 && est-1. <= 1e-8)
                     {
-                      const double squared_distance_cartesian = (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0]*est)
-                                                                +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]*est);
+                      const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+                      //const double squared_distance_cartesian =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0]*est)
+                      //                                          +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]*est);
+                      const double squared_distance_cartesian =  (point_on_curve-check_point).norm_square();
+                                                                output << ", sqdc: " << squared_distance_cartesian << ", msqdc: " << min_squared_distance << std::endl;
 
                       if (squared_distance_cartesian < min_squared_distance)
                         {
@@ -1347,8 +1350,8 @@ namespace WorldBuilder
 
                           // the sign is rotating the derivative by 90 degrees.
                           // When moving in the direction of increasing t, left is positve and right is negative.
-                          const double &t = est;
-                          const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+                          //const double &t = est;
+                          //const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
                           //(1-t)*(1-t)*(1-t)*points[cp_i] + 3*(1-t)*(1-t)*t *control_points[cp_i][0] + 3.*(1-t)*t *t *control_points[cp_i][1]+t *t *t *points[cp_i+1];
                           //const Point<2> derivative_point = ((-2+2*est)*points[cp_i] + (2-4*est)*control_points[cp_i] + 2*est*points[cp_i+1]);
                           //const Point<2> second_derivative_point = ((2)*points[cp_i] + (-4)*control_points[cp_i] + 2*points[cp_i+1]);
@@ -1372,15 +1375,17 @@ namespace WorldBuilder
                           closest_point_on_curve.point = point_on_curve;
                           Point<2> normal = point_on_curve;
                           {
-                            double mt = 1.-est;
-                            double a = mt * mt;
-                            double b = mt * est * 2.;
-                            double c = t * est;
-                            Point<2> derivative =a * p1 + b * control_points[cp_i][0] + c * control_points[cp_i][1]-point_on_curve;
+                            //double mt = 1.-est;
+                            //double a = mt * mt;
+                            //double b = mt * est * 2.;
+                            //double c = t * est;
+                            Point<2> derivative = a*est*est+b*est+c;
+                            //Point<2> derivative =a * p1 + b * control_points[cp_i][0] + c * control_points[cp_i][1]-point_on_curve;
                             normal=derivative;
-                            normal[0] = derivative[1];
-                            normal[1] = derivative[0];
-                            normal += point_on_curve;
+                            double normal_size = derivative.norm();
+                            normal[0] = derivative[1]/normal_size;
+                            normal[1] = -derivative[0]/normal_size;
+                            //normal += point_on_curve;
                           }
                           //derivative = p1 * (2.*est-2.) + (2.*P3-4*P2) * t + 2 * P2;
                           closest_point_on_curve.normal = normal;
@@ -1391,12 +1396,18 @@ namespace WorldBuilder
             }
           //if (std::fabs(check_point[0]-22500) < 1e-1 && std::fabs(check_point[1]-90625) < 1e-1)
           //if (std::fabs(check_point[0]-85500) < 1e-1 && std::fabs(check_point[1]-81250) < 1e-1)
-          if (std::fabs(check_point[0]-139500) < 1e-1 && std::fabs(check_point[1]-56250) < 1e-1)
-            {
-              std::cout << "cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl << output.str();
-            }
+          //if (std::fabs(check_point[0]-139500) < 1e-1 && std::fabs(check_point[1]-56250) < 1e-1)
+          //if (std::fabs(check_point[0]-101250) < 1e-1 && std::fabs(check_point[1]-35156.3) < 1e-1)
+          //if (std::fabs(check_point[0]-146250) < 1e-1 && std::fabs(check_point[1]-43750) < 1e-1)
+          //  {
+          //    std::cout << "cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl << output.str();
+          //  }
           WBAssertThrow(found, "Could not find a good solution. " << output.str());
         }
+          //if (std::fabs(check_point[0]-146250) < 1e-1 && std::fabs(check_point[1]-43750) < 1e-1)
+          //  {
+          //    std::cout << "--> cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl;
+          //  }
       return closest_point_on_curve;
     }
 

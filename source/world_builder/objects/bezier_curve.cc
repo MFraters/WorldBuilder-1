@@ -1326,21 +1326,10 @@ namespace WorldBuilder
 
               const double squared_distance_cartesian_derivative = 2.0*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
                                                                    + 2.0*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
-              //const double squared_distance_cartesian_derivative = 6.*(a[0]*a[0]+a[1]*a[1])*est*est*est*est*est
-              //                                                     + 10.*(a[0]*b[0]+a[1]*b[1])*est*est*est*est
-              //                                                     + 4.*(2.*(a[0]*c[0]+a[1]*c[1]) + b[0]*b[0] + b[1]*b[1])*est*est*est
-              //                                                     + 6.*(a[0]*(d[0]-p[0]) + b[0]*c[0]+a[1]*(d[1]-p[1]) + b[1]*c[1])*est*est
-              //                                                     + 2.*(2.*(b[0]*d[0] - b[0]*p[0] + b[1]*d[1] - b[1]*p[1]) + c[0]*c[0])*est
-              //                                                     + 2.*(c[0]*d[0] - c[0]*p[0] + c[1]*d[1] - c[1]-p[1]);
               const double squared_distance_cartesian_second_derivative  = 2.0*(6.0*a[0]*est + 2.0*b[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
                                                                            + 2.0*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])
                                                                            + 2.0*(6.0*a[1]*est + 2.0*b[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])
                                                                            + 2.0*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1])*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1]) ;
-              //const double squared_distance_cartesian_second_derivative  = 30.*(a[0]*a[0]+a[1]*a[1])*est*est*est*est
-              //                                                             + 40.*(a[0]*b[0]+a[1]*b[1])*est*est*est*
-              //                                                             + 12.*(2.*(a[0]*c[0]+a[1]*c[1]) + b[0]*b[0] + b[1]*b[1])*est*est
-              //                                                             + 12.*(a[0]*(d[0]-p[0]) + b[0]*c[0]+a[1]*(d[1]-p[1]) + b[1]*c[1])*est
-              //                                                             + 2.*(2.*(b[0]*d[0] - b[0]*p[0] + b[1]*d[1] - b[1]*p[1]) + c[0]*c[0]);
               //output << " ---->> squared_distance_cartesian = " << squared_distance_cartesian << ", squared_distance_cartesian_derivative=" << squared_distance_cartesian_derivative << ", squared_distance_cartesian_second_derivative= " << squared_distance_cartesian_second_derivative << ", est=" << est<< std::endl;
               // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
 
@@ -1372,44 +1361,7 @@ namespace WorldBuilder
                   line_search *= 2./3.;
                 }
 
-              //double est_sub = est-update*1.0;
-              ////double est_add= est+update;
-              //const double squared_distance_cartesian_sub =  (a[0]*est_sub*est_sub*est_sub+b[0]*est_sub*est_sub+c[0]*est_sub+d[0]-p[0])*(a[0]*est_sub*est_sub*est_sub+b[0]*est_sub*est_sub+c[0]*est_sub+d[0]-p[0])
-              //+(a[1]*est_sub*est_sub*est_sub+b[1]*est_sub*est_sub+c[1]*est_sub+d[1]-p[1])*(a[1]*est_sub*est_sub*est_sub+b[1]*est_sub*est_sub+c[1]*est_sub+d[1]-p[1]);
-              //const double squared_distance_cartesian_add=  (a[0]*est_add*est_add*est_add+b[0]*est_add*est_add+c[0]*est_add+d[0]-p[0])*(a[0]*est_add*est_add*est_add+b[0]*est_add*est_add+c[0]*est_add+d[0]-p[0])
-              //                                                 +(a[1]*est_add*est_add*est_add+b[1]*est_add*est_add+c[1]*est_add+d[1]-p[1])*(a[1]*est_add*est_add*est_add+b[1]*est_add*est_add+c[1]*est_add+d[1]-p[1]);
-
-              //if(squared_distance_cartesian_sub < squared_distance_cartesian_add){
-              //est = est_sub;
               est -= update*line_search;
-              //} else{
-              //  est = est_add;
-              //}
-
-              //output << "---> " << newton_i <<", est:" << est << ", est_sub:" << est_sub << ", est_add=" << est_add << ", sqc_sub: " << squared_distance_cartesian_sub << ", sqd_add: " << squared_distance_cartesian_add << ", diff_sub = " << squared_distance_cartesian_sub-min_squared_distance_cartesian_temp << ", diff_add=" << squared_distance_cartesian_add-min_squared_distance_cartesian_temp << std::endl;
-              /*double line_search = 1.;
-
-
-              for (unsigned int i = 0; i < 30; i++)
-                {
-                  double est_temp = est-update*line_search;
-                  double est_temp2 = est+update*line_search;
-                  //const double squared_distance_cartesian_temp =  ((a*est_temp*est_temp*est_temp+b*est_temp*est_temp+c*est_temp+d)-check_point).norm_square();
-
-                  const double squared_distance_cartesian_temp =  (a[0]*est_temp*est_temp*est_temp+b[0]*est_temp*est_temp+c[0]*est_temp+d[0]-p[0])*(a[0]*est_temp*est_temp*est_temp+b[0]*est_temp*est_temp+c[0]*est_temp+d[0]-p[0])
-                                                                  +(a[1]*est_temp*est_temp*est_temp+b[1]*est_temp*est_temp+c[1]*est_temp+d[1]-p[1])*(a[1]*est_temp*est_temp*est_temp+b[1]*est_temp*est_temp+c[1]*est_temp+d[1]-p[1]);
-                  const double squared_distance_cartesian_temp2 =  (a[0]*est_temp2*est_temp2*est_temp2+b[0]*est_temp2*est_temp2+c[0]*est_temp2+d[0]-p[0])*(a[0]*est_temp2*est_temp2*est_temp2+b[0]*est_temp2*est_temp2+c[0]*est_temp2+d[0]-p[0])
-                                                                   +(a[1]*est_temp2*est_temp2*est_temp2+b[1]*est_temp2*est_temp2+c[1]*est_temp2+d[1]-p[1])*(a[1]*est_temp2*est_temp2*est_temp2+b[1]*est_temp2*est_temp2+c[1]*est_temp2+d[1]-p[1]);
-                  output << "---> " << i <<", est_temp:" << est_temp << ", est: " << est << ", update: " << update << ", ls: " << line_search << ", squared_distance_cartesian_temp=" << squared_distance_cartesian_temp << ", min_squared_distance_cartesian_temp=" << min_squared_distance_cartesian_temp << ", diff=" << squared_distance_cartesian_temp-min_squared_distance_cartesian_temp << ", 2=" << squared_distance_cartesian_temp2 << ", 2dif=" << squared_distance_cartesian_temp2-min_squared_distance_cartesian_temp << std::endl;
-                  if (squared_distance_cartesian_temp < min_squared_distance_cartesian_temp)
-                    break;
-
-                  line_search *= 2./3.;
-
-                }
-
-              est -= update*line_search;*/
-              //min_squared_distance_cartesian_temp =  ((a*est*est*est+b*est*est+c*est+d)-check_point).norm_square();
 
               min_squared_distance_cartesian_temp =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
                                                      +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
@@ -1427,16 +1379,6 @@ namespace WorldBuilder
                         {
                           min_squared_distance = squared_distance_cartesian;
                           const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
-                          //const double squared_distance_cartesian =  (point_on_curve-check_point).norm_square();
-                          //min_squared_distance_cartesian_temp = squared_distance_cartesian;
-                          //output << ", sqdc: " << squared_distance_cartesian << ", msqdc: " << min_squared_distance << std::endl;
-                          //squared_distance_cartesian =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                          //                                           +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
-                          //output << ", sqdc: " << squared_distance_cartesian << ", msqdc: " << min_squared_distance << std::endl;
-
-                          //if (min_squared_distance_cartesian_temp < min_squared_distance)
-                          //  {
-                          //    min_squared_distance = squared_distance_cartesian;
 
                           // the sign is rotating the derivative by 90 degrees.
                           // When moving in the direction of increasing t, left is positve and right is negative.
@@ -1465,25 +1407,15 @@ namespace WorldBuilder
                           closest_point_on_curve.point = point_on_curve;
                           Point<2> normal = point_on_curve;
                           {
-                            //double mt = 1.-est;
-                            //double a = mt * mt;
-                            //double b = mt * est * 2.;
-                            //double c = t * est;
                             Point<2> derivative = a*est*est+b*est+c;
-                            //Point<2> derivative =a * p1 + b * control_points[cp_i][0] + c * control_points[cp_i][1]-point_on_curve;
                             normal=derivative;
                             double normal_size = derivative.norm();
                             normal[0] = derivative[1]/normal_size;
                             normal[1] = -derivative[0]/normal_size;
-                            //normal += point_on_curve;
                           }
-                          //derivative = p1 * (2.*est-2.) + (2.*P3-4*P2) * t + 2 * P2;
                           closest_point_on_curve.normal = normal;
-                          //}
                         }
                     }
-                    //if (cp_i+est < -1e-8 || cp_i+est >  control_points.size()-1.+1e-8)
-                    //  min_squared_distance = squared_distance_cartesian;
                   break;
                 }
             }

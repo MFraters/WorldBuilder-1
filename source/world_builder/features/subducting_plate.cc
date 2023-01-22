@@ -130,7 +130,7 @@ namespace WorldBuilder
       if (coordinate_system == spherical)
         {
           // When spherical, input is in degrees, so change to radians for internal use.
-          reference_point *= (Consts::PI/180);
+          reference_point *= (Consts::PI/180.);
         }
 
       default_temperature_models.resize(0);
@@ -443,6 +443,7 @@ namespace WorldBuilder
           get_surface_bounding_box().point_inside(Point<2>(position_in_natural_coordinates.get_surface_coordinates(),
                                                            world->parameters.coordinate_system->natural_coordinate_system())))
         {
+          //std::cout << "name = " << this->name << ": ";
           /*WBAssert(coordinates.size() == slab_segment_lengths.size(),
                    "Internal error: The size of coordinates (" << coordinates.size()
                    << ") and slab_segment_lengths (" << slab_segment_lengths.size() << ") are different.");

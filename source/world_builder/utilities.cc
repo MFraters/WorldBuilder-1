@@ -627,11 +627,18 @@ namespace WorldBuilder
               AB_normal[1] = -AB[0];
               AB_normal = closest_point_on_curve.normal*AB.norm();
               const Point<2> local_reference_point = AB_normal*1.+closest_point_on_line_2d;
-              const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d-local_reference_point).norm_square();
-              const bool reference_point_on_side_of_line =  (point_list[0]-reference_point).norm_square() < (point_list[1]-reference_point).norm_square();
+              const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d_temp-local_reference_point).norm_square();
+              const bool reference_point_on_side_of_line =  (point_list[1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[1][1] - point_list[0][1]) < 0.;//(point_list[0]-reference_point).norm_square() < (point_list[1]-reference_point).norm_square();
               const double reference_on_side_of_line =  reference_normal_on_side_of_line == reference_point_on_side_of_line ? 1 : -1;
 
+              //std::cout << "check_point_surface_2d = " << check_point_surface_2d << ":" << check_point_surface_2d *(180./Consts::PI)<< ", A: " << A  << ":" <<  A *(180./Consts::PI) << ", B: " << B  << ":" <<  B *(180./Consts::PI)
+              //<< ", closest_point_on_line_2d: " << closest_point_on_line_2d << ":" <<  closest_point_on_line_2d*(180./Consts::PI) << ", local_reference_point: " << local_reference_point << ":" << local_reference_point*(180./Consts::PI)
+              //<< ", reference_point: " << reference_point << ":" <<  reference_point *(180./Consts::PI)
+              //<< " ---->> reference_normal_on_side_of_line: " << reference_normal_on_side_of_line << ", reference_point_on_side_of_line: " << reference_point_on_side_of_line << ", reference_on_side_of_line = " << reference_on_side_of_line << std::endl;
 
+              //std::cout << std::endl << "    0: (" << point_list[0] << "-" << reference_point << ") = (" << point_list[0]-reference_point << "), normsqr = " << (point_list[0]-reference_point).norm_square() << std::endl
+              // << "    1: (" << point_list[1] << "-" << reference_point << ") = (" << point_list[1]-reference_point << "), normsqr = " << (point_list[1]-reference_point).norm_square() << std::endl
+              //<< " ---->> reference_normal_on_side_of_line: " << reference_normal_on_side_of_line << ", reference_point_on_side_of_line: " << reference_point_on_side_of_line << ", reference_on_side_of_line = " << reference_on_side_of_line << std::endl;
               if ((
                     std::fabs(check_point_surface_2d[0]-139500) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)
                   || (std::fabs(check_point_surface_2d[0]-67500) < 1e-1 && std::fabs(check_point_surface_2d[1]-18750) < 1e-1)
@@ -664,8 +671,17 @@ namespace WorldBuilder
                   || (std::fabs(check_point_surface_2d[0]-158625) < 1e-1 && std::fabs(check_point_surface_2d[1]-14843.8) < 1e-1)
                   || (std::fabs(check_point_surface_2d[0]-165375) < 1e-1 && std::fabs(check_point_surface_2d[1]+23437.5) < 1e-1)
                   || (std::fabs(check_point_surface_2d[0]-168750) < 1e-1 && std::fabs(check_point_surface_2d[1]-4687.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-171000) < 1e-1 && std::fabs(check_point_surface_2d[1]+12500) < 1e-1))
-                std::cout << "cp2d: " << check_point_surface_2d << " reference_normal: " << reference_normal << " local_reference_point: " << local_reference_point << " reference_on_side_of_line: " << reference_on_side_of_line << " 1: " << reference_normal_on_side_of_line << ", 2: " << reference_point_on_side_of_line << " nl: " << closest_point_on_curve.normal << " cl2d: " << closest_point_on_line_2d << " i:" << closest_point_on_curve.index << std::endl;
+                  || (std::fabs(check_point_surface_2d[0]-171000) < 1e-1 && std::fabs(check_point_surface_2d[1]+12500) < 1e-1)
+                  || (std::fabs(check_point_surface_2d[0]+0.0872665) < 1e-1 && std::fabs(check_point_surface_2d[1]-0.109083) < 1e-1))
+                {
+
+                  //std::cout << "  ==> check_point_surface_2d = " << check_point_surface_2d << ":" << check_point_surface_2d *(180./Consts::PI)<< ", A: " << A  << ":" <<  A *(180./Consts::PI) << ", B: " << B  << ":" <<  B *(180./Consts::PI)
+                  //<< ", closest_point_on_line_2d: " << closest_point_on_line_2d << ":" <<  closest_point_on_line_2d*(180./Consts::PI) << ", local_reference_point: " << local_reference_point << ":" << local_reference_point*(180./Consts::PI)
+                  //<< ", check_point_surface_2d_temp: " << check_point_surface_2d_temp << ":" <<  check_point_surface_2d_temp *(180./Consts::PI)
+                  //<< " ---->> reference_normal_on_side_of_line: " << reference_normal_on_side_of_line << ", reference_point_on_side_of_line: " << reference_point_on_side_of_line << ", reference_on_side_of_line = " << reference_on_side_of_line << std::endl;
+
+                }
+              //std::cout << "cp2d: " << check_point_surface_2d << " reference_normal: " << reference_normal << " local_reference_point: " << local_reference_point << " reference_on_side_of_line: " << reference_on_side_of_line << " 1: " << reference_normal_on_side_of_line << ", 2: " << reference_point_on_side_of_line << " nl: " << closest_point_on_curve.normal << " cl2d: " << closest_point_on_line_2d << " i:" << closest_point_on_curve.index << std::endl;
               WBAssert(!std::isnan(x_axis[0]),
                        "Internal error: The x_axis variable is not a number: " << x_axis[0]);
               WBAssert(!std::isnan(x_axis[1]),
@@ -701,6 +717,8 @@ namespace WorldBuilder
           Point<2> begin_segment(x_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
                                  y_axis * (closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian),
                                  cartesian);
+
+          //std::cout << "axis: " << x_axis << ", " << y_axis << std::endl;
 
           WBAssert(!std::isnan(check_point_2d[0]),
                    "Internal error: The check_point_2d variable is not a number: " << check_point_2d[0]);

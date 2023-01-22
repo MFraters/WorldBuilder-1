@@ -96,7 +96,7 @@ namespace WorldBuilder
       if (std::isnan(angle_constrains[n_points-1]))
         {
           Point<2> P1P2 = points[n_points-1]-points[n_points-2];
-          angles[n_points-1] = atan2(P1P2[0],P1P2[1]);
+          angles[n_points-1] = atan2(P1P2[1],P1P2[0]);
         }
       else
         {
@@ -181,10 +181,26 @@ namespace WorldBuilder
           }
 
           std::cout << "p1= " << points[p_i] << ", cp1= " << control_points[p_i][0] //<< ", df=" << (points[p_i]-control_points[p_i][0]).norm()
-                    << ", cp2= " << control_points[p_i][1] << ", p2=" << points[p_i+1] //<< ", df=" << (points[p_i+1]-control_points[p_i][1]).norm()
+                    << ", cp2= " << control_points[p_i][1] << ", p2= " << points[p_i+1] //<< ", df=" << (points[p_i+1]-control_points[p_i][1]).norm()
                     << ", angle1= " << angles[p_i] << ":" << angles[p_i]*180./Consts::PI << ", angle2= " << angles[p_i+1] << ":" << angles[p_i+1]*180./Consts::PI << std::endl;
+
+          Point<2> a = 3.*control_points[p_i][0]-3.*control_points[p_i][1]+points[p_i+1]-points[p_i];
+          Point<2> b = 3.*points[p_i] - 6.*control_points[p_i][0]+3.*control_points[p_i][1];
+          Point<2> c = -3.*points[p_i] + 3.*control_points[p_i][0];
+          Point<2> d = points[p_i];
+
+          std::cout << "parametric plot (" << a[0]*(180/Consts::PI) << "*t^3 + " << b[0]*(180/Consts::PI) << "*t^2 + " << c[0]*(180/Consts::PI) << "*t + " << d[0]*(180/Consts::PI) << ","
+                    << a[1]*(180/Consts::PI) << "*t^3 + " << b[1]*(180/Consts::PI) << "*t^2 + " << c[1]*(180/Consts::PI) << "*t + " << d[1]*(180/Consts::PI) << ") for t=0 to 1" <<std::endl;
+
+          //std::cout << "parametric plot (3.*" << control_points[cp_i][0] << "-3.*" << control_points[cp_i][1] << "+" << points[cp_i+1] << "-" << points[cp_i] << ")*t^3"
+          //    << "+(3.*" << points[cp_i] << "- 6.*" << control_points[cp_i][0] << "+3.*" << control_points[cp_i][1] << ")*t^2"
+          //    << "-3.*" << points[cp_i] << "+ 3.*" <<control_points[cp_i][0] << ")*t"
+          //    << points[cp_i]
+          //    << ","
+          //     << std::endl;
         }
 
+      std::cout << "==============================" << std::endl;
 
 
       /*points = p;
@@ -1277,161 +1293,350 @@ namespace WorldBuilder
     BezierCurve::closest_point_on_curve_segment(const Point<2> &check_point) const
     {
       ClosestPointOnCurve closest_point_on_curve;
-      const Point<2> &p = check_point;
+      const Point<2> &cp = check_point;
       double min_squared_distance = std::numeric_limits<double>::infinity();
-      for ( size_t cp_i = 0; cp_i < control_points.size(); ++cp_i)
+      if (check_point.get_coordinate_system() == CoordinateSystem::cartesian)
         {
-          const Point<2> &p1 = points[cp_i];
-          const Point<2> &p2 = points[cp_i+1];
-          // first check if one of the points or control points is closer than the current closest point
-          {
-            //if (!((check_point-p1).norm_square() <= min_squared_distance
-            //      && (check_point-p2).norm_square() <= min_squared_distance
-            //      && (check_point-control_points[cp_i][0]).norm_square() <= min_squared_distance
-            //      && (check_point-control_points[cp_i][1]).norm_square() <= min_squared_distance))
-            //  {
-            //    min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
-            //    continue;
-            //  }
-
-            min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
-          }
-          // Todo: check if any of the points or control points is closer than the current estimate.
-          // Getting an estimate for where the closest point is with a linear approximation
-          Point<2> P1P2 = p2-p1;
-          Point<2> P1Pc = check_point-p1;
-
-          double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))); // est=estimate of solution
-          bool found = false;
-          std::stringstream output;
-          //output << "cp_i=" << cp_i << ", init est = " << est << ", min_squared_distance = " << min_squared_distance << std::endl;
-          Point<2> a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
-          Point<2> b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
-          Point<2> c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
-          Point<2> d = points[cp_i];
-
-          //output << "wlfrm= (" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << p[0] << ")^2+(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << p[1] << ")^2" << std::endl;
-          double min_squared_distance_cartesian_temp = (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                                                       +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
-          for (size_t newton_i = 0; newton_i < 50; newton_i++)
+          for ( size_t cp_i = 0; cp_i < control_points.size(); ++cp_i)
             {
-              // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
-              a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
-              b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
-              c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
-              d = points[cp_i];
-              //output << "  wlfrm= (" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << p[0] << ")^2+(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << p[1] << ")^2 with x=" << est << std::endl;
-              const double squared_distance_cartesian = (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                                                        +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
+              const Point<2> &p1 = points[cp_i];
+              const Point<2> &p2 = points[cp_i+1];
+              min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
 
-              const double squared_distance_cartesian_derivative = 2.0*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                                                                   + 2.0*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
-              const double squared_distance_cartesian_second_derivative  = 2.0*(6.0*a[0]*est + 2.0*b[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                                                                           + 2.0*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])
-                                                                           + 2.0*(6.0*a[1]*est + 2.0*b[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])
-                                                                           + 2.0*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1])*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1]) ;
-              //output << " ---->> squared_distance_cartesian = " << squared_distance_cartesian << ", squared_distance_cartesian_derivative=" << squared_distance_cartesian_derivative << ", squared_distance_cartesian_second_derivative= " << squared_distance_cartesian_second_derivative << ", est=" << est<< std::endl;
-              // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
+              // Getting an estimate for where the closest point is with a linear approximation
+              Point<2> P1P2 = p2-p1;
+              Point<2> P1Pc = check_point-p1;
 
-              const double update = squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative);//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
-              double line_search = 1.;
-              double est_test = est-update*line_search;
-              double squared_distance_cartesian_test = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
-                                                       +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1]);
-              //output << " ->> init squared_distance_cartesian = " << squared_distance_cartesian_test << ", min_squared_distance_cartesian_temp = " << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp << ", est = " << est << ", est_test = " << est_test << ", update: " << update << ", ls = " << line_search << ", up*ls: " << update*line_search << std::endl;
+              double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))); // est=estimate of solution
+              bool found = false;
+              std::stringstream output;
+              //output << "cp_i=" << cp_i << ", init est = " << est << ", min_squared_distance = " << min_squared_distance << std::endl;
+              Point<2> a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
+              Point<2> b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
+              Point<2> c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
+              Point<2> d = points[cp_i];
 
-              for (unsigned int i = 0; i < 10; i++)
+              //output << "wlfrm= (" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << p[0] << ")^2+(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << p[1] << ")^2" << std::endl;
+              Point<2> estimate_point = a*est*est*est+b*est*est+c*est+d;
+              double min_squared_distance_cartesian_temp = estimate_point.cheap_relative_distance_cartesian(cp);
+              //(sin(estimate_point[1]-cp[1]) * sin(estimate_point[1]-cp[1])) + (sin(estimate_point[0]-cp[0])*sin(estimate_point[0]-cp[0])) * FT::cos(cp[1]) * FT::cos(estimate_point[1]);
+
+
+              //(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+              // +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+              for (size_t newton_i = 0; newton_i < 50; newton_i++)
                 {
-                  est_test = est-update*line_search;
+                  // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
+                  a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
+                  b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
+                  c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
+                  d = points[cp_i];
+                  //output << "  wlfrm= (" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << p[0] << ")^2+(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << p[1] << ")^2 with x=" << est << std::endl;
+                  estimate_point = a*est*est*est+b*est*est+c*est+d;
+                  const double squared_distance_cartesian = estimate_point.cheap_relative_distance_cartesian(cp);
+                  //(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+                  //+(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
 
-                  squared_distance_cartesian_test = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
-                                                    +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1]);
-                  //output << "    ->> test squared_distance_cartesian = " << squared_distance_cartesian_test << ", ls =" << line_search << ", est_test=" << est_test<< std::endl;
-                  //double squared_distance_cartesian_derivative_test = 2.0*(3.0* a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
-                  //                                               + 2.0*(a[1]*est_test*est_test+b[1]*est_test+c[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1]);
+                  const double squared_distance_cartesian_derivative = 2.0*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+                                                                       + 2.0*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+                  const double squared_distance_cartesian_second_derivative  = 2.0*(6.0*a[0]*est + 2.0*b[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+                                                                               + 2.0*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])
+                                                                               + 2.0*(6.0*a[1]*est + 2.0*b[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])
+                                                                               + 2.0*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1])*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1]) ;
+                  //output << " ---->> squared_distance_cartesian = " << squared_distance_cartesian << ", squared_distance_cartesian_derivative=" << squared_distance_cartesian_derivative << ", squared_distance_cartesian_second_derivative= " << squared_distance_cartesian_second_derivative << ", est=" << est<< std::endl;
+                  // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
 
-                  //double squared_distance_cartesian_second_derivative_test  = 2.0*(6.0*a[0]*est_test + 2.0*b[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
-                  //                                                       + 2.0*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])
-                  //                                                       + 2.0*(6.0*a[1]*est_test + 2.0*b[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1])
-                  //                                                       + 2.0*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1])*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1]) ;
-                  //output << "    ls: " << newton_i<< ": i=" << cp_i << ", est_test=" << est_test << ", update=" << update*0.5 << ", deriv=" << squared_distance_cartesian_derivative_test << ", sec_deriv=" << squared_distance_cartesian_second_derivative_test << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
-                  if (squared_distance_cartesian_test < min_squared_distance_cartesian_temp)
-                    break;
+                  const double update = squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative);//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
+                  double line_search = 1.;
+                  double est_test = est-update*line_search;
+                  double squared_distance_cartesian_test = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
+                                                           +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                  //output << " ->> init squared_distance_cartesian = " << squared_distance_cartesian_test << ", min_squared_distance_cartesian_temp = " << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp << ", est = " << est << ", est_test = " << est_test << ", update: " << update << ", ls = " << line_search << ", up*ls: " << update*line_search << std::endl;
 
-                  line_search *= 2./3.;
-                }
-
-              est -= update*line_search;
-
-              min_squared_distance_cartesian_temp =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-p[0])
-                                                     +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-p[1]);
-
-              //output << ", " << newton_i<< ": i=" << cp_i << ", est=" << est << ", update=" << update << ", deriv=" << squared_distance_cartesian_derivative << ", sec_deriv=" << squared_distance_cartesian_second_derivative << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est *est *est+b *est *est+c *est+d << ", cp= " <<  check_point << ", ds:" << ((a*est*est*est+b*est*est+c*est+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp<< std::endl;
-              //output += "" +std::to_string( newton_i)+ ": i=" +std::to_string( cp_i )+", est=" +std::to_string( est )+", update=" +std::to_string( update )+", deriv="+std::to_string( squared_distance_cartesian_derivative )+", sec_deriv=" +std::to_string( squared_distance_cartesian_second_derivative )+ ", p1=" +std::to_string( P1 )+", p2= "+std::to_string( P2 )+", poc= " +std::to_string( a*est*est*est+b*est*est+c*est+d )+", cp= " +std::to_string(  check_point ) + std::endl;
-
-
-              if (std::fabs(update) < 1e-4)
-                {
-                  found = true;
-                  if (min_squared_distance_cartesian_temp < min_squared_distance)
+                  for (unsigned int i = 0; i < 10; i++)
                     {
-                      if (est >= -1e-8 && est-1. <= 1e-8)
-                        {
-                          min_squared_distance = squared_distance_cartesian;
-                          const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+                      est_test = est-update*line_search;
 
-                          // the sign is rotating the derivative by 90 degrees.
-                          // When moving in the direction of increasing t, left is positve and right is negative.
-                          //const double &t = est;
-                          //const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
-                          //(1-t)*(1-t)*(1-t)*points[cp_i] + 3*(1-t)*(1-t)*t *control_points[cp_i][0] + 3.*(1-t)*t *t *control_points[cp_i][1]+t *t *t *points[cp_i+1];
-                          //const Point<2> derivative_point = ((-2+2*est)*points[cp_i] + (2-4*est)*control_points[cp_i] + 2*est*points[cp_i+1]);
-                          //const Point<2> second_derivative_point = ((2)*points[cp_i] + (-4)*control_points[cp_i] + 2*points[cp_i+1]);
-                          // https://www.wolframalpha.com/input?i=d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
-                          const Point<2> derivative_point = points[cp_i]*((6.-3.*est)*est-3.) + control_points[cp_i][0]*(est*(9*est-12)+3)
-                                                            + control_points[cp_i][1]*(6.-9.*est)*est + points[cp_i+1]*3.*est*est;
-                          //https://www.wolframalpha.com/input?i=d%2Fdt+d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
-                          const Point<2> second_derivative_point = points[cp_i]*(6-6*est) + control_points[cp_i][0]*(18*est-12)
-                                                                   + control_points[cp_i][1]*-18*est+ points[cp_i+1]*6*est;
+                      squared_distance_cartesian_test = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
+                                                        +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                      //output << "    ->> test squared_distance_cartesian = " << squared_distance_cartesian_test << ", ls =" << line_search << ", est_test=" << est_test<< std::endl;
+                      //double squared_distance_cartesian_derivative_test = 2.0*(3.0* a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
+                      //                                               + 2.0*(a[1]*est_test*est_test+b[1]*est_test+c[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1]);
 
-                          Point<2> tangent_point = derivative_point - point_on_curve;
-                          // if angle between check point and tangent point is larget than 90 degrees, return a negative distance
-                          const double dot_product = (tangent_point*(check_point-point_on_curve));
-                          const double sign = dot_product < 0. ? -1. : 1.;
-                          tangent_point = Point<2>(-tangent_point[1],tangent_point[0],tangent_point.get_coordinate_system());
+                      //double squared_distance_cartesian_second_derivative_test  = 2.0*(6.0*a[0]*est_test + 2.0*b[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-p[0])
+                      //                                                       + 2.0*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])
+                      //                                                       + 2.0*(6.0*a[1]*est_test + 2.0*b[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-p[1])
+                      //                                                       + 2.0*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1])*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1]) ;
+                      //output << "    ls: " << newton_i<< ": i=" << cp_i << ", est_test=" << est_test << ", update=" << update*0.5 << ", deriv=" << squared_distance_cartesian_derivative_test << ", sec_deriv=" << squared_distance_cartesian_second_derivative_test << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
+                      if (squared_distance_cartesian_test < min_squared_distance_cartesian_temp)
+                        break;
 
-                          closest_point_on_curve.distance = sign*std::sqrt(min_squared_distance);
-                          closest_point_on_curve.parametric_fraction = est;
-                          closest_point_on_curve.interpolation_fraction = NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
-                          closest_point_on_curve.index = cp_i;
-                          closest_point_on_curve.point = point_on_curve;
-                          Point<2> normal = point_on_curve;
-                          {
-                            Point<2> derivative = a*est*est+b*est+c;
-                            normal=derivative;
-                            double normal_size = derivative.norm();
-                            normal[0] = derivative[1]/normal_size;
-                            normal[1] = -derivative[0]/normal_size;
-                          }
-                          closest_point_on_curve.normal = normal;
-                        }
+                      line_search *= 2./3.;
                     }
-                  break;
+
+                  est -= update*line_search;
+
+                  min_squared_distance_cartesian_temp =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+                                                         +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+
+                  //output << ", " << newton_i<< ": i=" << cp_i << ", est=" << est << ", update=" << update << ", deriv=" << squared_distance_cartesian_derivative << ", sec_deriv=" << squared_distance_cartesian_second_derivative << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est *est *est+b *est *est+c *est+d << ", cp= " <<  check_point << ", ds:" << ((a*est*est*est+b*est*est+c*est+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp<< std::endl;
+                  //output += "" +std::to_string( newton_i)+ ": i=" +std::to_string( cp_i )+", est=" +std::to_string( est )+", update=" +std::to_string( update )+", deriv="+std::to_string( squared_distance_cartesian_derivative )+", sec_deriv=" +std::to_string( squared_distance_cartesian_second_derivative )+ ", p1=" +std::to_string( P1 )+", p2= "+std::to_string( P2 )+", poc= " +std::to_string( a*est*est*est+b*est*est+c*est+d )+", cp= " +std::to_string(  check_point ) + std::endl;
+
+
+                  if (std::fabs(update) < 1e-4)
+                    {
+                      found = true;
+                      if (min_squared_distance_cartesian_temp < min_squared_distance)
+                        {
+                          if (est >= -1e-8 && est-1. <= 1e-8)
+                            {
+                              min_squared_distance = squared_distance_cartesian;
+                              const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+
+                              // the sign is rotating the derivative by 90 degrees.
+                              // When moving in the direction of increasing t, left is positve and right is negative.
+                              //const double &t = est;
+                              //const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+                              //(1-t)*(1-t)*(1-t)*points[cp_i] + 3*(1-t)*(1-t)*t *control_points[cp_i][0] + 3.*(1-t)*t *t *control_points[cp_i][1]+t *t *t *points[cp_i+1];
+                              //const Point<2> derivative_point = ((-2+2*est)*points[cp_i] + (2-4*est)*control_points[cp_i] + 2*est*points[cp_i+1]);
+                              //const Point<2> second_derivative_point = ((2)*points[cp_i] + (-4)*control_points[cp_i] + 2*points[cp_i+1]);
+                              // https://www.wolframalpha.com/input?i=d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
+                              const Point<2> derivative_point = points[cp_i]*((6.-3.*est)*est-3.) + control_points[cp_i][0]*(est*(9*est-12)+3)
+                                                                + control_points[cp_i][1]*(6.-9.*est)*est + points[cp_i+1]*3.*est*est;
+                              //https://www.wolframalpha.com/input?i=d%2Fdt+d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
+                              const Point<2> second_derivative_point = points[cp_i]*(6-6*est) + control_points[cp_i][0]*(18*est-12)
+                                                                       + control_points[cp_i][1]*-18*est+ points[cp_i+1]*6*est;
+
+                              Point<2> tangent_point = derivative_point - point_on_curve;
+                              // if angle between check point and tangent point is larget than 90 degrees, return a negative distance
+                              const double dot_product = (tangent_point*(check_point-point_on_curve));
+                              const double sign = dot_product < 0. ? -1. : 1.;
+                              tangent_point = Point<2>(-tangent_point[1],tangent_point[0],tangent_point.get_coordinate_system());
+
+                              closest_point_on_curve.distance = sign*std::sqrt(min_squared_distance);
+                              closest_point_on_curve.parametric_fraction = est;
+                              closest_point_on_curve.interpolation_fraction = NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
+                              closest_point_on_curve.index = cp_i;
+                              closest_point_on_curve.point = point_on_curve;
+                              Point<2> normal = point_on_curve;
+                              {
+                                Point<2> derivative = a*est*est+b*est+c;
+                                normal=derivative;
+                                double normal_size = derivative.norm();
+                                normal[0] = derivative[1]/normal_size;
+                                normal[1] = -derivative[0]/normal_size;
+                              }
+                              closest_point_on_curve.normal = normal;
+                            }
+                        }
+                      break;
+                    }
                 }
+              //if (std::fabs(check_point[0]-22500) < 1e-1 && std::fabs(check_point[1]-90625) < 1e-1)
+              //if (std::fabs(check_point[0]-85500) < 1e-1 && std::fabs(check_point[1]-81250) < 1e-1)
+              //if (std::fabs(check_point[0]-139500) < 1e-1 && std::fabs(check_point[1]-56250) < 1e-1)
+              //if (std::fabs(check_point[0]-101250) < 1e-1 && std::fabs(check_point[1]-35156.3) < 1e-1)
+              //if (std::fabs(check_point[0]-147375) < 1e-1 && std::fabs(check_point[1]-71875) < 1e-1)
+              //  {
+              //    std::cout << "cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl << output.str();
+              //  }
+              WBAssertThrow(found, "Could not find a good solution. " << output.str());
             }
-          //if (std::fabs(check_point[0]-22500) < 1e-1 && std::fabs(check_point[1]-90625) < 1e-1)
-          //if (std::fabs(check_point[0]-85500) < 1e-1 && std::fabs(check_point[1]-81250) < 1e-1)
-          //if (std::fabs(check_point[0]-139500) < 1e-1 && std::fabs(check_point[1]-56250) < 1e-1)
-          //if (std::fabs(check_point[0]-101250) < 1e-1 && std::fabs(check_point[1]-35156.3) < 1e-1)
+          //if (std::fabs(check_point[0]-147375) < 1e-1 && std::fabs(check_point[1]-71875) < 1e-1)
+          //  {
+          //    std::cout << "--> cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl;
+          //  }
+        }
+      else
+        {
+          for ( size_t cp_i = 0; cp_i < control_points.size(); ++cp_i)
+            {
+              const Point<2> &p1 = points[cp_i];
+              const Point<2> &p2 = points[cp_i+1];
+              //min_squared_distance = std::min(std::min(min_squared_distance,check_point.cheap_relative_distance_spherical(p1)),check_point.cheap_relative_distance_spherical(p1));
+
+              // Getting an estimate for where the closest point is with a linear approximation
+              Point<2> P1P2 = p2-p1;
+              Point<2> P1Pc = check_point-p1;
+
+              double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))); // est=estimate of solution
+              bool found = false;
+              std::stringstream output;
+              //output << "cp_i=" << cp_i << ", init est = " << est << ", min_squared_distance = " << min_squared_distance << std::endl;
+              Point<2> a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
+              Point<2> b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
+              Point<2> c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
+              Point<2> d = points[cp_i];
+
+              //output << std::setprecision(5) << "wlfrm= sin((" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ")*.5)^2+sin((" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << cp[0] << ")*.5)^2*cos(" << cp[1] << ")*cos(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ") with x=" << est << std::endl;
+              Point<2> estimate_point = a*est*est*est+b*est*est+c*est+d;
+              //double min_squared_distance_cartesian_temp = estimate_point.cheap_relative_distance_spherical(cp);
+
+
+              //(sin(f*x*x*x+g*x*x+h*x+i-j)*sin(f*x*x*x+g*x*x+h*x+i-j)) + (sin(a*x*x*x+b*x*x+c*x+d-e) * sin(a*x*x*x+b*x*x+c*x+d-e)) * cos(j) * cos(f*x*x*x+g*x*x+h*x+i-j);
+              //double cos_cp_long = cos(cp[0]);
+              double cos_cp_lat = cos(cp[1]);
+              double cos_lat = cos(estimate_point[1]);
+              double sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+              double sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+              double min_squared_distance_cartesian_temp = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_lat;
+
+              //output << ", min_squared_distance_cartesian_temp = " << min_squared_distance_cartesian_temp << ", distance = " << distance << ", derivative = " << derivative << ", second_derivative=" << second_derivative << std::endl;
+
+              //(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
+              // +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+              for (size_t newton_i = 0; newton_i < 50; newton_i++)
+                {
+                  // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
+                  //a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
+                  //b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
+                  //c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
+                  //d = points[cp_i];
+                  //output  << std::setprecision(5)  << "  wlfrm= sin((" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ")*.5)^2+sin((" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << cp[0] << ")*.5)^2*cos(" << cp[1] << ")*cos(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ") with x=" << est << std::endl;
+                  estimate_point = a*est*est*est+b*est*est+c*est+d;
+
+                  //cos_cp_lat = cos(cp[1]);
+                  cos_lat = cos(estimate_point[1]);
+                  sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                  sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+                  double squared_distance_cartesian = sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*.5)*sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*.5)+sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*.5)*sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*.5)*cos(cp[1])*cos(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);//sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_lat;
+
+                  double sin_dlat = sin(estimate_point[1]-cp[1]);
+                  double cos_dlong = cos(estimate_point[0]-cp[0]);
+                  double deriv_long = (3.0*a[0]*est*est+2.0*b[0]*est+c[0]);
+                  double deriv_lat = (3.0*a[1]*est*est+2.0*b[1]*est+c[1]);
+
+                  double squared_distance_cartesian_derivative = cos(cp[1])*(-(3.0*a[1]*est*est+2.0*b[1]*est+c[1]))*sin(0.5*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0]))*sin(0.5*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0]))*sin(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])+cos(cp[1])*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*sin(0.5*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0]))*cos(0.5*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0]))*cos(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])+(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*sin(0.5*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]))*cos(0.5*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]));//cos_cp_lat*(-(3.0*a[1]*est*est+2.0*b[1]*est+c[1]))*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))*sin_dlat+cos_cp_lat*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))*cos_lat+(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*sin(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]));
+                  double squared_distance_cartesian_second_derivative = cos_cp_lat*cos_lat*(-0.5*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))+0.5*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*cos(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))+(6.0*a[0]*est+2.0*b[0])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0])))+cos_cp_lat*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))*((3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(-cos_lat)-(6.0*a[1]*est+2.0*b[1])*sin_dlat)-2.0*cos_cp_lat*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))*sin_dlat-0.5*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*sin(0.5*(estimate_point[1]-cp[1]))*sin(0.5*(estimate_point[1]-cp[1]))+0.5*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*cos(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]))+(6.0*a[1]*est+2.0*b[1])*sin(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]));
+
+
+                  //output << " ---->> squared_distance_cartesian = " << squared_distance_cartesian << ", squared_distance_cartesian_derivative=" << squared_distance_cartesian_derivative << ", squared_distance_cartesian_second_derivative= " << squared_distance_cartesian_second_derivative << ", est=" << est << ", distance checked= "<< estimate_point.cheap_relative_distance_spherical(cp) << std::endl;
+                  // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
+
+                  const double update = squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative);//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
+                  double line_search = 1.;
+                  double est_test = est-update*line_search;
+                  double squared_distance_cartesian_test = squared_distance_cartesian;
+                  double squared_distance_cartesian_derivative_test = squared_distance_cartesian_derivative;
+                  //output << " ->> init squared_distance_cartesian = " << squared_distance_cartesian_test << ", min_squared_distance_cartesian_temp = " << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp << ", est = " << est << ", est_test = " << est_test << ", update: " << update << ", ls = " << line_search << ", up*ls: " << update *line_search << std::endl;
+
+                  for (unsigned int i = 0; i < 10; i++)
+                    {
+                      est_test = est-update*line_search;
+
+                      output  << std::setprecision(5) << "  wlfrm= sin((" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ")*.5)^2+sin((" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << cp[0] << ")*.5)^2*cos(" << cp[1] << ")*cos(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ") with x=" << est_test << std::endl;
+                      output  << std::setprecision(10) << "  python= np.sin((" << a[1] << "*x**3+" << b[1] << "*x**2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ")*.5)**2+np.sin((" << a[0] << "*x**3+" << b[0] << "*x**2+"<< c[0] << "*x+" << d[0] << "-" << cp[0] << ")*.5)**2*np.cos(" << cp[1] << ")*np.cos(" << a[1] << "*x**3+" << b[1] << "*x**2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ") -- x=" << est_test << std::endl;
+                      estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
+
+                      //cos_cp_lat = cos(cp[1]);
+                      cos_lat = cos(estimate_point[1]);
+                      sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                      sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+                      squared_distance_cartesian_test = sin((a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*.5)*sin((a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*.5)+sin((a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*.5)*sin((a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*.5)*cos(cp[1])*cos(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);;//sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_lat;
+                      //output << "    ->> test squared_distance_cartesian=" << squared_distance_cartesian_test << ", ls=" << line_search << ", est_test=" << est_test  << ", distance checked= "<< estimate_point.cheap_relative_distance_spherical(cp) << std::endl;
+
+
+
+                      sin_dlat = sin(estimate_point[1]-cp[1]);
+                      cos_dlong = cos(estimate_point[0]-cp[0]);
+                      deriv_long = (3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0]);
+                      deriv_lat = (3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1]);
+
+                      squared_distance_cartesian_derivative_test = cos(cp[1])*(-(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1]))*sin(0.5*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0]))*sin(0.5*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0]))*sin(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])+cos(cp[1])*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*sin(0.5*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0]))*cos(0.5*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0]))*cos(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])+(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*sin(0.5*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]))*cos(0.5*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]));//cos_cp_lat*(-(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1]))*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))*sin_dlat+cos_cp_lat*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))*cos_lat+(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*sin(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]));
+                      double squared_distance_cartesian_second_derivative_test = cos_cp_lat*cos_lat*(-0.5*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))+0.5*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*cos(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))+(6.0*a[0]*est_test+2.0*b[0])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0])))+cos_cp_lat*sin(0.5*(estimate_point[0]-cp[0]))*sin(0.5*(estimate_point[0]-cp[0]))*((3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(-cos_lat)-(6.0*a[1]*est_test+2.0*b[1])*sin_dlat)-2.0*cos_cp_lat*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*sin(0.5*(estimate_point[0]-cp[0]))*cos(0.5*(estimate_point[0]-cp[0]))*sin_dlat-0.5*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*sin(0.5*(estimate_point[1]-cp[1]))*sin(0.5*(estimate_point[1]-cp[1]))+0.5*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*cos(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]))+(6.0*a[1]*est_test+2.0*b[1])*sin(0.5*(estimate_point[1]-cp[1]))*cos(0.5*(estimate_point[1]-cp[1]));
+
+
+                      //output << "    ls: " << i << ", ni: " << newton_i<< ": i=" << cp_i << ", est_test=" << est_test << ", update=" << update*0.5 << ", test deriv =" << squared_distance_cartesian_derivative_test  << ", test upate=" << squared_distance_cartesian_derivative_test/fabs(squared_distance_cartesian_second_derivative_test)<< ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
+                      if (squared_distance_cartesian_test <= squared_distance_cartesian || std::fabs(squared_distance_cartesian_derivative_test) <= std::fabs(squared_distance_cartesian_derivative))
+                        break;
+
+                      line_search *= 2./3.;
+                    }
+
+                  est -= update*line_search;
+
+                  if (est < 0 || est > 1)
+                    {
+                      found = true;
+                      break;
+                    }
+                  estimate_point = a*est*est*est+b*est*est+c*est+d;
+
+                  cos_cp_lat = cos(cp[1]);
+                  cos_lat = cos(estimate_point[1]);
+                  sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                  sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+
+                  min_squared_distance_cartesian_temp = sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*.5)*sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*.5)+sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*.5)*sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*.5)*cos(cp[1])*cos(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);//sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_lat;
+
+                  //output << ", " << newton_i<< ": i=" << cp_i << ", est=" << est << ", update=" << update << ", deriv=" << squared_distance_cartesian_derivative << ", sec_deriv=" << squared_distance_cartesian_second_derivative << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est *est *est+b *est *est+c *est+d << ", cp= " <<  check_point << ", ds:" << ((a*est*est*est+b*est*est+c*est+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp<< std::endl;
+                  //output += "" +std::to_string( newton_i)+ ": i=" +std::to_string( cp_i )+", est=" +std::to_string( est )+", update=" +std::to_string( update )+", deriv="+std::to_string( squared_distance_cartesian_derivative )+", sec_deriv=" +std::to_string( squared_distance_cartesian_second_derivative )+ ", p1=" +std::to_string( P1 )+", p2= "+std::to_string( P2 )+", poc= " +std::to_string( a*est*est*est+b*est*est+c*est+d )+", cp= " +std::to_string(  check_point ) + std::endl;
+
+
+                  if (std::fabs(update) < 1e-4)
+                    {
+                      found = true;
+                      if (min_squared_distance_cartesian_temp < min_squared_distance)
+                        {
+                          if (est >= -1e-8 && est-1. <= 1e-8)
+                            {
+                              min_squared_distance = squared_distance_cartesian;
+                              const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+
+                              // the sign is rotating the derivative by 90 degrees.
+                              // When moving in the direction of increasing t, left is positve and right is negative.
+                              //const double &t = est;
+                              //const Point<2> point_on_curve = a*est*est*est+b*est*est+c*est+d;
+                              //(1-t)*(1-t)*(1-t)*points[cp_i] + 3*(1-t)*(1-t)*t *control_points[cp_i][0] + 3.*(1-t)*t *t *control_points[cp_i][1]+t *t *t *points[cp_i+1];
+                              //const Point<2> derivative_point = ((-2+2*est)*points[cp_i] + (2-4*est)*control_points[cp_i] + 2*est*points[cp_i+1]);
+                              //const Point<2> second_derivative_point = ((2)*points[cp_i] + (-4)*control_points[cp_i] + 2*points[cp_i+1]);
+                              // https://www.wolframalpha.com/input?i=d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
+                              const Point<2> derivative_point = points[cp_i]*((6.-3.*est)*est-3.) + control_points[cp_i][0]*(est*(9*est-12)+3)
+                                                                + control_points[cp_i][1]*(6.-9.*est)*est + points[cp_i+1]*3.*est*est;
+                              //https://www.wolframalpha.com/input?i=d%2Fdt+d%2Fdt+%281-t%29*%281-t%29*%281-t%29*a+%2B+3*%281-t%29*%281-t%29*t*b+%2B+3.*%281-t%29*t*t*c%2Bt*t*t*d
+                              const Point<2> second_derivative_point = points[cp_i]*(6-6*est) + control_points[cp_i][0]*(18*est-12)
+                                                                       + control_points[cp_i][1]*-18*est+ points[cp_i+1]*6*est;
+
+                              Point<2> tangent_point = derivative_point - point_on_curve;
+                              // if angle between check point and tangent point is larget than 90 degrees, return a negative distance
+                              const double dot_product = (tangent_point*(check_point-point_on_curve));
+                              const double sign = dot_product < 0. ? -1. : 1.;
+                              tangent_point = Point<2>(-tangent_point[1],tangent_point[0],tangent_point.get_coordinate_system());
+
+                              closest_point_on_curve.distance = sign*std::sqrt(min_squared_distance);
+                              closest_point_on_curve.parametric_fraction = est;
+                              closest_point_on_curve.interpolation_fraction = NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
+                              closest_point_on_curve.index = cp_i;
+                              closest_point_on_curve.point = point_on_curve;
+                              Point<2> normal = point_on_curve;
+                              {
+                                Point<2> derivative = a*est*est+b*est+c;
+                                normal=derivative;
+                                double normal_size = derivative.norm();
+                                normal[0] = derivative[1]/normal_size;
+                                normal[1] = -derivative[0]/normal_size;
+                              }
+                              closest_point_on_curve.normal = normal;
+                            }
+                        }
+                      break;
+                    }
+                }
+              //if (std::fabs(check_point[0]-22500) < 1e-1 && std::fabs(check_point[1]-90625) < 1e-1)
+              //if (std::fabs(check_point[0]-85500) < 1e-1 && std::fabs(check_point[1]-81250) < 1e-1)
+              //if (std::fabs(check_point[0]-139500) < 1e-1 && std::fabs(check_point[1]-56250) < 1e-1)
+              //if (std::fabs(check_point[0]-101250) < 1e-1 && std::fabs(check_point[1]-35156.3) < 1e-1)
+              if (std::fabs(check_point[0]-147375) < 1e-1 && std::fabs(check_point[1]-71875) < 1e-1)
+                {
+                  std::cout << "cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl << output.str();
+                }
+              WBAssertThrow(found, "Could not find a good solution. " << output.str());
+            }
           if (std::fabs(check_point[0]-147375) < 1e-1 && std::fabs(check_point[1]-71875) < 1e-1)
             {
-              std::cout << "cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl << output.str();
+              std::cout << "--> cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl;
             }
-          WBAssertThrow(found, "Could not find a good solution. " << output.str());
-        }
-      if (std::fabs(check_point[0]-147375) < 1e-1 && std::fabs(check_point[1]-71875) < 1e-1)
-        {
-          std::cout << "--> cp= " << check_point << ", point= " << closest_point_on_curve.point << ", fraction=" << closest_point_on_curve.parametric_fraction << ", index= " << closest_point_on_curve.index << ", normal = " << closest_point_on_curve.normal << std::endl;
+
         }
       return closest_point_on_curve;
     }

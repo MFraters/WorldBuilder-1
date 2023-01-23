@@ -622,13 +622,10 @@ namespace WorldBuilder
               Point<2> A = point_list[closest_point_on_curve.index];
               Point<2> B = (closest_point_on_curve.index+2 < point_list.size() ? point_list[closest_point_on_curve.index+2] : point_list[closest_point_on_curve.index+1]);
               Point<2> AB = A-B;
-              Point<2> AB_normal = AB;
-              AB_normal[0] = AB[1];
-              AB_normal[1] = -AB[0];
-              AB_normal = closest_point_on_curve.normal*AB.norm();
+              Point<2> AB_normal = closest_point_on_curve.normal*AB.norm();
               const Point<2> local_reference_point = AB_normal*1.+closest_point_on_line_2d;
               const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d_temp-local_reference_point).norm_square();
-              const bool reference_point_on_side_of_line =  (point_list[1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[1][1] - point_list[0][1]) < 0.;//(point_list[0]-reference_point).norm_square() < (point_list[1]-reference_point).norm_square();
+              const bool reference_point_on_side_of_line =  (point_list[1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[1][1] - point_list[0][1]) < 0.;
               const double reference_on_side_of_line =  reference_normal_on_side_of_line == reference_point_on_side_of_line ? 1 : -1;
 
               //std::cout << "check_point_surface_2d = " << check_point_surface_2d << ":" << check_point_surface_2d *(180./Consts::PI)<< ", A: " << A  << ":" <<  A *(180./Consts::PI) << ", B: " << B  << ":" <<  B *(180./Consts::PI)
@@ -639,49 +636,7 @@ namespace WorldBuilder
               //std::cout << std::endl << "    0: (" << point_list[0] << "-" << reference_point << ") = (" << point_list[0]-reference_point << "), normsqr = " << (point_list[0]-reference_point).norm_square() << std::endl
               // << "    1: (" << point_list[1] << "-" << reference_point << ") = (" << point_list[1]-reference_point << "), normsqr = " << (point_list[1]-reference_point).norm_square() << std::endl
               //<< " ---->> reference_normal_on_side_of_line: " << reference_normal_on_side_of_line << ", reference_point_on_side_of_line: " << reference_point_on_side_of_line << ", reference_on_side_of_line = " << reference_on_side_of_line << std::endl;
-              if ((
-                    std::fabs(check_point_surface_2d[0]-139500) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-67500) < 1e-1 && std::fabs(check_point_surface_2d[1]-18750) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-81000) < 1e-1 && std::fabs(check_point_surface_2d[1]-59375) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-76500) < 1e-1 && std::fabs(check_point_surface_2d[1]-53125) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-67500) < 1e-1 && std::fabs(check_point_surface_2d[1]-40625) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-104625) < 1e-1 && std::fabs(check_point_surface_2d[1]-40625) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-101250) < 1e-1 && std::fabs(check_point_surface_2d[1]-35156.3) < 1e-1)
 
-                  || (std::fabs(check_point_surface_2d[0]+146250) < 1e-1 && std::fabs(check_point_surface_2d[1]-44531.3) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-54000) < 1e-1 && std::fabs(check_point_surface_2d[1]- 27343.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-63000) < 1e-1 && std::fabs(check_point_surface_2d[1]- 42968.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-74250) < 1e-1 && std::fabs(check_point_surface_2d[1]- 57812.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-85500) < 1e-1 && std::fabs(check_point_surface_2d[1]- 67968.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-99000) < 1e-1 && std::fabs(check_point_surface_2d[1]- 76562.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-111375) < 1e-1 && std::fabs(check_point_surface_2d[1]-82031.3) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-126000) < 1e-1 && std::fabs(check_point_surface_2d[1]+10156.3) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-126000) < 1e-1 && std::fabs(check_point_surface_2d[1]-90625) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-131625) < 1e-1 && std::fabs(check_point_surface_2d[1]-781.25) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-133875) < 1e-1 && std::fabs(check_point_surface_2d[1]-11718.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-136125) < 1e-1 && std::fabs(check_point_surface_2d[1]-88281.3) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-142875) < 1e-1 && std::fabs(check_point_surface_2d[1]-82812.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-144000) < 1e-1 && std::fabs(check_point_surface_2d[1]-33593.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-146250) < 1e-1 && std::fabs(check_point_surface_2d[1]-43750) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-147375) < 1e-1 && std::fabs(check_point_surface_2d[1]-56250) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-147375) < 1e-1 && std::fabs(check_point_surface_2d[1]-71875) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-148500) < 1e-1 && std::fabs(check_point_surface_2d[1]+39062.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-149625) < 1e-1 && std::fabs(check_point_surface_2d[1]-24218.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-158625) < 1e-1 && std::fabs(check_point_surface_2d[1]+32812.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-158625) < 1e-1 && std::fabs(check_point_surface_2d[1]-14843.8) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-165375) < 1e-1 && std::fabs(check_point_surface_2d[1]+23437.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-168750) < 1e-1 && std::fabs(check_point_surface_2d[1]-4687.5) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]-171000) < 1e-1 && std::fabs(check_point_surface_2d[1]+12500) < 1e-1)
-                  || (std::fabs(check_point_surface_2d[0]+0.0872665) < 1e-1 && std::fabs(check_point_surface_2d[1]-0.109083) < 1e-1))
-                {
-
-                  //std::cout << "  ==> check_point_surface_2d = " << check_point_surface_2d << ":" << check_point_surface_2d *(180./Consts::PI)<< ", A: " << A  << ":" <<  A *(180./Consts::PI) << ", B: " << B  << ":" <<  B *(180./Consts::PI)
-                  //<< ", closest_point_on_line_2d: " << closest_point_on_line_2d << ":" <<  closest_point_on_line_2d*(180./Consts::PI) << ", local_reference_point: " << local_reference_point << ":" << local_reference_point*(180./Consts::PI)
-                  //<< ", check_point_surface_2d_temp: " << check_point_surface_2d_temp << ":" <<  check_point_surface_2d_temp *(180./Consts::PI)
-                  //<< " ---->> reference_normal_on_side_of_line: " << reference_normal_on_side_of_line << ", reference_point_on_side_of_line: " << reference_point_on_side_of_line << ", reference_on_side_of_line = " << reference_on_side_of_line << std::endl;
-
-                }
-              //std::cout << "cp2d: " << check_point_surface_2d << " reference_normal: " << reference_normal << " local_reference_point: " << local_reference_point << " reference_on_side_of_line: " << reference_on_side_of_line << " 1: " << reference_normal_on_side_of_line << ", 2: " << reference_point_on_side_of_line << " nl: " << closest_point_on_curve.normal << " cl2d: " << closest_point_on_line_2d << " i:" << closest_point_on_curve.index << std::endl;
               WBAssert(!std::isnan(x_axis[0]),
                        "Internal error: The x_axis variable is not a number: " << x_axis[0]);
               WBAssert(!std::isnan(x_axis[1]),

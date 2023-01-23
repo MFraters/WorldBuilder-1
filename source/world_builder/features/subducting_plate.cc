@@ -715,8 +715,7 @@ namespace WorldBuilder
                                                                    starting_radius,
                                                                    this->world->parameters.coordinate_system,
                                                                    false,
-                                                                   this->x_spline,
-                                                                   this->y_spline);
+                                                                   this->bezier_curve);
 
       Objects::PlaneDistances plane_distances(distance_from_planes.distance_from_plane, distance_from_planes.distance_along_plane);
       return plane_distances;

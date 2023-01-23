@@ -5,7 +5,7 @@
   "features":
   [
     {
-       "model":"subducting plate", "name":"Antilles slab 1", "dip point":[-10,10],
+       "model":"subducting plate", "name":"Antilles slab 1", "dip point":[10,-10],
        "coordinates":[[0,0],[10,10],[25,15],[35,35]], 
        "segments":
        [

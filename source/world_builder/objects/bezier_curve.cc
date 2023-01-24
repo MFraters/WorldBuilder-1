@@ -380,7 +380,7 @@ namespace WorldBuilder
                   min_squared_distance_cartesian_temp =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
                                                          +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
 
-                  if (std::fabs(update) < 1e-6)
+                  if (std::fabs(update) < 1e-4)
                     {
                       found = true;
                       if (min_squared_distance_cartesian_temp < min_squared_distance)
@@ -554,7 +554,7 @@ namespace WorldBuilder
 
                   min_squared_distance_cartesian_temp = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos(estimate_point[1]-cp[1]);
 
-                  if (std::fabs(update) < 1e-6)
+                  if (std::fabs(update) < 1e-4)
                     {
                       found = true;
                       if (min_squared_distance_cartesian_temp < min_squared_distance)

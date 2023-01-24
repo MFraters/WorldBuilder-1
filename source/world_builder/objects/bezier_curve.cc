@@ -344,11 +344,11 @@ namespace WorldBuilder
 
 #ifdef debug
                       squared_distance_cartesian_derivative_test = 2.0*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
-                                                                       + 2.0*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                                                                   + 2.0*(3.0*a[1]*est_test*est_test+2.0*b[1]*est_test+c[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
                       double squared_distance_cartesian_second_derivative_test = 2.0*(6.0*a[0]*est_test + 2.0*b[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
-                                                                               + 2.0*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])
-                                                                               + 2.0*(6.0*a[1]*est_test + 2.0*b[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])
-                                                                               + 2.0*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1])*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1]) ;
+                                                                                 + 2.0*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])*(3.0*a[0]*est_test*est_test + 2.0*b[0]*est_test + c[0])
+                                                                                 + 2.0*(6.0*a[1]*est_test + 2.0*b[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])
+                                                                                 + 2.0*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1])*(3.0*a[1]*est_test*est_test + 2.0*b[1]*est_test + c[1]) ;
                       output << "    i: " << cp_i << ", ni: " << newton_i<< ", lsi: " << i << ", line_search_step=" << line_search_step << ": squared_distance_cartesian_test = " << squared_distance_cartesian_test << ", diff= " << squared_distance_cartesian_test-squared_distance_cartesian << ", tests: " << (squared_distance_cartesian_test_previous < squared_distance_cartesian ? "true" : "false") << ":" << (squared_distance_cartesian_test > squared_distance_cartesian_test_previous ? "true" : "false") << ", est_test=" << est_test << ", update=" << update << ", ls=" << line_search << ", up*ls=" << update *line_search << ", test deriv =" << squared_distance_cartesian_derivative_test  << ", test upate=" << squared_distance_cartesian_derivative_test/fabs(squared_distance_cartesian_second_derivative_test) << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
 #endif
                       if (i > 0 && (squared_distance_cartesian_test > squared_distance_cartesian_test_previous))
@@ -365,7 +365,7 @@ namespace WorldBuilder
                               estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
 
                               squared_distance_cartesian_test_previous = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
-                                                        +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                                                                         +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
                               line_search_step = std::min(line_search_step*(11./10.),0.95);
                               continue;
                             }
@@ -542,7 +542,7 @@ namespace WorldBuilder
                       line_search *= line_search_step;
                     }
 #ifdef debug
-                  output << "    i: " << cp_i << ", ni: " << newton_i<< ", est= " << est-update*line_search << ", ls:" << line_search << ": squared_distance_cartesian_test = " << squared_distance_cartesian_test << ", diff= " << squared_distance_cartesian_test-squared_distance_cartesian << std::endl;
+                  output << "    i: " << cp_i << ", ni: " << newton_i<< ", est= " << est-update *line_search << ", ls:" << line_search << ": squared_distance_cartesian_test = " << squared_distance_cartesian_test << ", diff= " << squared_distance_cartesian_test-squared_distance_cartesian << std::endl;
 #endif
                   est -= update*line_search;
 

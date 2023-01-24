@@ -619,10 +619,10 @@ namespace WorldBuilder
 
               // check whether the check point and the reference point are on the same side, if not, change the side.
               const Point<2> reference_normal = closest_point_on_curve.normal*10e3+closest_point_on_line_2d;
-              Point<2> A = point_list[closest_point_on_curve.index];
-              Point<2> B = (closest_point_on_curve.index+2 < point_list.size() ? point_list[closest_point_on_curve.index+2] : point_list[closest_point_on_curve.index+1]);
-              Point<2> AB = A-B;
-              Point<2> AB_normal = closest_point_on_curve.normal*AB.norm();
+              //Point<2> A = closest_point_on_line_2d;//point_list[closest_point_on_curve.index];
+              //Point<2> B = reference_point;//(closest_point_on_curve.index+2 < point_list.size() ? point_list[closest_point_on_curve.index+2] : point_list[closest_point_on_curve.index+1]);
+              //Point<2> AB = A-B;
+              Point<2> AB_normal = closest_point_on_curve.normal*closest_point_on_line_2d.distance(reference_point);//*AB.norm();
               const Point<2> local_reference_point = AB_normal*1.+closest_point_on_line_2d;
               const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d_temp-local_reference_point).norm_square();
               const bool reference_point_on_side_of_line =  (point_list[1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[1][1] - point_list[0][1]) < 0.;

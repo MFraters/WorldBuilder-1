@@ -117,6 +117,7 @@ namespace WorldBuilder
       const CoordinateSystem coordinate_system = prm.coordinate_system->natural_coordinate_system();
 
       this->name = prm.get<std::string>("name");
+      //std::cout << "name=" << this->name << std::endl;
       this->get_coordinates("coordinates", prm, coordinate_system);
 
 

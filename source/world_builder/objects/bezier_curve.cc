@@ -139,10 +139,10 @@ namespace WorldBuilder
             }
         }
       }
-      Point<2> a = 3.*control_points[0][0]-3.*control_points[0][1]+points[0+1]-points[0];
-      Point<2> b = 3.*points[0] - 6.*control_points[0][0]+3.*control_points[0][1];
-      Point<2> c = -3.*points[0] + 3.*control_points[0][0];
-      Point<2> d = points[0];
+      //Point<2> a = 3.*control_points[0][0]-3.*control_points[0][1]+points[0+1]-points[0];
+      //Point<2> b = 3.*points[0] - 6.*control_points[0][0]+3.*control_points[0][1];
+      //Point<2> c = -3.*points[0] + 3.*control_points[0][0];
+      //Point<2> d = points[0];
       //std::cout << "parametric plot (" << a[0]*(180/Consts::PI) << "*t^3 + " << b[0]*(180/Consts::PI) << "*t^2 + " << c[0]*(180/Consts::PI) << "*t + " << d[0]*(180/Consts::PI) << ","
       //              << a[1]*(180/Consts::PI) << "*t^3 + " << b[1]*(180/Consts::PI) << "*t^2 + " << c[1]*(180/Consts::PI) << "*t + " << d[1]*(180/Consts::PI) << ") for t=0 to 1" <<std::endl;
 
@@ -194,10 +194,10 @@ namespace WorldBuilder
                 }
             }
 
-          Point<2> a = 3.*control_points[p_i][0]-3.*control_points[p_i][1]+points[p_i+1]-points[p_i];
-          Point<2> b = 3.*points[p_i] - 6.*control_points[p_i][0]+3.*control_points[p_i][1];
-          Point<2> c = -3.*points[p_i] + 3.*control_points[p_i][0];
-          Point<2> d = points[p_i];
+          //Point<2> a = 3.*control_points[p_i][0]-3.*control_points[p_i][1]+points[p_i+1]-points[p_i];
+          //Point<2> b = 3.*points[p_i] - 6.*control_points[p_i][0]+3.*control_points[p_i][1];
+          //Point<2> c = -3.*points[p_i] + 3.*control_points[p_i][0];
+          //Point<2> d = points[p_i];
           //std::cout << "1: " << points[p_i] << ", 2: " << control_points[p_i][0] << ", 3: " << control_points[p_i][1] << ", 4: " << points[p_i+1] << std::endl;
           //std::cout << "parametric plot (" << a[0]*(180/Consts::PI) << "*t^3 + " << b[0]*(180/Consts::PI) << "*t^2 + " << c[0]*(180/Consts::PI) << "*t + " << d[0]*(180/Consts::PI) << ","
           //          << a[1]*(180/Consts::PI) << "*t^3 + " << b[1]*(180/Consts::PI) << "*t^2 + " << c[1]*(180/Consts::PI) << "*t + " << d[1]*(180/Consts::PI) << ") for t=0 to 1" <<std::endl;

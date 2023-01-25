@@ -352,40 +352,44 @@ namespace WorldBuilder
                   // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
                   const double update = std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
                   double line_search = 1.;
-                  double est_test = est-update*line_search;
-                  double squared_distance_cartesian_test = squared_distance_cartesian;
-                  double squared_distance_cartesian_test_previous = squared_distance_cartesian;
-                  double squared_distance_cartesian_derivative_test = squared_distance_cartesian_derivative;
 
-                  for (unsigned int i = 0; i < 10; i++)
+                  if (std::fabs(update) > 1e-2)
                     {
-                      est_test = est-update*line_search;
-                      const double est_test_sq = est_test*est_test;
-                      const double estimate_point_min_cp_test_0 = a_0*est_test_sq*est_test+b_0*est_test_sq+c_0*est_test+d_min_cp_0;
-                      const double estimate_point_min_cp_test_1 = a_1*est_test_sq*est_test+b_1*est_test_sq+c_1*est_test+d_min_cp_1;
+                      double est_test = est-update*line_search;
+                      double squared_distance_cartesian_test = squared_distance_cartesian;
+                      double squared_distance_cartesian_test_previous = squared_distance_cartesian;
+                      double squared_distance_cartesian_derivative_test = squared_distance_cartesian_derivative;
 
-                      squared_distance_cartesian_test = (estimate_point_min_cp_test_0*estimate_point_min_cp_test_0)+(estimate_point_min_cp_test_1*estimate_point_min_cp_test_1);
+                      for (unsigned int i = 0; i < 10; i++)
+                        {
+                          est_test = est-update*line_search;
+                          const double est_test_sq = est_test*est_test;
+                          const double estimate_point_min_cp_test_0 = a_0*est_test_sq*est_test+b_0*est_test_sq+c_0*est_test+d_min_cp_0;
+                          const double estimate_point_min_cp_test_1 = a_1*est_test_sq*est_test+b_1*est_test_sq+c_1*est_test+d_min_cp_1;
+
+                          squared_distance_cartesian_test = (estimate_point_min_cp_test_0*estimate_point_min_cp_test_0)+(estimate_point_min_cp_test_1*estimate_point_min_cp_test_1);
 
 #ifndef NDEBUG
-                      squared_distance_cartesian_derivative_test = 2.0*(3.0*a_0*est_test*est_test+2.0*b_0*est_test+c_0)*(a_0*est_test*est_test*est_test+b_0*est_test*est_test+c_0*est_test+d_0-cp[0])
-                                                                   + 2.0*(3.0*a_1*est_test*est_test+2.0*b_1*est_test+c_1)*(a_1*est_test*est_test*est_test+b_1*est_test*est_test+c_1*est_test+d_1-cp[1]);
-                      double squared_distance_cartesian_second_derivative_test = 2.0*(6.0*a_0*est_test + 2.0*b_0)*(a_0*est_test*est_test*est_test+b_0*est_test*est_test+c_0*est_test+d_0-cp[0])
-                                                                                 + 2.0*(3.0*a_0*est_test*est_test + 2.0*b_0*est_test + c_0)*(3.0*a_0*est_test*est_test + 2.0*b_0*est_test + c_0)
-                                                                                 + 2.0*(6.0*a_1*est_test + 2.0*b_1)*(a_1*est_test*est_test*est_test+b_1*est_test*est_test+c_1*est_test+d_1-cp[1])
-                                                                                 + 2.0*(3.0*a_1*est_test*est_test + 2.0*b_1*est_test + c_1)*(3.0*a_1*est_test*est_test + 2.0*b_1*est_test + c_1) ;
-                      output << "    i: " << cp_i << ", ni: " << newton_i<< ", lsi: " << i << ", line_search_step=" << 2./3. << ": squared_distance_cartesian_test = " << squared_distance_cartesian_test << ", diff= " << squared_distance_cartesian_test-squared_distance_cartesian << ", tests: " << (squared_distance_cartesian_test_previous < squared_distance_cartesian ? "true" : "false") << ":" << (squared_distance_cartesian_test > squared_distance_cartesian_test_previous ? "true" : "false") << ", est_test=" << est_test << ", update=" << update << ", ls=" << line_search << ", up*ls=" << update *line_search << ", test deriv =" << squared_distance_cartesian_derivative_test  << ", test upate=" << squared_distance_cartesian_derivative_test/fabs(squared_distance_cartesian_second_derivative_test) << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
+                          squared_distance_cartesian_derivative_test = 2.0*(3.0*a_0*est_test*est_test+2.0*b_0*est_test+c_0)*(a_0*est_test*est_test*est_test+b_0*est_test*est_test+c_0*est_test+d_0-cp[0])
+                                                                       + 2.0*(3.0*a_1*est_test*est_test+2.0*b_1*est_test+c_1)*(a_1*est_test*est_test*est_test+b_1*est_test*est_test+c_1*est_test+d_1-cp[1]);
+                          double squared_distance_cartesian_second_derivative_test = 2.0*(6.0*a_0*est_test + 2.0*b_0)*(a_0*est_test*est_test*est_test+b_0*est_test*est_test+c_0*est_test+d_0-cp[0])
+                                                                                     + 2.0*(3.0*a_0*est_test*est_test + 2.0*b_0*est_test + c_0)*(3.0*a_0*est_test*est_test + 2.0*b_0*est_test + c_0)
+                                                                                     + 2.0*(6.0*a_1*est_test + 2.0*b_1)*(a_1*est_test*est_test*est_test+b_1*est_test*est_test+c_1*est_test+d_1-cp[1])
+                                                                                     + 2.0*(3.0*a_1*est_test*est_test + 2.0*b_1*est_test + c_1)*(3.0*a_1*est_test*est_test + 2.0*b_1*est_test + c_1) ;
+                          output << "    i: " << cp_i << ", ni: " << newton_i<< ", lsi: " << i << ", line_search_step=" << 2./3. << ": squared_distance_cartesian_test = " << squared_distance_cartesian_test << ", diff= " << squared_distance_cartesian_test-squared_distance_cartesian << ", tests: " << (squared_distance_cartesian_test_previous < squared_distance_cartesian ? "true" : "false") << ":" << (squared_distance_cartesian_test > squared_distance_cartesian_test_previous ? "true" : "false") << ", est_test=" << est_test << ", update=" << update << ", ls=" << line_search << ", up*ls=" << update *line_search << ", test deriv =" << squared_distance_cartesian_derivative_test  << ", test upate=" << squared_distance_cartesian_derivative_test/fabs(squared_distance_cartesian_second_derivative_test) << ", p1=" << p1 << ", p2= " << p2 << ", poc= " << a *est_test *est_test *est_test+b *est_test *est_test+c *est_test+d << ", cp= " <<  check_point << ", ds:" << ((a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d)-check_point).norm_square() << ":" << min_squared_distance_cartesian_temp << ", diff = " << squared_distance_cartesian_test-min_squared_distance_cartesian_temp<< std::endl;
 #endif
-                      if (i > 0 && (squared_distance_cartesian_test > squared_distance_cartesian_test_previous))
-                        {
-                          if (squared_distance_cartesian_test_previous-squared_distance_cartesian < 0)
+                          if (i > 0 && (squared_distance_cartesian_test > squared_distance_cartesian_test_previous))
                             {
-                              line_search *= 3./2.;
-                              break;
+                              if (squared_distance_cartesian_test_previous-squared_distance_cartesian < 0)
+                                {
+                                  line_search *= 3./2.;
+                                  break;
+                                }
                             }
-                        }
-                      squared_distance_cartesian_test_previous = squared_distance_cartesian_test;
+                          squared_distance_cartesian_test_previous = squared_distance_cartesian_test;
 
-                      line_search *=  2./3.;
+                          line_search *=  2./3.;
+                        }
                     }
 
                   est -= update*line_search;

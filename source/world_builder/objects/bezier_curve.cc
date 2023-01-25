@@ -483,10 +483,10 @@ namespace WorldBuilder
               Point<2> d = points[cp_i];
 
               Point<2> estimate_point = a*est*est*est+b*est*est+c*est+d;
-              const double cos_cp_lat = FT::cos(cp[1]);
-              double cos_lat = FT::cos(estimate_point[1]);
-              double sin_d_long_h = FT::sin((estimate_point[0]-cp[0])*0.5);
-              double sin_d_lat_h = FT::sin((estimate_point[1]-cp[1])*0.5);
+              const double cos_cp_lat = cos(cp[1]);
+              double cos_lat = cos(estimate_point[1]);
+              double sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+              double sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
               double min_squared_distance_cartesian_temp = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_lat;
 #ifndef NDEBUG
               output << "cp_i=" << cp_i << ", init est = " << est << ", min_squared_distance = " << min_squared_distance << ", min_squared_distance_cartesian_temp: " << min_squared_distance_cartesian_temp << ", p1: " << p1 << ", p2: " << p2 << std::endl;
@@ -498,17 +498,17 @@ namespace WorldBuilder
                   // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
                   estimate_point = a*est*est*est+b*est*est+c*est+d;
 
-                  cos_lat = FT::cos(estimate_point[1]);
-                  sin_d_long_h = FT::sin((estimate_point[0]-cp[0])*0.5);
-                  sin_d_lat_h = FT::sin((estimate_point[1]-cp[1])*0.5);
-                  const double cos_d_lat = FT::cos(estimate_point[1]-cp[1]);
-                  const double squared_distance_cartesian_full = FT::sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*0.5)*FT::sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*0.5)+FT::sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*0.5)*FT::sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*0.5)*FT::cos(cp[1])*FT::cos(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+                  cos_lat = cos(estimate_point[1]);
+                  sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                  sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+                  const double cos_d_lat = cos(estimate_point[1]-cp[1]);
+                  const double squared_distance_cartesian_full = sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*0.5)*sin((a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*0.5)+sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*0.5)*sin((a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*0.5)*cos(cp[1])*cos(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
                   const double squared_distance_cartesian = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos_d_lat;
 
-                  double sin_dlat = FT::sin(estimate_point[1]-cp[1]);
-                  double cos_dlong = FT::cos(estimate_point[0]-cp[0]);
-                  double cos_dlong_h = FT::cos(0.5*(estimate_point[0]-cp[0]));
-                  double cos_dlat_h = FT::cos(0.5*(estimate_point[1]-cp[1]));
+                  double sin_dlat = sin(estimate_point[1]-cp[1]);
+                  double cos_dlong = cos(estimate_point[0]-cp[0]);
+                  double cos_dlong_h = cos(0.5*(estimate_point[0]-cp[0]));
+                  double cos_dlat_h = cos(0.5*(estimate_point[1]-cp[1]));
                   double deriv_long = (3.0*a[0]*est*est+2.0*b[0]*est+c[0]);
                   double deriv_lat = (3.0*a[1]*est*est+2.0*b[1]*est+c[1]);
 
@@ -534,10 +534,10 @@ namespace WorldBuilder
                       est_test = est-update*line_search;
                       estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
 
-                      cos_lat = FT::cos(estimate_point[1]);
-                      sin_d_long_h = FT::sin((estimate_point[0]-cp[0])*0.5);
-                      sin_d_lat_h = FT::sin((estimate_point[1]-cp[1])*0.5);
-                      squared_distance_cartesian_test = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*FT::cos(estimate_point[1]-cp[1]);
+                      cos_lat = cos(estimate_point[1]);
+                      sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                      sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+                      squared_distance_cartesian_test = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos(estimate_point[1]-cp[1]);
 
 #ifndef NDEBUG
                       sin_dlat = sin(estimate_point[1]-cp[1]);
@@ -561,10 +561,10 @@ namespace WorldBuilder
                               est_test = est-update*line_search;
                               estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
 
-                              cos_lat = FT::cos(estimate_point[1]);
-                              sin_d_long_h = FT::sin((estimate_point[0]-cp[0])*0.5);
-                              sin_d_lat_h = FT::sin((estimate_point[1]-cp[1])*0.5);
-                              squared_distance_cartesian_test_previous = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*FT::cos(estimate_point[1]-cp[1]);
+                              cos_lat = cos(estimate_point[1]);
+                              sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                              sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
+                              squared_distance_cartesian_test_previous = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos(estimate_point[1]-cp[1]);
                               line_search_step = std::min(line_search_step*(11./10.),0.95);
                               continue;
                             }
@@ -580,11 +580,11 @@ namespace WorldBuilder
 
                   estimate_point = a*est*est*est+b*est*est+c*est+d;
 
-                  cos_lat = FT::cos(estimate_point[1]);
-                  sin_d_long_h = FT::sin((estimate_point[0]-cp[0])*0.5);
-                  sin_d_lat_h = FT::sin((estimate_point[1]-cp[1])*0.5);
+                  cos_lat = cos(estimate_point[1]);
+                  sin_d_long_h = sin((estimate_point[0]-cp[0])*0.5);
+                  sin_d_lat_h = sin((estimate_point[1]-cp[1])*0.5);
 
-                  min_squared_distance_cartesian_temp = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*FT::cos(estimate_point[1]-cp[1]);
+                  min_squared_distance_cartesian_temp = sin_d_lat_h*sin_d_lat_h+sin_d_long_h*sin_d_long_h*cos_cp_lat*cos(estimate_point[1]-cp[1]);
 
                   if (std::fabs(update) < 1e-4 || est < -0.1 || est > 1.1)
                     {

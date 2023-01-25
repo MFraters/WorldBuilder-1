@@ -300,7 +300,9 @@ namespace WorldBuilder
         {
           for ( size_t cp_i = 0; cp_i < control_points.size(); ++cp_i)
             {
+#ifndef NDEBUG
               std::stringstream output;
+#endif
               const Point<2> &p1 = points[cp_i];
               const Point<2> &p2 = points[cp_i+1];
               min_squared_distance = std::min(std::min(min_squared_distance,(check_point-p1).norm_square()),(check_point-p1).norm_square());
@@ -444,8 +446,12 @@ namespace WorldBuilder
                       break;
                     }
                 }
+#ifndef NDEBUG
               //std::cout << output.str();
               WBAssertThrow(found, "Could not find a good solution. " << output.str());
+#else
+              WBAssertThrow(found, "Could not find a good solution. Enable debug mode for more info.");
+#endif
             }
         }
       else
@@ -460,7 +466,9 @@ namespace WorldBuilder
 
               double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2)));
               bool found = false;
+#ifndef NDEBUG
               std::stringstream output;
+#endif
               Point<2> a = 3.*control_points[cp_i][0]-3.*control_points[cp_i][1]+points[cp_i+1]-points[cp_i];
               Point<2> b = 3.*points[cp_i] - 6.*control_points[cp_i][0]+3.*control_points[cp_i][1];
               Point<2> c = -3.*points[cp_i] + 3.*control_points[cp_i][0];
@@ -619,7 +627,13 @@ namespace WorldBuilder
                       break;
                     }
                 }
+
+#ifndef NDEBUG
+              //std::cout << output.str();
               WBAssertThrow(found, "Could not find a good solution. " << output.str());
+#else
+              WBAssertThrow(found, "Could not find a good solution. Enable debug mode for more info.");
+#endif
             }
 
         }

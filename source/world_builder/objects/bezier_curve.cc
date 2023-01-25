@@ -320,7 +320,8 @@ namespace WorldBuilder
               Point<2> d = points[cp_i];
 
               Point<2> estimate_point = a*est*est*est+b*est*est+c*est+d;
-              double min_squared_distance_cartesian_temp = estimate_point.cheap_relative_distance_cartesian(cp);
+              Point<2> estimate_point_min_cp = estimate_point-cp;
+              double min_squared_distance_cartesian_temp = (estimate_point_min_cp[0])*(estimate_point_min_cp[0])+(estimate_point_min_cp[1])*(estimate_point_min_cp[1]);
 
               for (size_t newton_i = 0; newton_i < 150; newton_i++)
                 {
@@ -333,14 +334,17 @@ namespace WorldBuilder
                   output << "  wolfram alpha: (" << a[0] << "*x^3+" << b[0] << "*x^2+"<< c[0] << "*x+" << d[0] << "-" << cp[0] << ")^2+(" << a[1] << "*x^3+" << b[1] << "*x^2+"<< c[1] << "*x+" << d[1] << "-" << cp[1] << ")^2 with x=" << est << std::endl;
 #endif
                   estimate_point = a*est*est*est+b*est*est+c*est+d;
-                  const double squared_distance_cartesian = estimate_point.cheap_relative_distance_cartesian(cp);
+                  estimate_point_min_cp = estimate_point-cp;
 
-                  const double squared_distance_cartesian_derivative = 2.0*(3.0*a[0]*est*est+2.0*b[0]*est+c[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
-                                                                       + 2.0*(3.0*a[1]*est*est+2.0*b[1]*est+c[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
-                  const double squared_distance_cartesian_second_derivative  = 2.0*(6.0*a[0]*est + 2.0*b[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
-                                                                               + 2.0*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])*(3.0*a[0]*est*est + 2.0*b[0]*est + c[0])
-                                                                               + 2.0*(6.0*a[1]*est + 2.0*b[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])
-                                                                               + 2.0*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1])*(3.0*a[1]*est*est + 2.0*b[1]*est + c[1]) ;
+                  const double deriv_0 = 3.0*a[0]*est*est+2.0*b[0]*est+c[0];
+                  const double deriv_1 = 3.0*a[1]*est*est+2.0*b[1]*est+c[1];
+                  const double squared_distance_cartesian = (estimate_point_min_cp[0])*(estimate_point_min_cp[0])+(estimate_point_min_cp[1])*(estimate_point_min_cp[1]);
+
+                  const double squared_distance_cartesian_derivative = 2.0*(deriv_0*estimate_point_min_cp[0] + deriv_1*estimate_point_min_cp[1]);
+                  const double squared_distance_cartesian_second_derivative  = 2.0*((6.0*a[0]*est+2.0*b[0])*estimate_point_min_cp[0]
+                                                                                    + deriv_0*deriv_0
+                                                                                    + (6.0*a[1]*est+2.0*b[1])*estimate_point_min_cp[1]
+                                                                                    + deriv_1*deriv_1);
 
                   // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
                   const double update = std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
@@ -355,9 +359,9 @@ namespace WorldBuilder
                     {
                       est_test = est-update*line_search;
                       estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
+                      estimate_point_min_cp = estimate_point-cp;
 
-                      squared_distance_cartesian_test = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
-                                                        +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                      squared_distance_cartesian_test = (estimate_point_min_cp[0])*(estimate_point_min_cp[0])+(estimate_point_min_cp[1])*(estimate_point_min_cp[1]);
 
 #ifndef NDEBUG
                       squared_distance_cartesian_derivative_test = 2.0*(3.0*a[0]*est_test*est_test+2.0*b[0]*est_test+c[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
@@ -380,9 +384,9 @@ namespace WorldBuilder
                               line_search *= (1/line_search_step)*(1/line_search_step);
                               est_test = est-update*line_search;
                               estimate_point = a*est_test*est_test*est_test+b*est_test*est_test+c*est_test+d;
+                              estimate_point_min_cp = estimate_point-cp;
 
-                              squared_distance_cartesian_test_previous = (a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])*(a[0]*est_test*est_test*est_test+b[0]*est_test*est_test+c[0]*est_test+d[0]-cp[0])
-                                                                         +(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1])*(a[1]*est_test*est_test*est_test+b[1]*est_test*est_test+c[1]*est_test+d[1]-cp[1]);
+                              squared_distance_cartesian_test_previous = (estimate_point_min_cp[0])*(estimate_point_min_cp[0])+(estimate_point_min_cp[1])*(estimate_point_min_cp[1]);
                               line_search_step = std::min(line_search_step*(11./10.),0.95);
                               continue;
                             }
@@ -394,8 +398,10 @@ namespace WorldBuilder
 
                   est -= update*line_search;
 
-                  min_squared_distance_cartesian_temp =  (a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])*(a[0]*est*est*est+b[0]*est*est+c[0]*est+d[0]-cp[0])
-                                                         +(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1])*(a[1]*est*est*est+b[1]*est*est+c[1]*est+d[1]-cp[1]);
+                  estimate_point = a*est*est*est+b*est*est+c*est+d;
+                  estimate_point_min_cp = estimate_point-cp;
+
+                  min_squared_distance_cartesian_temp =  (estimate_point_min_cp[0])*(estimate_point_min_cp[0])+(estimate_point_min_cp[1])*(estimate_point_min_cp[1]);
 
                   if (std::fabs(update) < 1e-4)
                     {

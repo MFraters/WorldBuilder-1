@@ -23,7 +23,7 @@ This file is part of the World Builder.
 
 #include "world_builder/point.h"
 
-using namespace WorldBuilder;
+//using namespace WorldBuilder;
 
 namespace WorldBuilder
 {

@@ -25,7 +25,7 @@ This file is part of the World Builder.
 #include <array>
 #include <vector>
 
-using namespace WorldBuilder;
+//using namespace WorldBuilder;
 
 namespace WorldBuilder
 {

@@ -1,7 +1,7 @@
 # ouput variables
 grid_type = chunk
 dim = 3
-compositions = 02
+compositions = 2
 
 # domain of the grid
 x_min = -5

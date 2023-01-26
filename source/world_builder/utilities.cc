@@ -624,7 +624,7 @@ namespace WorldBuilder
               Point<2> AB_normal = closest_point_on_curve.normal*closest_point_on_line_2d.distance(reference_point);//*AB.norm();
               const Point<2> local_reference_point = AB_normal*1.+closest_point_on_line_2d;
               const bool reference_normal_on_side_of_line =  (closest_point_on_line_2d-local_reference_point).norm_square() < (check_point_surface_2d_temp-local_reference_point).norm_square();
-              const bool reference_point_on_side_of_line =  (point_list[1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[1][1] - point_list[0][1]) < 0.;
+              const bool reference_point_on_side_of_line =  (point_list[point_list.size()-1][0] - point_list[0][0])*(reference_point[1] - point_list[0][1]) - (reference_point[0] - point_list[0][0])*(point_list[point_list.size()-1][1] - point_list[0][1]) < 0.;
               const double reference_on_side_of_line =  reference_normal_on_side_of_line == reference_point_on_side_of_line ? 1 : -1;
 
               //std::cout << "check_point_surface_2d = " << check_point_surface_2d << ":" << check_point_surface_2d *(180./Consts::PI)<< ", A: " << A  << ":" <<  A *(180./Consts::PI) << ", B: " << B  << ":" <<  B *(180./Consts::PI)

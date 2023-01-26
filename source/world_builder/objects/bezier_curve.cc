@@ -351,21 +351,16 @@ namespace WorldBuilder
 
                   const double squared_distance_cartesian_derivative = 2.0*(deriv_0*estimate_point_min_cp_0 + deriv_1*estimate_point_min_cp_1);
                   const double squared_distance_cartesian_second_derivative_abs  = std::fabs(2.0*((6.0*a_0*est+2.0*b_0)*estimate_point_min_cp_0 + deriv_0*deriv_0
-                                                                                    + (6.0*a_1*est+2.0*b_1)*estimate_point_min_cp_1 + deriv_1*deriv_1));
+                                                                                                  + (6.0*a_1*est+2.0*b_1)*estimate_point_min_cp_1 + deriv_1*deriv_1));
 
-                  // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
-                  const double update = squared_distance_cartesian_second_derivative_abs > 0.0
-                                        ?
-                                        std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/squared_distance_cartesian_second_derivative_abs))
-                                        :
-                                        NaN::DQNAN;
-
-                  if (std::isnan(update))
+                  if (squared_distance_cartesian_second_derivative_abs <= 0.0)
                     {
                       found = true;
                       break;
                     }
 
+                  // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
+                  const double update = std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/squared_distance_cartesian_second_derivative_abs));
                   double line_search = 1.;
 
                   if (std::fabs(update) > 1e-1)

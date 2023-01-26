@@ -66,7 +66,7 @@ namespace WorldBuilder
           d[j] = (c[j+1]-c[j])/3.;
         }
 
-      m.resize(n, {NaN::DSNAN,NaN::DSNAN,NaN::DSNAN,NaN::DSNAN});
+      m.resize(n, {{NaN::DSNAN,NaN::DSNAN,NaN::DSNAN,NaN::DSNAN}});
       //std::cout << "n = " << n << std::endl;
       for (int i = 0; i < n; ++i)
         {

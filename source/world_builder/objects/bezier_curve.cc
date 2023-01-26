@@ -38,7 +38,7 @@ namespace WorldBuilder
     {
       points = p;
       const size_t n_points = p.size();
-      control_points.resize(n_points-1, {p[0],p[0]});
+      control_points.resize(n_points-1, {{p[0],p[0]}});
       lengths.resize(n_points-1,NaN::DSNAN);
       angles.resize(n_points,NaN::DSNAN);
       std::vector<double> angle_constrains = angle_constrains_input;
@@ -255,7 +255,7 @@ namespace WorldBuilder
 
 
     double
-    BezierCurve::arc_length(const size_t index, const double fraction) const
+    BezierCurve::arc_length(const size_t , const double ) const
     {
       /*// This method uses a similair approach as https://malczak.info/blog/quadratic-bezier-curve-length
       // but instead of the full length, we integrate the full equaion (https://www.wolframalpha.com/input?i=integrate+sqrt%28A*t%5E2%2BB*t%2Bc%29+dt)

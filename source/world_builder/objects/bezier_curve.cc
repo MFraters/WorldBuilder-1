@@ -315,7 +315,7 @@ namespace WorldBuilder
 
               const double P2P2_dot = P1P2*P1P2;
 
-              double est =  P2P2_dot < 0.0 || P2P2_dot > 0.0 ? std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))) : 1.0; // est=estimate of solution
+              double est =  P2P2_dot > 0.0 ? std::min(1.,std::max(0.,(P1Pc*P1P2) / P2P2_dot)) : 1.0; // est=estimate of solution
               bool found = false;
 
               // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
@@ -350,13 +350,13 @@ namespace WorldBuilder
                   const double squared_distance_cartesian = (estimate_point_min_cp_0*estimate_point_min_cp_0)+(estimate_point_min_cp_1*estimate_point_min_cp_1);
 
                   const double squared_distance_cartesian_derivative = 2.0*(deriv_0*estimate_point_min_cp_0 + deriv_1*estimate_point_min_cp_1);
-                  const double squared_distance_cartesian_second_derivative  = 2.0*((6.0*a_0*est+2.0*b_0)*estimate_point_min_cp_0 + deriv_0*deriv_0
-                                                                                    + (6.0*a_1*est+2.0*b_1)*estimate_point_min_cp_1 + deriv_1*deriv_1);
+                  const double squared_distance_cartesian_second_derivative_abs  = std::fabs(2.0*((6.0*a_0*est+2.0*b_0)*estimate_point_min_cp_0 + deriv_0*deriv_0
+                                                                                    + (6.0*a_1*est+2.0*b_1)*estimate_point_min_cp_1 + deriv_1*deriv_1));
 
                   // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
-                  const double update = squared_distance_cartesian_second_derivative < 0.0 || squared_distance_cartesian_second_derivative > 0.0
+                  const double update = squared_distance_cartesian_second_derivative_abs > 0.0
                                         ?
-                                        std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)))
+                                        std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/squared_distance_cartesian_second_derivative_abs))
                                         :
                                         NaN::DQNAN;
 

@@ -22,6 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "world_builder/nan.h"
 #include "world_builder/utilities.h"
 
+#include <cmath>
+#include <limits>
 #include <sstream>
 #include <cstddef>
 #include <iomanip>
@@ -40,7 +42,7 @@ namespace WorldBuilder
       lengths.resize(n_points-1,NaN::DSNAN);
       angles.resize(n_points,NaN::DSNAN);
       std::vector<double> angle_constrains = angle_constrains_input;
-      angle_constrains.resize(n_points,NaN::DSNAN);
+      angle_constrains.resize(n_points,NaN::DQNAN);
 
       // if no angle is provided, compute the angle as the average angle bewteen the previous and next point.
       // The first angle points at the second point and the last angle points at the second to last point.
@@ -57,7 +59,7 @@ namespace WorldBuilder
 
       for (size_t p_i = 1; p_i < n_points-1; ++p_i)
         {
-          bool clockwise = true;
+          //bool clockwise = true;
 
           // first determine the angle
           if (std::isnan(angle_constrains[p_i]))
@@ -66,7 +68,7 @@ namespace WorldBuilder
               const Point<2> P1P2 = points[p_i-1]-points[p_i];
               const Point<2> P3P2 = points[p_i+1]-points[p_i];
 
-              double diff_angle = atan2(P1P2[0]*P3P2[1] - P1P2[1]*P3P2[0] , P1P2[0]*P3P2[0] + P1P2[1]*P3P2[1]);
+              //double diff_angle = atan2(P1P2[0]*P3P2[1] - P1P2[1]*P3P2[0] , P1P2[0]*P3P2[0] + P1P2[1]*P3P2[1]);
               const double angle_p1p2 = atan2(P1P2[1],P1P2[0]);
               const double angle_p3p1 = atan2(P3P2[1],P3P2[0]);
               const double average_angle = (angle_p1p2 + angle_p3p1)*0.5;
@@ -311,7 +313,9 @@ namespace WorldBuilder
               const Point<2> P1P2 = p2-p1;
               const Point<2> P1Pc = check_point-p1;
 
-              double est =  std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))); // est=estimate of solution
+              const double P2P2_dot = P1P2*P1P2;
+
+              double est =  P2P2_dot < 0.0 || P2P2_dot > 0.0 ? std::min(1.,std::max(0.,(P1Pc*P1P2) / (P1P2*P1P2))) : 1.0; // est=estimate of solution
               bool found = false;
 
               // based on https://stackoverflow.com/questions/2742610/closest-point-on-a-cubic-bezier-curve
@@ -350,7 +354,18 @@ namespace WorldBuilder
                                                                                     + (6.0*a_1*est+2.0*b_1)*estimate_point_min_cp_1 + deriv_1*deriv_1);
 
                   // the local minimum is where  squared_distance_cartesian_derivative=0 and squared_distance_cartesian_derivative>=0
-                  const double update = std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));//std::min(0.25,std::max(0.25,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)));
+                  const double update = squared_distance_cartesian_second_derivative < 0.0 || squared_distance_cartesian_second_derivative > 0.0
+                                        ?
+                                        std::min(0.5,std::max(-0.5,squared_distance_cartesian_derivative/std::fabs(squared_distance_cartesian_second_derivative)))
+                                        :
+                                        NaN::DQNAN;
+
+                  if (std::isnan(update))
+                    {
+                      found = true;
+                      break;
+                    }
+
                   double line_search = 1.;
 
                   if (std::fabs(update) > 1e-1)
@@ -414,7 +429,7 @@ namespace WorldBuilder
                             {
                               min_squared_distance = squared_distance_cartesian;
                               const Point<2> point_on_curve = Point<2>(a_0*est*est*est+b_0*est*est+c_0*est+d_0,a_1*est*est*est+b_1*est*est+c_1*est+d_1,cp.get_coordinate_system());
-
+                              WBAssert(!std::isnan(point_on_curve[0]) && !std::isnan(point_on_curve[1]), "Point on curve has NAN entries: " << point_on_curve);
                               // the sign is rotating the derivative by 90 degrees.
                               // When moving in the direction of increasing t, left is positve and right is negative.
                               //const double &t = est;
@@ -440,6 +455,7 @@ namespace WorldBuilder
                               closest_point_on_curve.interpolation_fraction = NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
                               closest_point_on_curve.index = cp_i;
                               closest_point_on_curve.point = point_on_curve;
+                              WBAssert(!std::isnan(point_on_curve[0]) && !std::isnan(point_on_curve[1]), "Point on curve has NAN entries: " << point_on_curve);
                               Point<2> normal = point_on_curve;
                               {
                                 Point<2> derivative = Point<2>(a_0*est*est+b_0*est+c_0,a_1*est*est+b_1*est+c_1,cp.get_coordinate_system());//a*est*est+b*est+c;

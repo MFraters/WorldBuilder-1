@@ -22,6 +22,7 @@ This file is part of the World Builder.
 
 
 #include "world_builder/point.h"
+#include "world_builder/nan.h"
 
 //using namespace WorldBuilder;
 
@@ -39,7 +40,7 @@ namespace WorldBuilder
         parametric_fraction(std::numeric_limits<double>::signaling_NaN()),
         interpolation_fraction(std::numeric_limits<double>::signaling_NaN()),
         index(0),
-        point(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid)),
+        point(Point<2>(NaN::DQNAN,NaN::DQNAN,CoordinateSystem::invalid)),
         normal(Point<2>(std::numeric_limits<double>::signaling_NaN(),std::numeric_limits<double>::signaling_NaN(),CoordinateSystem::invalid))
       {}
 

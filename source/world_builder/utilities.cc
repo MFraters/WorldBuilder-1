@@ -400,11 +400,10 @@ namespace WorldBuilder
       // get an estimate for the closest point between P1 and P2.
       //constexpr double parts = 1;
       //constexpr double one_div_parts = 1./parts;
-      double minimum_distance_to_reference_point = std::numeric_limits<double>::infinity();
-      const size_t number_of_points = point_list.size();
+      //double minimum_distance_to_reference_point = std::numeric_limits<double>::infinity();
+      //const size_t number_of_points = point_list.size();
 
       Objects::ClosestPointOnCurve closest_point_on_curve = bezier_curve.closest_point_on_curve_segment(check_point_surface_2d);
-
       Point<2> closest_point_on_line_2d = closest_point_on_curve.point;
 
       // We now need 3d points from this point on, so make them.
@@ -528,7 +527,7 @@ namespace WorldBuilder
 
                   // see on what side the line P1P2 reference point is. This is based on the determinant
 
-                  bool on_left = true;
+                  //bool on_left = true;
                   //const double reference_on_side_of_line =  (closest_point_on_curve.normal).norm_square() < (check_point_surface_2d-closest_point_on_line_2d-closest_point_on_curve.normal).norm_square() ? -1 : 1;
                   //const double reference_on_side_of_line =  (closest_point_on_line_2d-reference_point).norm_square() < (check_point_surface_2d-reference_point).norm_square() ? 1 : -1;
                   //const double reference_on_side_of_line =  (closest_point_on_line_2d-closest_point_on_curve.normal).norm_square() < (check_point_surface_2d-closest_point_on_curve.normal).norm_square() ? 1 : -1;

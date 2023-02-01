@@ -25,6 +25,7 @@
 #include "world_builder/coordinate_systems/interface.h"
 #include "world_builder/objects/natural_coordinate.h"
 #include "world_builder/objects/bezier_curve.h"
+#include "glm/glm.h"
 #include <iostream>
 
 
@@ -426,6 +427,20 @@ namespace WorldBuilder
     */
     std::string
     read_and_distribute_file_content(const std::string &filename);
+
+    inline
+    std::array<std::array<double,3>,3> average_matrices(const std::array<std::array<double,3>,3> &first,
+                                                        const std::array<std::array<double,3>,3> &second,
+                                                        const double fraction)
+    {
+      glm::quaternion::quat quat_current = glm::quaternion::quat_cast(first);
+      glm::quaternion::quat quat_next = glm::quaternion::quat_cast(second);
+
+      glm::quaternion::quat quat_average = glm::quaternion::slerp(quat_current,quat_next,fraction);
+
+      return glm::quaternion::mat3_cast(quat_average);
+    }
+
   } // namespace Utilities
 } // namespace WorldBuilder
 

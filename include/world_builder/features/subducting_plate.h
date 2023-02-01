@@ -24,7 +24,8 @@
 #include "world_builder/features/subducting_plate_models/composition/interface.h"
 #include "world_builder/features/subducting_plate_models/grains/interface.h"
 #include "world_builder/features/subducting_plate_models/temperature/interface.h"
-#include "world_builder/objects/segment.h"
+#include "world_builder/objects/contours.h"
+#include "world_builder/types/segment.h"
 #include "world_builder/bounding_box.h"
 #include "world_builder/objects/distance_from_surface.h"
 
@@ -142,6 +143,9 @@ namespace WorldBuilder
 
 
       private:
+        bool using_contours;
+        Objects::Contours contours;
+
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > default_temperature_models;
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface>  > default_composition_models;
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface>  > default_grains_models;
@@ -160,6 +164,10 @@ namespace WorldBuilder
         std::vector<std::vector<Objects::Segment<Features::SubductingPlateModels::Temperature::Interface,
             Features::SubductingPlateModels::Composition::Interface,
             Features::SubductingPlateModels::Grains::Interface> > > segment_vector;
+
+        std::vector< std::vector<Objects::Segment<Features::SubductingPlateModels::Temperature::Interface,
+            Features::SubductingPlateModels::Composition::Interface,
+            Features::SubductingPlateModels::Grains::Interface> > > property_nodes;
 
         // todo: the memory of this can be greatly improved by
         // or using a plugin system for the submodules, or

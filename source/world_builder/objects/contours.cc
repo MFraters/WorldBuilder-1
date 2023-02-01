@@ -46,26 +46,23 @@ namespace WorldBuilder
     {
       bool bool_cartesian = points[0][0].get_coordinate_system() == cartesian;
       const size_t n_curves = points.size();
-      std::vector<std::vector<double> > angle_contraints_horizontal = thicknesses;
-      for (size_t i = 0; i < angle_contraints_horizontal.size(); ++i)
-        for (size_t j = 0; j < angle_contraints_horizontal[i].size(); ++j)
-          angle_contraints_horizontal[i][j] = NaN::DSNAN;
+      std::vector<std::vector<double> > angle_contraints_horizontal(points.size());
+      for (size_t i = 0; i < points.size(); ++i){
+        angle_contraints_horizontal[i].resize(points[i].size(),NaN::DQNAN);
+      }
 
       // if angle contrainst is empty fill it with the right amount of entries and set the values to signaling nan.
       if (angle_contraints.size() == 0)
         {
-          angle_contraints = thicknesses;
-          for (size_t curve_i = 0; curve_i < angle_contraints.size(); ++curve_i)
-            for (size_t point_i = 0; point_i < angle_contraints[curve_i].size(); ++point_i)
-              angle_contraints[curve_i][point_i] = NaN::DSNAN;
+          angle_contraints = angle_contraints_horizontal;
         }
 
-      WBAssertThrow(angle_contraints.size() == thicknesses.size(),
-                    "Error: incorrect number of curves in angle contstrains: " << angle_contraints.size() << ". Expected: " << thicknesses.size());
+      WBAssertThrow(angle_contraints.size() == points.size(),
+                    "Error: incorrect number of curves in angle contstrains: " << angle_contraints.size() << ". Expected: " << points.size());
       for (size_t curve_i = 0; curve_i < angle_contraints.size(); ++curve_i)
-        WBAssertThrow(angle_contraints[curve_i].size() == thicknesses[curve_i].size(),
+        WBAssertThrow(angle_contraints[curve_i].size() == points[curve_i].size(),
                       "Error: incorrect number of points in curve " << curve_i << " in angle contstrains: " << angle_contraints[curve_i].size()
-                      << ". Expected: " << thicknesses[curve_i].size());
+                      << ". Expected: " << points[curve_i].size());
 
       for (size_t curve_i = 0; curve_i < n_curves; ++curve_i)
         {
@@ -118,13 +115,13 @@ namespace WorldBuilder
         }
 
 
-      WBAssertThrow(directions.size() == thicknesses.size()-1,
-                    "Error: incorrect number of curves in directions: " << directions.size() << ". Expected: " << thicknesses.size()-1);
+      WBAssertThrow(directions.size() == points.size()-1,
+                    "Error: incorrect number of curves in directions: " << directions.size() << ". Expected: " << points.size()-1);
       for (size_t curve_i = 0; curve_i < directions.size(); ++curve_i)
         {
-          WBAssertThrow(directions[curve_i].size() == thicknesses[curve_i].size(),
+          WBAssertThrow(directions[curve_i].size() == points[curve_i].size(),
                         "Error: incorrect number of points in curve " << curve_i << " in directions: " << directions[curve_i].size()
-                        << ". Expected: " << thicknesses[curve_i].size());
+                        << ". Expected: " << points[curve_i].size());
         }
 
       /*std::cout << "============================================= construct connectivity ========================================" << std::endl << std::endl;
@@ -224,60 +221,60 @@ namespace WorldBuilder
           // first set the angles at the top
           for (size_t point_i = 0; point_i < angle_contraints[0].size(); ++point_i)
             {
-          std::cout << "ct flag 51" << std::endl;
+              std::cout << "ct flag 51" << std::endl;
               if (std::isnan(angle_contraints[0][point_i]))
                 {
-          std::cout << "ct flag 52: points[0][point_i].coordiante_system()=" << points[0][point_i].get_coordinate_system() << std::endl;
+                  std::cout << "ct flag 52: points[0][point_i].coordiante_system()=" << points[0][point_i].get_coordinate_system() << std::endl;
                   // The first angle at each point is determined by the angle of the closest point below and the closest point below that
                   ClosestPointOnCurve closest_point_below = contour_curves[1].closest_point_on_curve_segment(points[0][point_i]);
                   std::cout << "ct flag 52.5: points[0][point_i].coordiante_system()=" << points[0][point_i].get_coordinate_system() << ", closest_point_below.point.get_coordinate_system()= " << closest_point_below.point.get_coordinate_system() << ", closest_point_below= " << closest_point_below.point<< std::endl;
-          
+
                   ClosestPointOnCurve closest_point_below_below = contour_curves[2].closest_point_on_curve_segment(closest_point_below.point);
 
-          std::cout << "ct flag 53" << std::endl;
+                  std::cout << "ct flag 53" << std::endl;
                   // first we need to compute the normal to the plane defined by the vector going from the point down and to closest_point_below_below.
                   const Point<2> &basis_point = points[0][point_i];
                   const Point<2> &point_b = closest_point_below.point;
                   const Point<2> &point_bb = closest_point_below_below.point;
 
-          std::cout << "ct flag 54" << std::endl;
+                  std::cout << "ct flag 54" << std::endl;
                   const Point<3> basis_point_cartesian = bool_cartesian ? Point<3>(basis_point[0],basis_point[1],start_radius-depths[0],cartesian) : Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[0],basis_point[0],basis_point[1],spherical).get_array());
                   const Point<3> point_b_cartesian = bool_cartesian ? Point<3>(point_b[0],point_b[1],start_radius-depths[1],cartesian) : Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[1],point_b[0],point_b[1],spherical).get_array());
                   const Point<3> point_bb_cartesian = bool_cartesian ? Point<3>(point_bb[0],point_bb[1],start_radius-depths[2],cartesian) : Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[2],point_bb[0],point_bb[1],spherical).get_array());
                   const Point<3> basis_point_bottom_cartesian = bool_cartesian ? Point<3>(basis_point[0],basis_point[1],0,cartesian) : Utilities::spherical_to_cartesian_coordinates(Point<3>(0,basis_point[0],basis_point[1],spherical).get_array());
                   const Point<3> basis_point_bottom_cartesian_normalized = basis_point_bottom_cartesian/basis_point_bottom_cartesian.norm();
 
-          std::cout << "ct flag 55" << std::endl;
+                  std::cout << "ct flag 55" << std::endl;
                   Point<3> normal_to_plane = Utilities::cross_product(point_bb_cartesian-basis_point_cartesian,basis_point_bottom_cartesian-basis_point_cartesian);
                   normal_to_plane = normal_to_plane/normal_to_plane.norm();
 
-          std::cout << "ct flag 56" << std::endl;
+                  std::cout << "ct flag 56" << std::endl;
                   // next compute the x and y axis
                   const Point<3> y_axis = (basis_point_cartesian-basis_point_bottom_cartesian)/(basis_point_cartesian-basis_point_bottom_cartesian).norm();
                   const Point<3> x_axis = Utilities::cross_product(y_axis,normal_to_plane)/Utilities::cross_product(y_axis,normal_to_plane).norm();
 
-          std::cout << "ct flag 57" << std::endl;
+                  std::cout << "ct flag 57" << std::endl;
                   // compute basis_point and point_bb in 2d cross_section
                   Point<2> basis_point_2d(x_axis * (basis_point_cartesian-basis_point_bottom_cartesian),
                                           y_axis * (basis_point_cartesian-basis_point_bottom_cartesian),
                                           cartesian);
 
-          std::cout << "ct flag 58" << std::endl;
+                  std::cout << "ct flag 58" << std::endl;
                   Point<2> point_b_2d(x_axis * (point_b_cartesian-basis_point_bottom_cartesian),
                                       y_axis * (point_b_cartesian-basis_point_bottom_cartesian),
                                       cartesian);
 
-          std::cout << "ct flag 59" << std::endl;
+                  std::cout << "ct flag 59" << std::endl;
                   Point<2> point_bb_2d(x_axis * (point_bb_cartesian-basis_point_bottom_cartesian),
                                        y_axis * (point_bb_cartesian-basis_point_bottom_cartesian),
                                        cartesian);
 
-          std::cout << "ct flag 60" << std::endl;
+                  std::cout << "ct flag 60" << std::endl;
                   const double top_b_angle = atan2((point_b_2d-basis_point_2d)[1],(point_b_2d-basis_point_2d)[0])+M_PI;
                   const double top_bb_angle = atan2((point_bb_2d-basis_point_2d)[1],(point_bb_2d-basis_point_2d)[0])+M_PI;
                   const double diff_angle = top_b_angle-top_bb_angle;
 
-          std::cout << "ct flag 61" << std::endl;
+                  std::cout << "ct flag 61" << std::endl;
                   angle_contraints[0][point_i] = top_b_angle+0.5*diff_angle;
 
 
@@ -431,7 +428,7 @@ namespace WorldBuilder
           distance_along_surface[curve_i].resize(points[curve_i].size(),0.);
           for (size_t point_i = 0; point_i < points[curve_i].size(); ++point_i)
             {
-          std::cout << "ct flag 11" << std::endl;
+              std::cout << "ct flag 11" << std::endl;
 
               const Point<3> basis_point_3D_cartesian = bool_cartesian
                                                         ?
@@ -439,7 +436,7 @@ namespace WorldBuilder
                                                         :
                                                         Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[curve_i],points[curve_i][point_i][0],points[curve_i][point_i][1],spherical).get_array());
 
-          std::cout << "ct flag 12" << std::endl;
+              std::cout << "ct flag 12" << std::endl;
               const Point<3> basis_point_3D_cartesian_bottom = bool_cartesian
                                                                ?
                                                                Point<3>(points[curve_i][point_i][0],points[curve_i][point_i][1],0.,cartesian)
@@ -448,24 +445,24 @@ namespace WorldBuilder
               // loop over the points above and find the point for which the direction (3D) makes the smallest angle a direct line between the two points.
               // if they are the same (with an error of 1 degree?), use the smallest distance;
 
-          std::cout << "ct flag 13" << std::endl;
+              std::cout << "ct flag 13" << std::endl;
               unsigned int lowest_angle = 800;
               size_t lowest_angle_point = std::numeric_limits<size_t>::max();
               double lowest_angle_distance = std::numeric_limits<double>::infinity();
 
 
-          std::cout << "ct flag 14" << std::endl;
+              std::cout << "ct flag 14" << std::endl;
               for (size_t prev_point_i = 0; prev_point_i < points[curve_i-1].size(); ++prev_point_i)
                 {
 
-          std::cout << "ct flag 15" << std::endl;
+                  std::cout << "ct flag 15" << std::endl;
                   const Point<3> basis_point_3D_cartesian_up = bool_cartesian
                                                                ?
                                                                Point<3>(points[curve_i-1][prev_point_i][0],points[curve_i-1][prev_point_i][1],start_radius-depths[curve_i-1],cartesian)
                                                                :
                                                                Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[curve_i-1],points[curve_i-1][prev_point_i][0],points[curve_i-1][prev_point_i][1],spherical).get_array());
 
-          std::cout << "ct flag 16" << std::endl;
+                  std::cout << "ct flag 16" << std::endl;
                   const Point<3> direction_3d_cartesian = (bool_cartesian
                                                            ?
                                                            Point<3>(directions[curve_i-1][prev_point_i][0],directions[curve_i-1][prev_point_i][1],start_radius-depths[curve_i], cartesian)
@@ -473,7 +470,7 @@ namespace WorldBuilder
                                                            Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[curve_i],directions[curve_i-1][prev_point_i][0],directions[curve_i-1][prev_point_i][1],spherical).get_array()))
                                                           - basis_point_3D_cartesian_up;
 
-          std::cout << "ct flag 16" << std::endl;
+                  std::cout << "ct flag 16" << std::endl;
                   const Point<3> top_bottom_3d_cartesian = (bool_cartesian
                                                             ?
                                                             Point<3>(directions[curve_i-1][prev_point_i][0],directions[curve_i-1][prev_point_i][1],start_radius-depths[curve_i], cartesian)
@@ -481,7 +478,7 @@ namespace WorldBuilder
                                                             Utilities::spherical_to_cartesian_coordinates(Point<3>(start_radius-depths[curve_i],directions[curve_i-1][prev_point_i][0],directions[curve_i-1][prev_point_i][1],spherical).get_array()))
                                                            - basis_point_3D_cartesian_up;
 
-          std::cout << "ct flag 17" << std::endl;
+                  std::cout << "ct flag 17" << std::endl;
                   const unsigned int angle = (unsigned int) std::round(std::abs(std::acos((direction_3d_cartesian*top_bottom_3d_cartesian)/(direction_3d_cartesian.norm()*top_bottom_3d_cartesian.norm()))*180/M_PI));
                   if (angle <= lowest_angle)
                     {
@@ -780,7 +777,8 @@ namespace WorldBuilder
                         << std::endl;
 
               // so now we know where the "closest point on the surface" is. Compute the distance between it and the check point.
-              const double closest_point_on_surface_depth = depths[curve_i+1]*closest_point_local.interpolation_fraction+depths[curve_i];
+              //const double closest_point_on_surface_depth = depths[curve_i+1]*closest_point_local.interpolation_fraction+depths[curve_i]; // correct
+              const double closest_point_on_surface_depth = depths[curve_i+1]*closest_point_local.parametric_fraction+depths[curve_i]; //approx
               const Point<3> closest_point_on_surface = Point<3>(closest_point_local.point[0],closest_point_local.point[1],start_radius-closest_point_on_surface_depth,cartesian);
               const double distance = (closest_point_on_surface-check_point_cartesian).norm();
               // deterimine the sign: up is negative, down is positive (kind of represents a local depth system)
@@ -791,7 +789,7 @@ namespace WorldBuilder
                 {
                   // compute the distance along the path up. Approximate for now by just interpolating
                   // the distance values on the nearest points on the curve
-                  return_distance_interpolation_data.distance_along_surface = closest_point_local.distance + (distance_along_surface[curve_i][closest_point_local.index]+distance_along_surface[curve_i][closest_point_local.index+1]*closest_point_local.interpolation_fraction);
+                  return_distance_interpolation_data.distance_along_surface = 100e3;//closest_point_local.distance + (distance_along_surface[curve_i][closest_point_local.index]+distance_along_surface[curve_i][closest_point_local.index+1]*closest_point_local.interpolation_fraction);
                   return_distance_interpolation_data.signed_distance_from_bezier_surface = final_distance;
 
                   return_distance_interpolation_data.curve_above_index = curve_i;

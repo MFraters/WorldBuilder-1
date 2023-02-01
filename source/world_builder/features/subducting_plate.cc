@@ -346,6 +346,10 @@ namespace WorldBuilder
           maximum_total_slab_length = std::max(maximum_total_slab_length, local_total_slab_length);
         }
 
+
+      // for now just use the segments
+      // todo: replace that with a special countours node thing
+      property_nodes = segment_vector;
       // Here, we compute the spherical bounding box using the two extreme points of the box containing all the surface
       // coordinates and an additional buffer zone that accounts for the slab thickness and length. The first and second
       // points correspond to the lower left and the upper right corners of the bounding box, respectively (see the
@@ -449,7 +453,336 @@ namespace WorldBuilder
                    "Internal error: The size of coordinates (" << coordinates.size()
                    << ") and one_dimensional_coordinates (" << one_dimensional_coordinates.size() << ") are different.");*/
           // todo: explain
-          const WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
+          if (using_contours) {
+              // use contours type of slab
+              const std::vector<std::vector<double> > interpolation_properties;
+              Objects::DistanceInterpolationData distance_interpolation_data = contours.distance_interpolation_data(position_in_cartesian_coordinates,
+                                                                               position_in_natural_coordinates,
+                                                                               reference_point,
+                                                                               world->parameters.coordinate_system,
+                                                                               interpolation_properties,
+                                                                               starting_radius,
+                                                                               false);
+
+              const double distance_from_surface = distance_interpolation_data.signed_distance_from_bezier_surface;
+              const double distance_along_surface = distance_interpolation_data.distance_along_surface;
+              const size_t segment_above = distance_interpolation_data.curve_above_index;
+              const size_t section_previous_above = distance_interpolation_data.curve_above_section_index;
+              const double section_fraction_above = distance_interpolation_data.curve_above_interplation_fraction;
+              const size_t segment_below = segment_above + 1;
+              const size_t section_previous_below = distance_interpolation_data.curve_below_section_index;
+              const double section_fraction_below = distance_interpolation_data.curve_below_interplation_fraction;
+              const double segment_fraction = distance_interpolation_data.curve_local_interpolation_fraction;
+
+
+              if (abs(distance_from_surface) < std::numeric_limits<double>::infinity() || (distance_along_surface) < std::numeric_limits<double>::infinity())
+                {
+                                    // We want to do both section (horizontal) and segment (vertical) interpolation.
+                  // first for thickness
+                  const double thickness_above = contours.thicknesses[segment_above][section_previous_above]
+                                                 + section_fraction_above
+                                                 * (contours.thicknesses[segment_above][section_previous_above+1]
+                                                    - contours.thicknesses[segment_above][section_previous_above]);
+                  const double thickness_below = contours.thicknesses[segment_below][section_previous_below]
+                                                 + section_fraction_below
+                                                 * (contours.thicknesses[segment_below][section_previous_below+1]
+                                                    - contours.thicknesses[segment_below][section_previous_below]);
+                  const double thickness_local = thickness_above + segment_fraction * (thickness_below - thickness_above);
+
+                  // if the thickness is zero, we don't need to compute anything, so return.
+                  if (std::fabs(thickness_local) < 2.0 * std::numeric_limits<double>::epsilon())
+                    return;
+
+                  // secondly for top truncation
+                  const double top_truncation_up = contours.top_truncation[segment_above][section_previous_above]
+                                                   + section_fraction_above
+                                                   * (contours.top_truncation[segment_above][section_previous_above+1]
+                                                      - contours.top_truncation[segment_above][section_previous_above]);
+                  const double top_truncation_down = contours.top_truncation[segment_below][section_previous_below]
+                                                     + section_fraction_below
+                                                     * (contours.top_truncation[segment_below][section_previous_below+1]
+                                                        - contours.top_truncation[segment_below][section_previous_below]);
+                  const double top_truncation_local = top_truncation_up + segment_fraction * (top_truncation_down - top_truncation_up);
+
+                  // if the thickness is smaller than what is truncated off at the top, we don't need to compute anything, so return.
+                  if (thickness_local < top_truncation_local)
+                    return;
+
+                  const double max_slab_length = contours.distance_along_surface.back()[section_previous_below] +
+                                                 section_fraction_below *
+                                                 (contours.distance_along_surface.back()[section_previous_below+1] - contours.distance_along_surface.back()[section_previous_below]);
+
+                  if (distance_from_surface >= top_truncation_local &&
+                      distance_from_surface <= thickness_local &&
+                      distance_along_surface >= 0 &&
+                      distance_along_surface <= max_slab_length)
+                    {
+                                            // Inside the slab!
+                      WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes(world->parameters.coordinate_system->natural_coordinate_system());
+                      distance_from_planes.distance_from_plane = distance_from_surface;
+                      distance_from_planes.distance_along_plane = distance_along_surface;
+                      const Features::Utilities::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
+                      for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
+                        {
+                            switch (properties[i_property][0])
+                            {
+                              case 1: // temperature
+                              {
+                                double temperature_previous_above = output[entry_in_output[i_property]];
+                                double temperature_next_above = output[entry_in_output[i_property]];
+                                double temperature_previous_below = output[entry_in_output[i_property]];
+                                double temperature_next_below = output[entry_in_output[i_property]];
+
+                                for (const auto &temperature_model: property_nodes[segment_above][section_previous_above].temperature_systems)
+                                  {
+                                    temperature_previous_above = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                    depth,
+                                                                                                    gravity_norm,
+                                                                                                    temperature_previous_above,
+                                                                                                    starting_depth,
+                                                                                                    maximum_depth,
+                                                                                                    distance_from_planes,
+                                                                                                    additional_parameters);
+
+                                    WBAssert(!std::isnan(temperature_previous_above), "Temparture is not a number: " << temperature_previous_above
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+                                    WBAssert(std::isfinite(temperature_previous_above), "Temparture is not a finite: " << temperature_previous_above
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+
+                                  }
+
+                                for (const auto &temperature_model: property_nodes[segment_above][section_previous_above+1].temperature_systems)
+                                  {
+                                    temperature_next_above = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                depth,
+                                                                                                gravity_norm,
+                                                                                                temperature_next_above,
+                                                                                                starting_depth,
+                                                                                                maximum_depth,
+                                                                                                distance_from_planes,
+                                                                                                additional_parameters);
+
+                                    WBAssert(!std::isnan(temperature_next_above), "Temparture is not a number: " << temperature_next_above
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+                                    WBAssert(std::isfinite(temperature_next_above), "Temparture is not a finite: " << temperature_next_above
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+
+                                  }
+
+                                for (const auto &temperature_model: property_nodes[segment_below][section_previous_below].temperature_systems)
+                                  {
+                                    temperature_previous_below = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                    depth,
+                                                                                                    gravity_norm,
+                                                                                                    temperature_previous_below,
+                                                                                                    starting_depth,
+                                                                                                    maximum_depth,
+                                                                                                    distance_from_planes,
+                                                                                                    additional_parameters);
+
+                                    WBAssert(!std::isnan(temperature_previous_below), "Temparture is not a number: " << temperature_previous_below
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+                                    WBAssert(std::isfinite(temperature_previous_below), "Temparture is not a finite: " << temperature_previous_below
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+
+                                  }
+
+                                for (const auto &temperature_model: property_nodes[segment_below][section_previous_below+1].temperature_systems)
+                                  {
+                                    temperature_next_below = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                depth,
+                                                                                                gravity_norm,
+                                                                                                temperature_next_below,
+                                                                                                starting_depth,
+                                                                                                maximum_depth,
+                                                                                                distance_from_planes,
+                                                                                                additional_parameters);
+
+                                    WBAssert(!std::isnan(temperature_next_below), "Temparture is not a number: " << temperature_next_below
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+                                    WBAssert(std::isfinite(temperature_next_below), "Temparture is not a finite: " << temperature_next_below
+                                             << ", based on a temperature model with the name " << temperature_model->get_name());
+
+                                  }
+
+                                // linear interpolation between above temperatures and below temperatures and between the above and below temperature
+                                const double temperature_above = temperature_previous_above + section_fraction_above * (temperature_next_above - temperature_previous_above);
+                                const double temperature_below = temperature_previous_below + section_fraction_below * (temperature_next_below - temperature_previous_below);
+
+                                output[entry_in_output[i_property]] = temperature_above + segment_fraction * (temperature_below - temperature_above);
+                                break;
+                              }
+                                                            case 2: // composition
+                              {
+                                                                double composition_previous_above = output[entry_in_output[i_property]];
+                                double composition_next_above = output[entry_in_output[i_property]];
+                                double composition_previous_below = output[entry_in_output[i_property]];
+                                double composition_next_below = output[entry_in_output[i_property]];
+
+                                for (const auto &composition_model: property_nodes[segment_above][section_previous_above].composition_systems)
+                                  {
+                                    composition_previous_above = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                    depth,
+                                                                                                    gravity_norm,
+                                                                                                    composition_previous_above,
+                                                                                                    starting_depth,
+                                                                                                    maximum_depth,
+                                                                                                    distance_from_planes,
+                                                                                                    additional_parameters);
+
+                                    WBAssert(!std::isnan(composition_previous_above), "Composition is not a number: " << composition_previous_above
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                    WBAssert(std::isfinite(composition_previous_above), "Composition is not a finite: " << composition_previous_above
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                  }
+
+                                for (const auto &composition_model: property_nodes[segment_above][section_previous_above+1].composition_systems)
+                                  {
+                                    composition_next_above = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                depth,
+                                                                                                gravity_norm,
+                                                                                                composition_next_above,
+                                                                                                starting_depth,
+                                                                                                maximum_depth,
+                                                                                                distance_from_planes,
+                                                                                                additional_parameters);
+
+                                    WBAssert(!std::isnan(composition_next_above), "Temparture is not a number: " << composition_next_above
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                    WBAssert(std::isfinite(composition_next_above), "Temparture is not a finite: " << composition_next_above
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                  }
+
+                                for (const auto &composition_model: property_nodes[segment_below][section_previous_below].composition_systems)
+                                  {
+                                    composition_previous_below = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                    depth,
+                                                                                                    gravity_norm,
+                                                                                                    composition_previous_below,
+                                                                                                    starting_depth,
+                                                                                                    maximum_depth,
+                                                                                                    distance_from_planes,
+                                                                                                    additional_parameters);
+
+                                    WBAssert(!std::isnan(composition_previous_below), "Temparture is not a number: " << composition_previous_below
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                    WBAssert(std::isfinite(composition_previous_below), "Temparture is not a finite: " << composition_previous_below
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                  }
+
+                                for (const auto &composition_model: property_nodes[segment_below][section_previous_below].composition_systems)
+                                  {
+                                    composition_next_below = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                depth,
+                                                                                                gravity_norm,
+                                                                                                composition_next_below,
+                                                                                                starting_depth,
+                                                                                                maximum_depth,
+                                                                                                distance_from_planes,
+                                                                                                additional_parameters);
+
+                                    WBAssert(!std::isnan(composition_next_below), "Composition is not a number: " << composition_next_below
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                    WBAssert(std::isfinite(composition_next_below), "Composition is not a finite: " << composition_next_below
+                                             << ", based on a composition model with the name " << composition_model->get_name());
+                                  }
+
+                                // linear interpolation between above compositions and below compositions and between the above and below composition
+                                const double composition_above = composition_previous_above + section_fraction_above * (composition_next_above - composition_previous_above);
+                                const double composition_below = composition_previous_below + section_fraction_below * (composition_next_below - composition_previous_below);
+
+                                output[entry_in_output[i_property]] = composition_above + segment_fraction * (composition_below - composition_above);
+                                break;
+                              }
+                                                            case 3: // grains
+                              {
+                                                                WorldBuilder::grains grains(output,properties[i_property][2],entry_in_output[i_property]);
+                                WorldBuilder::grains  grains_current_section = grains;
+                                WorldBuilder::grains  grains_next_section = grains;
+
+                                WorldBuilder::grains grains_previous_above = grains;
+                                WorldBuilder::grains grains_next_above = grains;
+                                WorldBuilder::grains grains_previous_below = grains;
+                                WorldBuilder::grains grains_next_below = grains;
+
+                                for (const auto &grains_model: property_nodes[segment_above][section_previous_above].grains_systems)
+                                  {
+                                    grains_previous_above = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                     depth,
+                                                                                     gravity_norm,
+                                                                                     grains_previous_above,
+                                                                                     starting_depth,
+                                                                                     maximum_depth,
+                                                                                     distance_from_planes,
+                                                                                     additional_parameters);
+                                  }
+
+                                for (const auto &grains_model: property_nodes[segment_above][section_previous_above+1].grains_systems)
+                                  {
+                                    grains_next_above = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                 depth,
+                                                                                 properties[i_property][1],
+                                                                                 grains_next_above,
+                                                                                 starting_depth,
+                                                                                 maximum_depth,
+                                                                                 distance_from_planes,
+                                                                                 additional_parameters);
+                                  }
+
+                                for (const auto &grains_model: property_nodes[segment_below][section_previous_below].grains_systems)
+                                  {
+                                    grains_previous_below = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                     depth,
+                                                                                     properties[i_property][1],
+                                                                                     grains_previous_below,
+                                                                                     starting_depth,
+                                                                                     maximum_depth,
+                                                                                     distance_from_planes,
+                                                                                     additional_parameters);
+                                  }
+
+                                for (const auto &grains_model: property_nodes[segment_below][section_previous_below+1].grains_systems)
+                                  {
+                                    grains_next_below = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                 depth,
+                                                                                 properties[i_property][1],
+                                                                                 grains_previous_below,
+                                                                                 starting_depth,
+                                                                                 maximum_depth,
+                                                                                 distance_from_planes,
+                                                                                 additional_parameters);
+                                  }
+
+                                // linear interpolation between above grainss and below grain sizes and between the above and below grain sizes
+                                for (size_t i = 0; i < grains.sizes.size(); i++)
+                                  {
+                                    const double grains_above = grains_previous_above.sizes[i] + section_fraction_above * (grains_next_above.sizes[i] - grains_previous_above.sizes[i]);
+                                    const double grains_below = grains_previous_below.sizes[i] + section_fraction_below * (grains_next_below.sizes[i] - grains_previous_below.sizes[i]);
+
+                                    grains.sizes[i] = grains_above + segment_fraction * (grains_below - grains_above);
+                                  }
+
+
+                                // average the four rotations matrices through quaternions in the same way as the sizes
+                                for (size_t i = 0; i < grains_current_section.rotation_matrices.size(); i++)
+                                  {
+                                    grains.rotation_matrices[i] = average_matrices(
+                                                                    average_matrices(grains_previous_above.rotation_matrices[i],grains_next_above.rotation_matrices[i], section_fraction_above),
+                                                                    average_matrices(grains_previous_below.rotation_matrices[i],grains_next_below.rotation_matrices[i], section_fraction_above),
+                                                                    segment_fraction);
+                                  }
+                                grains.unroll_into(output,entry_in_output[i_property]);
+                                break;
+                              }
+                              default:
+                                WBAssertThrow(false, "Internal error: Unimplemented property provided. Only temperature (1), composition (2) or grains (3) are allowed.");
+                            }
+                        }
+
+                    }
+                }
+          } else {
+          WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
             WorldBuilder::Utilities::distance_point_from_curved_planes(position_in_cartesian_coordinates,
                                                                        position_in_natural_coordinates,
                                                                        reference_point,
@@ -669,7 +1002,7 @@ namespace WorldBuilder
                           }
                         }
                     }
-
+                  }
                 }
             }
         }

@@ -71,11 +71,11 @@ namespace WorldBuilder
          */
         Point<2> operator()(const size_t i, const double x) const;
 
+        std::vector<double> angles;
       private:
         std::vector<Point<2> > points;
         std::vector<std::array<Point<2>,2 > > control_points;
         std::vector<double> lengths;
-        std::vector<double> angles;
 
     };
   }

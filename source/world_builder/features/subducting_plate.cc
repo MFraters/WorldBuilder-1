@@ -115,6 +115,8 @@ namespace WorldBuilder
     void
     SubductingPlate::parse_entries(Parameters &prm)
     {
+
+          using_contours = true;
       const CoordinateSystem coordinate_system = prm.coordinate_system->natural_coordinate_system();
 
       this->name = prm.get<std::string>("name");
@@ -521,7 +523,7 @@ namespace WorldBuilder
                       WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes(world->parameters.coordinate_system->natural_coordinate_system());
                       distance_from_planes.distance_from_plane = distance_from_surface;
                       distance_from_planes.distance_along_plane = distance_along_surface;
-                      const Features::Utilities::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
+                      const Features::FeatureUtilities::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
                       for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
                         {
                             switch (properties[i_property][0])

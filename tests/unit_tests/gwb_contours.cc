@@ -27,6 +27,42 @@ using namespace WorldBuilder;
 using doctest::Approx;
 using doctest::Contains;
 
+namespace WorldBuilder
+{
+  namespace Features
+  {
+    namespace FaultModels
+    {
+      namespace Composition
+      {
+        class Interface;
+      }  // namespace Composition
+      namespace Grains
+      {
+        class Interface;
+      }  // namespace Grains
+      namespace Temperature
+      {
+        class Interface;
+      }  // namespace Temperature
+    }  // namespace FaultModels
+    namespace SubductingPlateModels
+    {
+      namespace Composition
+      {
+        class Interface;
+      }  // namespace Composition
+      namespace Grains
+      {
+        class Interface;
+      }  // namespace Grains
+      namespace Temperature
+      {
+        class Interface;
+      }  // namespace Temperature
+    }  // namespace SubductingPlateModels
+  }  // namespace Features
+} // namespace WorldBuilder
 TEST_CASE("Contours")
 {
   std::cout << "Countours" << std::endl;
@@ -43,7 +79,7 @@ TEST_CASE("Contours")
   std::vector<std::vector<double> > angle_contraints;
   std::vector<std::vector<double> > thicknesses = {{5.,5.,5.,5.,5.,5.},{2.5,2.5},{10.,10.,10.,10.,10.,10.}};
   std::cout << "ut flag 2.5" << std::endl;
-  Objects::Contours a(points, depths,thicknesses, 60.);
+  Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,Features::SubductingPlateModels::Composition::Interface,Features::SubductingPlateModels::Grains::Interface> a(points, depths,thicknesses, 60., {}, {}, {}, {}, {});
 
   std::cout << "ut flag 3" << std::endl;
   const Point<3> position(4.75,3.,60-3.2,c);

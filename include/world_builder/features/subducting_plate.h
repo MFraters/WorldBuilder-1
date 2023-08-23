@@ -144,7 +144,9 @@ namespace WorldBuilder
 
       private:
         bool using_contours;
-        Objects::Contours contours;
+        Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,
+                Features::SubductingPlateModels::Composition::Interface,
+                Features::SubductingPlateModels::Grains::Interface> contours;
 
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > default_temperature_models;
         std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface>  > default_composition_models;

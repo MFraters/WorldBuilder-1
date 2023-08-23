@@ -73,6 +73,7 @@ namespace WorldBuilder
       //double curve_local_section_fraction;
     };
 
+    template <class A, class B, class C>
     class Contours
     {
       public:
@@ -88,8 +89,21 @@ namespace WorldBuilder
                  const std::vector<double> depths,
                  const std::vector<std::vector<double> > &thicknesses,
                  const double start_radius,
-                 const std::vector<std::vector<double> > &angle_contraints = {},
-                 const std::vector<std::vector<Point<2> > > &directions = {});
+                 const std::vector<std::vector<double> > &angle_contraints,
+                 const std::vector<std::vector<Point<2> > > &directions,
+                 std::vector<std::shared_ptr<A> > temperature_systems,
+                 std::vector<std::shared_ptr<B> > composition_systems,
+                 std::vector<std::shared_ptr<C> > grains_systems);
+
+        /**
+         * Copy constructor
+         */
+        Contours(Contours const &other);
+
+        /**
+         * Destructor
+         */
+        ~Contours();
 
         std::pair<Point<3>,Point<3> >
         compute_cross_section_axes(Point<3> origin,
@@ -118,6 +132,10 @@ namespace WorldBuilder
         std::vector<std::vector<double> > top_truncation;
         std::vector<std::vector<Point<2> > > directions;
         double start_radius;
+
+        std::vector<std::shared_ptr<A> > temperature_systems;
+        std::vector<std::shared_ptr<B> > composition_systems;
+        std::vector<std::shared_ptr<C> > grains_systems;
 
         /**
          * @brief Store the max thickness on each curve.

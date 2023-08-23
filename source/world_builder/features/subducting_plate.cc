@@ -19,6 +19,7 @@
 
 #include "world_builder/features/subducting_plate.h"
 
+#include "world_builder/types/contours.h"
 
 #include "glm/glm.h"
 #include "world_builder/types/array.h"
@@ -67,6 +68,11 @@ namespace WorldBuilder
           prm.declare_entry("", Types::Object(required_entries), "Subducting slab object. Requires properties `model` and `coordinates`.");
         }
 
+      prm.declare_entry("contours", Types::Contours(0,Point<2>(0,0,invalid),Point<2>(0,0,invalid),Point<2>(0,0,invalid),
+                                                    Types::PluginSystem("", Features::SubductingPlateModels::Temperature::Interface::declare_entries, {"model"}),
+                                                    Types::PluginSystem("", Features::SubductingPlateModels::Composition::Interface::declare_entries, {"model"}),
+                                                    Types::PluginSystem("", Features::SubductingPlateModels::Grains::Interface::declare_entries, {"model"})),
+                        "An array of 2d Points representing an array of coordinates where the feature is located.");
 
       prm.declare_entry("min depth", Types::Double(0),
                         "The depth to which this feature is present");
@@ -116,7 +122,7 @@ namespace WorldBuilder
     SubductingPlate::parse_entries(Parameters &prm)
     {
 
-          using_contours = true;
+      using_contours = true;
       const CoordinateSystem coordinate_system = prm.coordinate_system->natural_coordinate_system();
 
       this->name = prm.get<std::string>("name");
@@ -455,7 +461,8 @@ namespace WorldBuilder
                    "Internal error: The size of coordinates (" << coordinates.size()
                    << ") and one_dimensional_coordinates (" << one_dimensional_coordinates.size() << ") are different.");*/
           // todo: explain
-          if (using_contours) {
+          if (using_contours)
+            {
               // use contours type of slab
               const std::vector<std::vector<double> > interpolation_properties;
               Objects::DistanceInterpolationData distance_interpolation_data = contours.distance_interpolation_data(position_in_cartesian_coordinates,
@@ -479,7 +486,7 @@ namespace WorldBuilder
 
               if (abs(distance_from_surface) < std::numeric_limits<double>::infinity() || (distance_along_surface) < std::numeric_limits<double>::infinity())
                 {
-                                    // We want to do both section (horizontal) and segment (vertical) interpolation.
+                  // We want to do both section (horizontal) and segment (vertical) interpolation.
                   // first for thickness
                   const double thickness_above = contours.thicknesses[segment_above][section_previous_above]
                                                  + section_fraction_above
@@ -519,14 +526,14 @@ namespace WorldBuilder
                       distance_along_surface >= 0 &&
                       distance_along_surface <= max_slab_length)
                     {
-                                            // Inside the slab!
+                      // Inside the slab!
                       WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes(world->parameters.coordinate_system->natural_coordinate_system());
                       distance_from_planes.distance_from_plane = distance_from_surface;
                       distance_from_planes.distance_along_plane = distance_along_surface;
                       const Features::FeatureUtilities::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
                       for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
                         {
-                            switch (properties[i_property][0])
+                          switch (properties[i_property][0])
                             {
                               case 1: // temperature
                               {
@@ -614,9 +621,9 @@ namespace WorldBuilder
                                 output[entry_in_output[i_property]] = temperature_above + segment_fraction * (temperature_below - temperature_above);
                                 break;
                               }
-                                                            case 2: // composition
+                              case 2: // composition
                               {
-                                                                double composition_previous_above = output[entry_in_output[i_property]];
+                                double composition_previous_above = output[entry_in_output[i_property]];
                                 double composition_next_above = output[entry_in_output[i_property]];
                                 double composition_previous_below = output[entry_in_output[i_property]];
                                 double composition_next_below = output[entry_in_output[i_property]];
@@ -696,9 +703,9 @@ namespace WorldBuilder
                                 output[entry_in_output[i_property]] = composition_above + segment_fraction * (composition_below - composition_above);
                                 break;
                               }
-                                                            case 3: // grains
+                              case 3: // grains
                               {
-                                                                WorldBuilder::grains grains(output,properties[i_property][2],entry_in_output[i_property]);
+                                WorldBuilder::grains grains(output,properties[i_property][2],entry_in_output[i_property]);
                                 WorldBuilder::grains  grains_current_section = grains;
                                 WorldBuilder::grains  grains_next_section = grains;
 
@@ -783,228 +790,230 @@ namespace WorldBuilder
 
                     }
                 }
-          } else {
-          WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
-            WorldBuilder::Utilities::distance_point_from_curved_planes(position_in_cartesian_coordinates,
-                                                                       position_in_natural_coordinates,
-                                                                       reference_point,
-                                                                       coordinates,
-                                                                       slab_segment_lengths,
-                                                                       slab_segment_angles,
-                                                                       starting_radius,
-                                                                       this->world->parameters.coordinate_system,
-                                                                       false,
-                                                                       this->bezier_curve);
-
-          const double distance_from_plane = distance_from_planes.distance_from_plane;
-          const double distance_along_plane = distance_from_planes.distance_along_plane;
-          const double section_fraction = distance_from_planes.fraction_of_section;
-          const size_t current_section = distance_from_planes.section;
-          const size_t next_section = current_section + 1;
-          const size_t current_segment = distance_from_planes.segment; // the original value was a unsigned in, converting it back.
-          //const size_t next_segment = current_segment + 1;
-          const double segment_fraction = distance_from_planes.fraction_of_segment;
-
-          if (abs(distance_from_plane) < std::numeric_limits<double>::infinity() || (distance_along_plane) < std::numeric_limits<double>::infinity())
+            }
+          else
             {
-              // We want to do both section (horizontal) and segment (vertical) interpolation.
-              // first for thickness
-              const double thickness_up = slab_segment_thickness[current_section][current_segment][0]
-                                          + section_fraction
-                                          * (slab_segment_thickness[next_section][current_segment][0]
-                                             - slab_segment_thickness[current_section][current_segment][0]);
-              const double thickness_down = slab_segment_thickness[current_section][current_segment][1]
-                                            + section_fraction
-                                            * (slab_segment_thickness[next_section][current_segment][1]
-                                               - slab_segment_thickness[current_section][current_segment][1]);
-              const double thickness_local = thickness_up + segment_fraction * (thickness_down - thickness_up);
+              WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
+                WorldBuilder::Utilities::distance_point_from_curved_planes(position_in_cartesian_coordinates,
+                                                                           position_in_natural_coordinates,
+                                                                           reference_point,
+                                                                           coordinates,
+                                                                           slab_segment_lengths,
+                                                                           slab_segment_angles,
+                                                                           starting_radius,
+                                                                           this->world->parameters.coordinate_system,
+                                                                           false,
+                                                                           this->bezier_curve);
 
-              // if the thickness is zero, we don't need to compute anything, so return.
-              if (std::fabs(thickness_local) < 2.0 * std::numeric_limits<double>::epsilon())
-                return;
+              const double distance_from_plane = distance_from_planes.distance_from_plane;
+              const double distance_along_plane = distance_from_planes.distance_along_plane;
+              const double section_fraction = distance_from_planes.fraction_of_section;
+              const size_t current_section = distance_from_planes.section;
+              const size_t next_section = current_section + 1;
+              const size_t current_segment = distance_from_planes.segment; // the original value was a unsigned in, converting it back.
+              //const size_t next_segment = current_segment + 1;
+              const double segment_fraction = distance_from_planes.fraction_of_segment;
 
-              // secondly for top truncation
-              const double top_truncation_up = slab_segment_top_truncation[current_section][current_segment][0]
-                                               + section_fraction
-                                               * (slab_segment_top_truncation[next_section][current_segment][0]
-                                                  - slab_segment_top_truncation[current_section][current_segment][0]);
-              const double top_truncation_down = slab_segment_top_truncation[current_section][current_segment][1]
-                                                 + section_fraction
-                                                 * (slab_segment_top_truncation[next_section][current_segment][1]
-                                                    - slab_segment_top_truncation[current_section][current_segment][1]);
-              const double top_truncation_local = top_truncation_up + segment_fraction * (top_truncation_down - top_truncation_up);
-
-              // if the thickness is smaller than what is truncated off at the top, we don't need to compute anything, so return.
-              if (thickness_local < top_truncation_local)
-                return;
-
-              const double max_slab_length = total_slab_length[current_section] +
-                                             section_fraction *
-                                             (total_slab_length[next_section] - total_slab_length[current_section]);
-
-              if (distance_from_plane >= top_truncation_local &&
-                  distance_from_plane <= thickness_local &&
-                  distance_along_plane >= 0 &&
-                  distance_along_plane <= max_slab_length)
+              if (abs(distance_from_plane) < std::numeric_limits<double>::infinity() || (distance_along_plane) < std::numeric_limits<double>::infinity())
                 {
-                  // Inside the slab!
-                  const Features::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
-                  for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
+                  // We want to do both section (horizontal) and segment (vertical) interpolation.
+                  // first for thickness
+                  const double thickness_up = slab_segment_thickness[current_section][current_segment][0]
+                                              + section_fraction
+                                              * (slab_segment_thickness[next_section][current_segment][0]
+                                                 - slab_segment_thickness[current_section][current_segment][0]);
+                  const double thickness_down = slab_segment_thickness[current_section][current_segment][1]
+                                                + section_fraction
+                                                * (slab_segment_thickness[next_section][current_segment][1]
+                                                   - slab_segment_thickness[current_section][current_segment][1]);
+                  const double thickness_local = thickness_up + segment_fraction * (thickness_down - thickness_up);
+
+                  // if the thickness is zero, we don't need to compute anything, so return.
+                  if (std::fabs(thickness_local) < 2.0 * std::numeric_limits<double>::epsilon())
+                    return;
+
+                  // secondly for top truncation
+                  const double top_truncation_up = slab_segment_top_truncation[current_section][current_segment][0]
+                                                   + section_fraction
+                                                   * (slab_segment_top_truncation[next_section][current_segment][0]
+                                                      - slab_segment_top_truncation[current_section][current_segment][0]);
+                  const double top_truncation_down = slab_segment_top_truncation[current_section][current_segment][1]
+                                                     + section_fraction
+                                                     * (slab_segment_top_truncation[next_section][current_segment][1]
+                                                        - slab_segment_top_truncation[current_section][current_segment][1]);
+                  const double top_truncation_local = top_truncation_up + segment_fraction * (top_truncation_down - top_truncation_up);
+
+                  // if the thickness is smaller than what is truncated off at the top, we don't need to compute anything, so return.
+                  if (thickness_local < top_truncation_local)
+                    return;
+
+                  const double max_slab_length = total_slab_length[current_section] +
+                                                 section_fraction *
+                                                 (total_slab_length[next_section] - total_slab_length[current_section]);
+
+                  if (distance_from_plane >= top_truncation_local &&
+                      distance_from_plane <= thickness_local &&
+                      distance_along_plane >= 0 &&
+                      distance_along_plane <= max_slab_length)
                     {
-                      switch (properties[i_property][0])
+                      // Inside the slab!
+                      const Features::AdditionalParameters additional_parameters = {max_slab_length,thickness_local};
+                      for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
                         {
-                          case 1: // temperature
-                          {
-                            double temperature_current_section = output[entry_in_output[i_property]];
-                            double temperature_next_section = output[entry_in_output[i_property]];
-
-                            for (const auto &temperature_model: segment_vector[current_section][current_segment].temperature_systems)
+                          switch (properties[i_property][0])
+                            {
+                              case 1: // temperature
                               {
-                                temperature_current_section = temperature_model->get_temperature(position_in_cartesian_coordinates,
-                                                                                                 depth,
-                                                                                                 gravity_norm,
-                                                                                                 temperature_current_section,
-                                                                                                 starting_depth,
-                                                                                                 maximum_depth,
-                                                                                                 distance_from_planes,
-                                                                                                 additional_parameters);
+                                double temperature_current_section = output[entry_in_output[i_property]];
+                                double temperature_next_section = output[entry_in_output[i_property]];
 
-                                WBAssert(!std::isnan(temperature_current_section), "Temparture is not a number: " << temperature_current_section
-                                         << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
-                                WBAssert(std::isfinite(temperature_current_section), "Temparture is not a finite: " << temperature_current_section
-                                         << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+                                for (const auto &temperature_model: segment_vector[current_section][current_segment].temperature_systems)
+                                  {
+                                    temperature_current_section = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                     depth,
+                                                                                                     gravity_norm,
+                                                                                                     temperature_current_section,
+                                                                                                     starting_depth,
+                                                                                                     maximum_depth,
+                                                                                                     distance_from_planes,
+                                                                                                     additional_parameters);
 
+                                    WBAssert(!std::isnan(temperature_current_section), "Temparture is not a number: " << temperature_current_section
+                                             << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+                                    WBAssert(std::isfinite(temperature_current_section), "Temparture is not a finite: " << temperature_current_section
+                                             << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+
+                                  }
+
+                                for (const auto &temperature_model: segment_vector[next_section][current_segment].temperature_systems)
+                                  {
+                                    temperature_next_section = temperature_model->get_temperature(position_in_cartesian_coordinates,
+                                                                                                  depth,
+                                                                                                  gravity_norm,
+                                                                                                  temperature_next_section,
+                                                                                                  starting_depth,
+                                                                                                  maximum_depth,
+                                                                                                  distance_from_planes,
+                                                                                                  additional_parameters);
+
+                                    WBAssert(!std::isnan(temperature_next_section), "Temparture is not a number: " << temperature_next_section
+                                             << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+                                    WBAssert(std::isfinite(temperature_next_section), "Temparture is not a finite: " << temperature_next_section
+                                             << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+
+                                  }
+
+                                // linear interpolation between current and next section temperatures
+                                output[entry_in_output[i_property]] = temperature_current_section + section_fraction * (temperature_next_section - temperature_current_section);
+                                break;
                               }
-
-                            for (const auto &temperature_model: segment_vector[next_section][current_segment].temperature_systems)
+                              case 2: // composition
                               {
-                                temperature_next_section = temperature_model->get_temperature(position_in_cartesian_coordinates,
-                                                                                              depth,
-                                                                                              gravity_norm,
-                                                                                              temperature_next_section,
-                                                                                              starting_depth,
-                                                                                              maximum_depth,
-                                                                                              distance_from_planes,
-                                                                                              additional_parameters);
+                                double composition_current_section = output[entry_in_output[i_property]];
+                                double composition_next_section = output[entry_in_output[i_property]];
 
-                                WBAssert(!std::isnan(temperature_next_section), "Temparture is not a number: " << temperature_next_section
-                                         << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
-                                WBAssert(std::isfinite(temperature_next_section), "Temparture is not a finite: " << temperature_next_section
-                                         << ", based on a temperature model with the name " << temperature_model->get_name() << ", in feature " << this->name);
+                                for (const auto &composition_model: segment_vector[current_section][current_segment].composition_systems)
+                                  {
+                                    composition_current_section = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                     depth,
+                                                                                                     properties[i_property][1],
+                                                                                                     composition_current_section,
+                                                                                                     starting_depth,
+                                                                                                     maximum_depth,
+                                                                                                     distance_from_planes,
+                                                                                                     additional_parameters);
 
+                                    WBAssert(!std::isnan(composition_current_section), "Composition_current_section is not a number: " << composition_current_section
+                                             << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
+                                    WBAssert(std::isfinite(composition_current_section), "Composition_current_section is not a finite: " << composition_current_section
+                                             << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
+
+                                  }
+
+                                for (const auto &composition_model: segment_vector[next_section][current_segment].composition_systems)
+                                  {
+                                    composition_next_section = composition_model->get_composition(position_in_cartesian_coordinates,
+                                                                                                  depth,
+                                                                                                  properties[i_property][1],
+                                                                                                  composition_next_section,
+                                                                                                  starting_depth,
+                                                                                                  maximum_depth,
+                                                                                                  distance_from_planes,
+                                                                                                  additional_parameters);
+
+                                    WBAssert(!std::isnan(composition_next_section), "Composition_next_section is not a number: " << composition_next_section
+                                             << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
+                                    WBAssert(std::isfinite(composition_next_section), "Composition_next_section is not a finite: " << composition_next_section
+                                             << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
+
+                                  }
+
+                                // linear interpolation between current and next section temperatures
+                                output[entry_in_output[i_property]] = composition_current_section + section_fraction * (composition_next_section - composition_current_section);
+                                break;
                               }
-
-                            // linear interpolation between current and next section temperatures
-                            output[entry_in_output[i_property]] = temperature_current_section + section_fraction * (temperature_next_section - temperature_current_section);
-                            break;
-                          }
-                          case 2: // composition
-                          {
-                            double composition_current_section = output[entry_in_output[i_property]];
-                            double composition_next_section = output[entry_in_output[i_property]];
-
-                            for (const auto &composition_model: segment_vector[current_section][current_segment].composition_systems)
+                              case 3: // grains
                               {
-                                composition_current_section = composition_model->get_composition(position_in_cartesian_coordinates,
-                                                                                                 depth,
-                                                                                                 properties[i_property][1],
-                                                                                                 composition_current_section,
-                                                                                                 starting_depth,
-                                                                                                 maximum_depth,
-                                                                                                 distance_from_planes,
-                                                                                                 additional_parameters);
+                                WorldBuilder::grains grains(output,properties[i_property][2],entry_in_output[i_property]);
+                                WorldBuilder::grains  grains_current_section = grains;
+                                WorldBuilder::grains  grains_next_section = grains;
 
-                                WBAssert(!std::isnan(composition_current_section), "Composition_current_section is not a number: " << composition_current_section
-                                         << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
-                                WBAssert(std::isfinite(composition_current_section), "Composition_current_section is not a finite: " << composition_current_section
-                                         << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
+                                for (const auto &grains_model: segment_vector[current_section][current_segment].grains_systems)
+                                  {
+                                    grains_current_section = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                      depth,
+                                                                                      properties[i_property][1],
+                                                                                      grains_current_section,
+                                                                                      starting_depth,
+                                                                                      maximum_depth,
+                                                                                      distance_from_planes,
+                                                                                      additional_parameters);
 
+                                  }
+
+                                for (const auto &grains_model: segment_vector[next_section][current_segment].grains_systems)
+                                  {
+                                    grains_next_section = grains_model->get_grains(position_in_cartesian_coordinates,
+                                                                                   depth,
+                                                                                   properties[i_property][1],
+                                                                                   grains_next_section,
+                                                                                   starting_depth,
+                                                                                   maximum_depth,
+                                                                                   distance_from_planes,
+                                                                                   additional_parameters);
+
+                                  }
+
+                                // linear interpolation between current and next section temperatures
+                                for (size_t i = 0; i < grains.sizes.size(); i++)
+                                  {
+                                    grains.sizes[i] = grains_current_section.sizes[i] + section_fraction * (grains_next_section.sizes[i] - grains_current_section.sizes[i]);
+                                  }
+
+                                // average two rotations matrices throu quaternions.
+                                for (size_t i = 0; i < grains_current_section.rotation_matrices.size(); i++)
+                                  {
+                                    const glm::quaternion::quat quat_current = glm::quaternion::quat_cast(grains_current_section.rotation_matrices[i]);
+                                    const glm::quaternion::quat quat_next = glm::quaternion::quat_cast(grains_next_section.rotation_matrices[i]);
+
+                                    const glm::quaternion::quat quat_average = glm::quaternion::slerp(quat_current,quat_next,section_fraction);
+
+                                    grains.rotation_matrices[i] = glm::quaternion::mat3_cast(quat_average);
+                                  }
+
+                                grains.unroll_into(output,entry_in_output[i_property]);
+                                break;
                               }
-
-                            for (const auto &composition_model: segment_vector[next_section][current_segment].composition_systems)
+                              default:
                               {
-                                composition_next_section = composition_model->get_composition(position_in_cartesian_coordinates,
-                                                                                              depth,
-                                                                                              properties[i_property][1],
-                                                                                              composition_next_section,
-                                                                                              starting_depth,
-                                                                                              maximum_depth,
-                                                                                              distance_from_planes,
-                                                                                              additional_parameters);
-
-                                WBAssert(!std::isnan(composition_next_section), "Composition_next_section is not a number: " << composition_next_section
-                                         << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
-                                WBAssert(std::isfinite(composition_next_section), "Composition_next_section is not a finite: " << composition_next_section
-                                         << ", based on a composition model with the name " << composition_model->get_name() << ", in feature " << this->name);
-
+                                WBAssertThrow(false,
+                                              "Internal error: Unimplemented property provided. " <<
+                                              "Only temperature (1), composition (2) or grains (3) are allowed. "
+                                              "Provided property number was: " << properties[i_property][0]);
                               }
-
-                            // linear interpolation between current and next section temperatures
-                            output[entry_in_output[i_property]] = composition_current_section + section_fraction * (composition_next_section - composition_current_section);
-                            break;
-                          }
-                          case 3: // grains
-                          {
-                            WorldBuilder::grains grains(output,properties[i_property][2],entry_in_output[i_property]);
-                            WorldBuilder::grains  grains_current_section = grains;
-                            WorldBuilder::grains  grains_next_section = grains;
-
-                            for (const auto &grains_model: segment_vector[current_section][current_segment].grains_systems)
-                              {
-                                grains_current_section = grains_model->get_grains(position_in_cartesian_coordinates,
-                                                                                  depth,
-                                                                                  properties[i_property][1],
-                                                                                  grains_current_section,
-                                                                                  starting_depth,
-                                                                                  maximum_depth,
-                                                                                  distance_from_planes,
-                                                                                  additional_parameters);
-
-                              }
-
-                            for (const auto &grains_model: segment_vector[next_section][current_segment].grains_systems)
-                              {
-                                grains_next_section = grains_model->get_grains(position_in_cartesian_coordinates,
-                                                                               depth,
-                                                                               properties[i_property][1],
-                                                                               grains_next_section,
-                                                                               starting_depth,
-                                                                               maximum_depth,
-                                                                               distance_from_planes,
-                                                                               additional_parameters);
-
-                              }
-
-                            // linear interpolation between current and next section temperatures
-                            for (size_t i = 0; i < grains.sizes.size(); i++)
-                              {
-                                grains.sizes[i] = grains_current_section.sizes[i] + section_fraction * (grains_next_section.sizes[i] - grains_current_section.sizes[i]);
-                              }
-
-                            // average two rotations matrices throu quaternions.
-                            for (size_t i = 0; i < grains_current_section.rotation_matrices.size(); i++)
-                              {
-                                const glm::quaternion::quat quat_current = glm::quaternion::quat_cast(grains_current_section.rotation_matrices[i]);
-                                const glm::quaternion::quat quat_next = glm::quaternion::quat_cast(grains_next_section.rotation_matrices[i]);
-
-                                const glm::quaternion::quat quat_average = glm::quaternion::slerp(quat_current,quat_next,section_fraction);
-
-                                grains.rotation_matrices[i] = glm::quaternion::mat3_cast(quat_average);
-                              }
-
-                            grains.unroll_into(output,entry_in_output[i_property]);
-                            break;
-                          }
-                          default:
-                          {
-                            WBAssertThrow(false,
-                                          "Internal error: Unimplemented property provided. " <<
-                                          "Only temperature (1), composition (2) or grains (3) are allowed. "
-                                          "Provided property number was: " << properties[i_property][0]);
-                          }
+                            }
                         }
                     }
-                  }
                 }
             }
         }

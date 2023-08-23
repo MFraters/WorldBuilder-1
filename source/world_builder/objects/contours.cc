@@ -25,31 +25,74 @@
 
 namespace WorldBuilder
 {
+  namespace Features
+  {
+    namespace FaultModels
+    {
+      namespace Composition
+      {
+        class Interface;
+      }  // namespace Composition
+      namespace Grains
+      {
+        class Interface;
+      }  // namespace Grains
+      namespace Temperature
+      {
+        class Interface;
+      }  // namespace Temperature
+    }  // namespace FaultModels
+    namespace SubductingPlateModels
+    {
+      namespace Composition
+      {
+        class Interface;
+      }  // namespace Composition
+      namespace Grains
+      {
+        class Interface;
+      }  // namespace Grains
+      namespace Temperature
+      {
+        class Interface;
+      }  // namespace Temperature
+    }  // namespace SubductingPlateModels
+  }  // namespace Features
+
   namespace Objects
   {
-    Contours::Contours()
+    template<class A, class B, class C>
+    Contours<A,B,C>::Contours()
     {}
 
-    Contours::Contours(const std::vector<std::vector<Point<2> > > &points_,
-                       const std::vector<double> depths_,
-                       const std::vector<std::vector<double> > &thicknesses_,
-                       const double start_radius_,
-                       const std::vector<std::vector<double> > &angle_contraints_,
-                       const std::vector<std::vector<Point<2> > > &directions_)
+    template<class A, class B, class C>
+    Contours<A,B,C>::Contours(const std::vector<std::vector<Point<2> > > &points_,
+                              const std::vector<double> depths_,
+                              const std::vector<std::vector<double> > &thicknesses_,
+                              const double start_radius_,
+                              const std::vector<std::vector<double> > &angle_contraints_,
+                              const std::vector<std::vector<Point<2> > > &directions_,
+                              std::vector<std::shared_ptr<A> > temperature_systems_,
+                              std::vector<std::shared_ptr<B> > composition_systems_,
+                              std::vector<std::shared_ptr<C> > grains_systems_)
       :
       points(points_),
       depths(depths_),
       angle_contraints(angle_contraints_),
       thicknesses(thicknesses_),
       directions(directions_),
-      start_radius(start_radius_)
+      start_radius(start_radius_),
+      temperature_systems(temperature_systems_),
+      composition_systems(composition_systems_),
+      grains_systems(grains_systems_)
     {
       bool bool_cartesian = points[0][0].get_coordinate_system() == cartesian;
       const size_t n_curves = points.size();
       std::vector<std::vector<double> > angle_contraints_horizontal(points.size());
-      for (size_t i = 0; i < points.size(); ++i){
-        angle_contraints_horizontal[i].resize(points[i].size(),NaN::DQNAN);
-      }
+      for (size_t i = 0; i < points.size(); ++i)
+        {
+          angle_contraints_horizontal[i].resize(points[i].size(),NaN::DQNAN);
+        }
 
       // if angle contrainst is empty fill it with the right amount of entries and set the values to signaling nan.
       if (angle_contraints.size() == 0)
@@ -649,8 +692,12 @@ namespace WorldBuilder
       std::cout << "============================================= finished construction ========================================" << std::endl << std::endl;
     }
 
+    template<class A, class B, class C>
+    Contours<A, B, C>::~Contours() = default;
+
+    template<class A, class B, class C>
     std::pair<Point<3>,Point<3> >
-    Contours::compute_cross_section_axes(Point<3> origin, Point<3> x_direction,Point<3> y_direction) const
+    Contours<A,B,C>::compute_cross_section_axes(Point<3> origin, Point<3> x_direction,Point<3> y_direction) const
     {
       Point<3> y_axis = origin - y_direction;
       Point<3> x_axis = origin - x_direction;
@@ -673,14 +720,15 @@ namespace WorldBuilder
       return {x_axis,y_axis};
     }
 
+    template<class A, class B, class C>
     DistanceInterpolationData
-    Contours::distance_interpolation_data(const Point<3> &check_point_cartesian,
-                                          const Objects::NaturalCoordinate &check_point_natural,
-                                          const Point<2> &reference_point,
-                                          const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
-                                          const std::vector<std::vector<double> > &interpolation_properties,
-                                          const double /*start_radius*/,
-                                          const bool only_positive) const
+    Contours<A,B,C>::distance_interpolation_data(const Point<3> &check_point_cartesian,
+                                                 const Objects::NaturalCoordinate &check_point_natural,
+                                                 const Point<2> &reference_point,
+                                                 const std::unique_ptr<CoordinateSystems::Interface> &coordinate_system,
+                                                 const std::vector<std::vector<double> > &interpolation_properties,
+                                                 const double /*start_radius*/,
+                                                 const bool only_positive) const
     {
       // do some preparations
       const CoordinateSystem natural_coordinate_system = coordinate_system->natural_coordinate_system();
@@ -809,6 +857,21 @@ namespace WorldBuilder
       return return_distance_interpolation_data;
 
     }
+
+
+    /**
+    * Todo: Returns a vector of pointers to the Point<3> Type based on the provided name.
+    * Note that the variable with this name has to be loaded before this function is called.
+    */
+    template class
+    Contours<Features::SubductingPlateModels::Temperature::Interface,Features::SubductingPlateModels::Composition::Interface,Features::SubductingPlateModels::Grains::Interface>;
+
+    /**
+    * Todo: Returns a vector of pointers to the Point<3> Type based on the provided name.
+    * Note that the variable with this name has to be loaded before this function is called.
+    */
+    template class
+    Contours<Features::FaultModels::Temperature::Interface,Features::FaultModels::Composition::Interface,Features::FaultModels::Grains::Interface>;
 
   } // namespace Objects
 } // namespace WorldBuilder

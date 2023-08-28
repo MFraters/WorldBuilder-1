@@ -21,6 +21,7 @@
 
 #include <algorithm>
 
+#include "world_builder/features/feature_utilities.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/object.h"
 #include "world_builder/types/point.h"
@@ -131,7 +132,7 @@ namespace WorldBuilder
                << "You provided " << interpolation_type_string << '.');
 
       bezier_curve = Objects::BezierCurve(coordinates);
-
+      coordinates_type = FeatureUtilities::CoordinatesType::SIMPLE;
     }
 
 

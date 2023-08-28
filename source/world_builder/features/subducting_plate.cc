@@ -19,6 +19,7 @@
 
 #include "world_builder/features/subducting_plate.h"
 
+#include "world_builder/assert.h"
 #include "world_builder/types/contours.h"
 
 #include "glm/glm.h"
@@ -65,7 +66,7 @@ namespace WorldBuilder
         }
       else
         {
-          prm.declare_entry("", Types::Object(required_entries), "Subducting slab object. Requires properties `model` and `coordinates`.");
+          prm.declare_entry("", Types::Object(required_entries), "Subducting slab object. Requires properties `model` and (`coordinates` or `contours`).");
         }
 
       prm.declare_entry("contours", Types::Contours(0,Point<2>(0,0,invalid),Point<2>(0,0,invalid),Point<2>(0,0,invalid),
@@ -78,6 +79,9 @@ namespace WorldBuilder
                         "The depth to which this feature is present");
       prm.declare_entry("max depth", Types::Double(std::numeric_limits<double>::max()),
                         "The depth to which this feature is present");
+
+      
+
       prm.declare_entry("dip point", Types::Point<2>(),
                         "The depth to which this feature is present");
 
@@ -91,7 +95,7 @@ namespace WorldBuilder
                                                                 Types::PluginSystem("", Features::SubductingPlateModels::Composition::Interface::declare_entries, {"model"}),
                                                                 Types::PluginSystem("", Features::SubductingPlateModels::Grains::Interface::declare_entries, {"model"}))),
                         "The depth to which this feature is present");
-
+          
       prm.declare_entry("temperature models",
                         Types::PluginSystem("", Features::SubductingPlateModels::Temperature::Interface::declare_entries, {"model"}),
                         "A list of temperature models.");
@@ -122,11 +126,25 @@ namespace WorldBuilder
     SubductingPlate::parse_entries(Parameters &prm)
     {
 
-      using_contours = true;
       const CoordinateSystem coordinate_system = prm.coordinate_system->natural_coordinate_system();
 
       this->name = prm.get<std::string>("name");
-      this->get_coordinates("coordinates", prm, coordinate_system);
+      if (prm.check_entry("coordinates"))
+        {
+          WBAssertThrow(!prm.check_entry("contours"),
+                        "A subducting plate requires at either a coordinates or a contours property, but both were given for "
+                        << prm.get_full_json_path() << ", schema: " << prm.get_full_json_schema_path() << ".");
+
+                        coordinates_type = FeatureUtilities::CoordinatesType::SIMPLE;
+          this->get_coordinates("coordinates", prm, coordinate_system);
+        }
+      else
+        {
+          WBAssertThrow(prm.check_entry("contours"),
+                        "A subducting plate requires at either a coordinates or a contours property, but neither were given for "
+                        << prm.get_full_json_path() << ", schema: " << prm.get_full_json_schema_path() << ".");
+                        coordinates_type = FeatureUtilities::CoordinatesType::CONTOURS;
+        }
 
 
       starting_depth = prm.get<double>("min depth");
@@ -461,7 +479,7 @@ namespace WorldBuilder
                    "Internal error: The size of coordinates (" << coordinates.size()
                    << ") and one_dimensional_coordinates (" << one_dimensional_coordinates.size() << ") are different.");*/
           // todo: explain
-          if (using_contours)
+          if (coordinates_type == FeatureUtilities::CoordinatesType::CONTOURS)
             {
               // use contours type of slab
               const std::vector<std::vector<double> > interpolation_properties;

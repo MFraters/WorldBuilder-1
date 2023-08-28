@@ -37,6 +37,14 @@ namespace WorldBuilder
       };
 
       /**
+       * Which type of coordinates is in use: none, simple coordinates or contours
+       */
+      enum class CoordinatesType
+      {
+        NONE, SIMPLE, CONTOURS
+      };
+
+      /**
        * transforms string operations into enums.
        */
       Operations

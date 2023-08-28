@@ -21,7 +21,9 @@
 #define WORLD_BUILDER_FEATURES_INTERFACE_H
 
 
+#include "world_builder/features/feature_utilities.h"
 #include "world_builder/grains.h"
+#include "world_builder/objects/contours.h"
 #include "world_builder/utilities.h"
 #include "world_builder/objects/distance_from_surface.h"
 
@@ -140,6 +142,11 @@ namespace WorldBuilder
          * more automatically.
          */
         std::size_t original_number_of_coordinates;
+
+        /**
+         * Which type of coordinates is in use: none, simple coordinates or contours
+         */
+        FeatureUtilities::CoordinatesType coordinates_type;
 
         /**
          * The coordinates at the surface of the feature

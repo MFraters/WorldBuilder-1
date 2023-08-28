@@ -179,14 +179,14 @@ namespace WorldBuilder
     ClosestPointOnCurve
     BezierCurve::closest_point_on_curve_segment(const Point<2> &check_point) const
     {
-      std::cout << "BC cp flag 1" << std::endl;
+      //std::cout << "BC cp flag 1" << std::endl;
       ClosestPointOnCurve closest_point_on_curve;
       const Point<2> &cp = check_point;
       double min_squared_distance = std::numeric_limits<double>::infinity();
-      std::cout << "BC cp flag 2" << std::endl;
+      //std::cout << "BC cp flag 2" << std::endl;
       if (check_point.get_coordinate_system() == CoordinateSystem::cartesian)
         {
-          std::cout << "BC cp flag 3a1" << std::endl;
+          //std::cout << "BC cp flag 3a1" << std::endl;
           for ( size_t cp_i = 0; cp_i < control_points.size(); ++cp_i)
             {
 #ifndef NDEBUG
@@ -310,16 +310,16 @@ namespace WorldBuilder
 #else
               WBAssertThrow(found, "Could not find a good solution. Enable debug mode for more info.");
 #endif
-              std::cout << "BC cp flag 100" << std::endl;
+              //std::cout << "BC cp flag 100" << std::endl;
               const double est_min_cp_end_0 = a_0*est*est*est+b_0*est*est+c_0*est+d_min_cp_0;
               const double est_min_cp_end_1 = a_1*est*est*est+b_1*est*est+c_1*est+d_min_cp_1;
               const double min_squared_distance_temp = (est_min_cp_end_0*est_min_cp_end_0)+(est_min_cp_end_1*est_min_cp_end_1);
               if (min_squared_distance_temp < min_squared_distance)
                 {
-                  std::cout << "BC cp flag 101" << std::endl;
+                  //std::cout << "BC cp flag 101" << std::endl;
                   if (true || est >= -1e-8 && est-1. <= 1e-8)
                     {
-                      std::cout << "BC cp flag 102" << std::endl;
+                      //std::cout << "BC cp flag 102" << std::endl;
                       min_squared_distance = min_squared_distance_temp;
                       const Point<2> point_on_curve = Point<2>(a_0*est*est*est+b_0*est*est+c_0*est+d_0,a_1*est*est*est+b_1*est*est+c_1*est+d_1,cp.get_coordinate_system());
                       WBAssert(!std::isnan(point_on_curve[0]) && !std::isnan(point_on_curve[1]), "Point on curve has NAN entries: " << point_on_curve);

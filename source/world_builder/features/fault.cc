@@ -422,7 +422,7 @@ namespace WorldBuilder
                << ", starting_depth " << starting_depth
               );
 
-      // todo: explain and check -starting_depth
+      // TODO: explain and check -starting_depth
       if (depth <= maximum_depth && depth >= starting_depth && depth <= maximum_total_fault_length + maximum_fault_thickness &&
           get_surface_bounding_box().point_inside(Point<2>(position_in_natural_coordinates.get_surface_coordinates(),
                                                            world->parameters.coordinate_system->natural_coordinate_system())))
@@ -436,7 +436,7 @@ namespace WorldBuilder
           WBAssert(coordinates.size() == fault_segment_angles.size(),
                    "Internal error: The size of coordinates (" << coordinates.size()
                    << ") and one_dimensional_coordinates (" << one_dimensional_coordinates.size() << ") are different.");*/
-          // todo: explain
+          // TODO: explain
           const WorldBuilder::Utilities::PointDistanceFromCurvedPlanes distance_from_planes =
             WorldBuilder::Utilities::distance_point_from_curved_planes(position_in_cartesian_coordinates,
                                                                        position_in_natural_coordinates,

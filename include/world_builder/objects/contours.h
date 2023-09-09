@@ -25,6 +25,7 @@ This file is part of the World Builder.
 #include <memory>
 #include <vector>
 
+#include "world_builder/nan.h"
 #include "world_builder/objects/bezier_curve.h"
 #include "world_builder/coordinate_systems/interface.h"
 #include "world_builder/objects/natural_coordinate.h"
@@ -36,6 +37,15 @@ namespace WorldBuilder
   {
     struct DistanceInterpolationData
     {
+      DistanceInterpolationData() : signed_distance_from_bezier_surface(std::numeric_limits<double>::infinity()),
+        distance_along_surface(std::numeric_limits<double>::infinity()),
+        curve_above_index(NaN::DSNAN),
+        curve_above_section_index(NaN::DSNAN),
+        curve_above_interplation_fraction(NaN::DSNAN),
+        curve_below_index(NaN::DSNAN),
+        curve_below_section_index(NaN::DSNAN),
+        curve_below_interplation_fraction(NaN::DSNAN),
+        curve_local_interpolation_fraction(NaN::DSNAN) {}
       /**
        * @brief A distance to the Bezier surface. If only_positive is false, the distance is signed
        *        Up is negative and down is postive. It emulates a local depth system.
@@ -88,12 +98,13 @@ namespace WorldBuilder
         Contours(const std::vector<std::vector<Point<2> > > &points,
                  const std::vector<double> depths,
                  const std::vector<std::vector<double> > &thicknesses,
+                 const std::vector<std::vector<double> > &top_truncation,
                  const double start_radius,
                  const std::vector<std::vector<double> > &angle_contraints,
                  const std::vector<std::vector<Point<2> > > &directions,
-                 std::vector<std::shared_ptr<A> > temperature_systems,
-                 std::vector<std::shared_ptr<B> > composition_systems,
-                 std::vector<std::shared_ptr<C> > grains_systems);
+                 std::vector<std::vector<std::vector<std::shared_ptr<A> > > > temperature_systems,
+                 std::vector<std::vector<std::vector<std::shared_ptr<B> > > > composition_systems,
+                 std::vector<std::vector<std::vector<std::shared_ptr<C> > > > grains_systems);
 
         /**
          * Copy constructor
@@ -125,7 +136,7 @@ namespace WorldBuilder
          */
         std::vector<WorldBuilder::Objects::BezierCurve> contour_curves;
 
-        std::vector<std::vector<Point<2> > > points; // todo: probably do no need to store this one.
+        std::vector<std::vector<Point<2> > > points; // TODO: probably do no need to store this one.
         std::vector<double> depths;
         std::vector<std::vector<double> > angle_contraints;
         std::vector<std::vector<double> > thicknesses;
@@ -133,9 +144,9 @@ namespace WorldBuilder
         std::vector<std::vector<Point<2> > > directions;
         double start_radius;
 
-        std::vector<std::shared_ptr<A> > temperature_systems;
-        std::vector<std::shared_ptr<B> > composition_systems;
-        std::vector<std::shared_ptr<C> > grains_systems;
+        std::vector<std::vector<std::vector<std::shared_ptr<A> > >> temperature_systems;
+        std::vector<std::vector<std::vector<std::shared_ptr<B> > >> composition_systems;
+        std::vector<std::vector<std::vector<std::shared_ptr<C> > >> grains_systems;
 
         /**
          * @brief Store the max thickness on each curve.

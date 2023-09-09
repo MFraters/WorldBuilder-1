@@ -47,7 +47,7 @@ namespace WorldBuilder
     std::vector<double> sizes;
 
     // the rotation matrices of the latices of the grains.
-    // todo: convention.
+    // TODO: convention.
     std::vector<std::array<std::array<double,3>,3> > rotation_matrices;
 
     friend std::ostream &operator<<(std::ostream &os, const grains &grains)

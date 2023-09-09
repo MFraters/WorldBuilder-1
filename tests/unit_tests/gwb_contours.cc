@@ -78,8 +78,9 @@ TEST_CASE("Contours")
   std::vector<double> depths = {0.,1,3};
   std::vector<std::vector<double> > angle_contraints;
   std::vector<std::vector<double> > thicknesses = {{5.,5.,5.,5.,5.,5.},{2.5,2.5},{10.,10.,10.,10.,10.,10.}};
+  std::vector<std::vector<double> > top_truncations = {{0.,0.,0.,0.,0.,0.},{0.0,0.0},{0.,0.,0.,0.,0.,0.}};
   std::cout << "ut flag 2.5" << std::endl;
-  Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,Features::SubductingPlateModels::Composition::Interface,Features::SubductingPlateModels::Grains::Interface> a(points, depths,thicknesses, 60., {}, {}, {}, {}, {});
+  Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,Features::SubductingPlateModels::Composition::Interface,Features::SubductingPlateModels::Grains::Interface> a(points, depths,thicknesses,top_truncations, 60., {}, {}, {}, {}, {});
 
   std::cout << "ut flag 3" << std::endl;
   const Point<3> position(4.75,3.,60-3.2,c);

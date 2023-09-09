@@ -42,6 +42,12 @@ namespace WorldBuilder
     class UnsignedInt;
   } // namespace Types
 
+  namespace Objects
+  {
+    template<class A, class B, class C>
+    class Contours;
+  }
+
   namespace Features
   {
     class Interface;
@@ -131,6 +137,12 @@ namespace WorldBuilder
       std::vector<T> get_vector(const std::string &name, std::vector<std::shared_ptr<A> > &, std::vector<std::shared_ptr<B> > &, std::vector<std::shared_ptr<C> > &);
 
       /**
+       * TODO
+       */
+      template<class A, class B, class C>
+      Objects::Contours<A,B,C> get_contours(const std::string &name, std::vector<std::shared_ptr<A> > &, std::vector<std::shared_ptr<B> > &, std::vector<std::shared_ptr<C> > &);
+
+      /**
        * A specialized verions of get which can return unique pointers.
        * \param name The name of the entry to retrieved
        */
@@ -158,6 +170,19 @@ namespace WorldBuilder
       template<class T>
       bool
       get_shared_pointers(const std::string &name, std::vector<std::shared_ptr<T> > & /*vector*/);
+
+      /**
+       * A specialized verions of get which can return shared pointers as an argument
+       * and returns a bool to indicate whether it was successful or not. This version also
+       * allows to set the path.
+       * Note that this function will erase all information in the vector.
+       * \param path The path to the variable location
+       * \param name The name of the entry to retrieved
+       * \param vector A vector of shared pointers.
+       */
+      template<class T>
+      bool
+      get_shared_pointers(const std::string &path, const std::string &name, std::vector<std::shared_ptr<T> > & /*vector*/);
 
       /**
        * Checks for the existance of an entry in the parameter file.
@@ -218,6 +243,23 @@ namespace WorldBuilder
 
 
       /**
+       * Find the closed named value up in the path
+       */
+      size_t closest_named_value_in_path(std::string name)
+      {
+        size_t searchback = 0;
+        for (searchback = 0; searchback < path.size(); ++searchback)
+          {
+            if (rapidjson::Pointer((this->get_full_json_path(path.size()-searchback) + "/" + name).c_str()).Get(parameters) != nullptr)
+              {
+                break;
+              }
+          }
+        return searchback;
+      }
+
+
+      /**
        * A reference to the World class. This is needed to create the features.
        */
       World &world;
@@ -273,7 +315,7 @@ namespace WorldBuilder
       std::string get_full_json_path(size_t max_size = std::numeric_limits<size_t>::max()) const;
 
       /**
-       * todo: Warning: do not use before declarations is filled.
+       * TODO: Warning: do not use before declarations is filled.
        * This function return the current path as stored in the path variable
        * as a string in json pointer format.
        * \return std::string

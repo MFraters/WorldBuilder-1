@@ -317,11 +317,15 @@ namespace WorldBuilder
               if (min_squared_distance_temp < min_squared_distance)
                 {
                   //std::cout << "BC cp flag 101" << std::endl;
-                  if (true || est >= -1e-8 && est-1. <= 1e-8)
+                  if (est >= -1e-8 && est-1. <= 1e-8)
                     {
                       //std::cout << "BC cp flag 102" << std::endl;
                       min_squared_distance = min_squared_distance_temp;
                       const Point<2> point_on_curve = Point<2>(a_0*est*est*est+b_0*est*est+c_0*est+d_0,a_1*est*est*est+b_1*est*est+c_1*est+d_1,cp.get_coordinate_system());
+
+                      //std::cout << "est: " << est << ", a_0: " << a_0 << ", b_0: " << b_0 << ", c_0: " << c_0 << ", d_0: " << d_0
+                      // << ", a_1: " << a_1 << ", b_1: " << b_1 << ", c_1: " << c_1 << ", d_1: " << d_1 << ", point_on_curve = " << point_on_curve<< std::endl;
+
                       WBAssert(!std::isnan(point_on_curve[0]) && !std::isnan(point_on_curve[1]), "Point on curve has NAN entries: " << point_on_curve);
                       // the sign is rotating the derivative by 90 degrees.
                       // When moving in the direction of increasing t, left is positive and right is negative.
@@ -337,7 +341,7 @@ namespace WorldBuilder
 
                       closest_point_on_curve.distance = sign*std::sqrt(min_squared_distance);
                       closest_point_on_curve.parametric_fraction = est;
-                      closest_point_on_curve.interpolation_fraction = NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
+                      closest_point_on_curve.interpolation_fraction = est;// TODO: improve // NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
                       closest_point_on_curve.index = cp_i;
                       closest_point_on_curve.point = point_on_curve;
                       WBAssert(!std::isnan(point_on_curve[0]) && !std::isnan(point_on_curve[1]), "Point on curve has NAN entries: " << point_on_curve);

@@ -88,7 +88,7 @@ namespace WorldBuilder
       Pointer((base + "/maxItems").c_str()).Set(declarations,dim);
       Pointer((base + "/documentation").c_str()).Set(declarations,documentation.c_str());
       Pointer((base + "/items/type").c_str()).Set(declarations,"number");
-      // todo: default value
+      // TODO: default value
     }
 
 

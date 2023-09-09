@@ -149,7 +149,7 @@ namespace WorldBuilder
             Features::FaultModels::Composition::Interface,
             Features::FaultModels::Grains::Interface> > > segment_vector;
 
-        // todo: the memory of this can be greatly improved by
+        // TODO: the memory of this can be greatly improved by
         // or using a plugin system for the submodules, or
         // putting the variables in a union. Although the memory
         // used by this program is in real cases expected to be

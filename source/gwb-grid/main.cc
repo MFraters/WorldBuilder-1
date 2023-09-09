@@ -526,7 +526,7 @@ int main(int argc, char **argv)
           WBAssertThrow(dim == 2 || !std::isnan(dy), "dz is not a number:" << dz << '.');
           WBAssertThrow(!std::isnan(dz), "dz is not a number:" << dz << '.');
 
-          // todo: determine whether a input variable is desirable for this.
+          // TODO: determine whether a input variable is desirable for this.
           const double surface = z_max;
 
           grid_x.resize(n_p);

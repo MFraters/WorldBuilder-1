@@ -144,6 +144,13 @@ namespace WorldBuilder
 
 
       private:
+        struct ModelSystems
+        {
+          std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > temperature_systems;
+          std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface> > composition_systems;
+          std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface> > grains_systems;
+        };
+
         Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,
                 Features::SubductingPlateModels::Composition::Interface,
                 Features::SubductingPlateModels::Grains::Interface> contours;
@@ -161,17 +168,15 @@ namespace WorldBuilder
             Features::SubductingPlateModels::Grains::Interface> > > sections_segment_vector;
 
         // This vector stores segments to this coordinate/section.
-        //First used (raw) pointers to the segment relevant to this coordinate/section,
+        // First used (raw) pointers to the segment relevant to this coordinate/section,
         // but I do not trust it won't fail when memory is moved. So storing the all the data now.
         std::vector<std::vector<Objects::Segment<Features::SubductingPlateModels::Temperature::Interface,
             Features::SubductingPlateModels::Composition::Interface,
             Features::SubductingPlateModels::Grains::Interface> > > segment_vector;
 
-        std::vector< std::vector<Objects::Segment<Features::SubductingPlateModels::Temperature::Interface,
-            Features::SubductingPlateModels::Composition::Interface,
-            Features::SubductingPlateModels::Grains::Interface> > > property_nodes;
+        std::vector< std::vector<ModelSystems> > property_nodes;
 
-        // todo: the memory of this can be greatly improved by
+        // TODO: the memory of this can be greatly improved by
         // or using a plugin system for the submodules, or
         // putting the variables in a union. Although the memory
         // used by this program is in real cases expected to be

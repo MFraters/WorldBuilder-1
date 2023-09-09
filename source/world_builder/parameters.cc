@@ -18,6 +18,8 @@
 */
 
 
+#include "world_builder/assert.h"
+#include "world_builder/coordinate_systems/cartesian.h"
 #include "world_builder/features/continental_plate_models/composition/interface.h"
 #include "world_builder/features/continental_plate_models/grains/interface.h"
 #include "world_builder/features/continental_plate_models/temperature/interface.h"
@@ -39,6 +41,7 @@
 #include "rapidjson/mystwriter.h"
 #include "rapidjson/prettywriter.h"
 
+#include <cmath>
 #include <fstream>
 #include <memory>
 
@@ -886,7 +889,7 @@ namespace WorldBuilder
                 top_trunctation = Point<2>(local0,local1,invalid);
               }
           }
-        // get thickness
+        // get angle
         point_array = Pointer((base  + "/angle").c_str()).Get(parameters);
         Point<2> angle(invalid);
         WBAssertThrow(point_array != nullptr,"error: " << name
@@ -1088,7 +1091,7 @@ namespace WorldBuilder
                 top_trunctation = Point<2>(local0,local1,invalid);
               }
           }
-        // get thickness
+        // get angle
         point_array = Pointer((base  + "/angle").c_str()).Get(parameters);
         Point<2> angle(invalid);
         WBAssertThrow(point_array != nullptr,"error: " << name
@@ -1224,6 +1227,399 @@ namespace WorldBuilder
 
     this->leave_subsection();
     return vector;
+  }
+
+
+  template<>
+  Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,
+          Features::SubductingPlateModels::Composition::Interface,
+          Features::SubductingPlateModels::Grains::Interface>
+          Parameters::get_contours(const std::string &name,
+                                   std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > &default_temperature_models,
+                                   std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface> > &default_composition_models,
+                                   std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface> > &default_grains_models)
+  {
+    using namespace Features::SubductingPlateModels;
+
+    // These are the variable we need to fill to be able to construct a contours object.
+    std::vector<std::vector<Point<2> > > points = {};
+    std::vector<double> depths;
+    std::vector<std::vector<double> > thicknesses;
+    double start_radius = 0.0; // The start radius has to be strictly larger than the biggest possible depth (I think of  just this feature)
+    std::vector<std::vector<double> > top_truncations;
+    std::vector<std::vector<double> > angle_constraints;
+    std::vector<std::vector<Point<2> > > directions;// Todo: check if can be removed
+    std::vector<std::vector<std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > > > temperature_systems;
+    std::vector<std::vector<std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface> > > > composition_systems;
+    std::vector<std::vector<std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface> > > > grains_systems;
+
+    this->enter_subsection(name);
+    {
+      const std::string strict_base = this->get_full_json_path();
+      WBAssertThrow(Pointer((strict_base).c_str()).Get(parameters) != nullptr,"Error: " << name
+                    << " was not defined in " << strict_base << ", schema path: " << this->get_full_json_schema_path() << ".");
+
+      // get the array of contours
+      Value *array = Pointer((strict_base).c_str()).Get(parameters);
+      const size_t n_countours = array->Size();
+      points.resize(n_countours);
+      thicknesses.resize(n_countours);
+      top_truncations.resize(n_countours);
+      angle_constraints.resize(n_countours);
+      temperature_systems.resize(n_countours);
+      composition_systems.resize(n_countours);
+      grains_systems.resize(n_countours);
+      for (size_t contour_i = 0; contour_i < n_countours; ++contour_i )
+        {
+          this->enter_subsection(std::to_string(contour_i));
+          {
+            const std::string base = this->get_full_json_path();
+            // get one contour
+            // depth of this contour
+            const double depth = this->get<double>("depth");
+            // In the cartesian case the star radius is the deepest depth of this feature
+            if (this->coordinate_system->natural_coordinate_system() == CoordinateSystem::cartesian && depth > start_radius)
+              {
+                start_radius = depth;
+              }
+            // In the spherical case, the start radius is the spherical radius minus the minimum depth of the feature
+            if (this->coordinate_system->natural_coordinate_system() == CoordinateSystem::spherical &&
+                this->coordinate_system->max_model_depth()-depth > start_radius)
+              {
+                start_radius = this->coordinate_system->max_model_depth()-depth;
+              }
+            depths.emplace_back(depth);
+            // get the default values for the subpaths
+            const double default_thickness = this->get<double>("thickness");
+            const double default_top_truncation = this->get<double>("top truncation");
+            const double default_angle_constraint = this->get<double>("angle constraint")*Consts::PI/180.0;
+
+            std::cout << "depth = " << depth << ", thickness = " << default_thickness << ", top truc = " << default_top_truncation << ", angle const:" << default_angle_constraint << std::endl;
+
+            // get the actual contour
+            Value *contour_array = Pointer((base  + "/contour").c_str()).Get(parameters);
+            this->enter_subsection("contour");
+            {
+              for (size_t coords_i = 0; coords_i < contour_array->Size(); ++coords_i )
+                {
+                  this->enter_subsection(std::to_string(coords_i));
+                  {
+                    const std::string coords_base = this->get_full_json_path();
+                    size_t searchback = 0;
+                    // get and append the coordinates
+                    std::vector<Point<2>> coordinates = this->get_vector<Point<2>>("coordinates");
+                    size_t n_coords = coordinates.size();
+                    std::cout << "n coords = " << coordinates.size()<< std::endl;
+                    points[contour_i].insert(std::end(points[contour_i]), std::begin(coordinates), std::end(coordinates));
+
+                    // find the thickness for this part
+                    double thickness = default_thickness;
+                    searchback = closest_named_value_in_path("thickness");
+                    if (searchback < path.size())
+                      {
+                        thickness = Pointer((this->get_full_json_path(path.size()-searchback) + "/thickness").c_str()).Get(parameters)->GetDouble();
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        thicknesses[contour_i].emplace_back(thickness);
+                      }
+
+                    // find the top truncations for this part
+                    double top_truncation = default_top_truncation;
+                    searchback = closest_named_value_in_path("top truncation");
+                    if (searchback < path.size())
+                      {
+                        top_truncation = Pointer((this->get_full_json_path(path.size()-searchback) + "/top truncation").c_str()).Get(parameters)->GetDouble();
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        top_truncations[contour_i].emplace_back(top_truncation);
+                      }
+
+
+                    // find the angle constraints for this part
+                    double angle_constraint = default_angle_constraint;
+                    searchback = closest_named_value_in_path("angle constraint");
+                    std::cout << "searchback = " << searchback << std::endl;
+                    if (searchback < path.size())
+                      {
+                        angle_constraint = Pointer((this->get_full_json_path(path.size()-searchback) + "/angle constraint").c_str()).Get(parameters)->GetDouble()*Consts::PI/180.0;
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        std::cout << "angle consraints " << contour_i << ", sub_coord_i = " << sub_coord_i << std::endl;
+                        angle_constraints[contour_i].emplace_back(angle_constraint);
+                      }
+
+
+                    // find the temperature models for this part
+                    std::vector<std::shared_ptr<Temperature::Interface> > temperature_models = default_temperature_models;
+                    searchback = closest_named_value_in_path("temperature models");
+                    std::cout << "searchback = " << searchback << std::endl;
+                    if (searchback < path.size())
+                      {
+                        if (searchback != 0)
+                          {
+                            // copy the data from the found location to the current location
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/temperature models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/temperature models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("temperature models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("temperature models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/temperature model default entry").c_str()).Set(parameters,true);
+                          }
+                        if (!this->get_shared_pointers<Features::SubductingPlateModels::Temperature::Interface>("temperature models", temperature_models))
+                          {
+                            WBAssertThrow(false, "Found temperture models in searchback, but not when getting the shared pointer.");
+                          }
+
+                        this->enter_subsection("temperature models");
+                        {
+                          for (unsigned int j = 0; j < temperature_models.size(); ++j)
+                            {
+                              this->enter_subsection(std::to_string(j));
+                              {
+                                temperature_models[j]->parse_entries(*this);
+                              }
+                              this->leave_subsection();
+                            }
+                        }
+                        this->leave_subsection();
+
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        std::cout << "sub_coord_i = " << sub_coord_i << ", temperature_models.size() = " << temperature_models.size() <<  std::endl;
+                        temperature_systems[contour_i].emplace_back(temperature_models);
+                      }
+
+
+                    // find the composition models for this part
+                    std::vector<std::shared_ptr<Composition::Interface> > composition_models = default_composition_models;
+                    searchback = closest_named_value_in_path("composition models");
+                    std::cout << "searchback = " << searchback << std::endl;
+                    if (searchback < path.size())
+                      {
+                        if (searchback != 0)
+                          {
+                            // copy the data from the found location to the current location
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/composition models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/composition models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("composition models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("composition models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/composition model default entry").c_str()).Set(parameters,true);
+                          }
+                        if (!this->get_shared_pointers<Features::SubductingPlateModels::Composition::Interface>("composition models", composition_models))
+                          {
+                            WBAssertThrow(false, "Found temperture models in searchback, but not when getting the shared pointer.");
+                          }
+
+                        this->enter_subsection("composition models");
+                        {
+                          for (unsigned int j = 0; j < composition_models.size(); ++j)
+                            {
+                              this->enter_subsection(std::to_string(j));
+                              {
+                                composition_models[j]->parse_entries(*this);
+                              }
+                              this->leave_subsection();
+                            }
+                        }
+                        this->leave_subsection();
+
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        std::cout << "sub_coord_i = " << sub_coord_i << std::endl;
+                        composition_systems[contour_i].emplace_back(composition_models);
+                      }
+
+
+
+
+                    // find the grains models for this part
+                    std::vector<std::shared_ptr<Grains::Interface> > grains_models = default_grains_models;
+                    searchback = closest_named_value_in_path("grains models");
+                    std::cout << "searchback = " << searchback << std::endl;
+                    if (searchback < path.size())
+                      {
+                        if (searchback != 0)
+                          {
+                            // copy the data from the found location to the current location
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/grains models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/grains models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("grains models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("grains models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/grains model default entry").c_str()).Set(parameters,true);
+                          }
+                        if (!this->get_shared_pointers<Features::SubductingPlateModels::Grains::Interface>("grains models", grains_models))
+                          {
+                            WBAssertThrow(false, "Found temperture models in searchback, but not when getting the shared pointer.");
+                          }
+
+                        this->enter_subsection("grains models");
+                        {
+                          for (unsigned int j = 0; j < grains_models.size(); ++j)
+                            {
+                              this->enter_subsection(std::to_string(j));
+                              {
+                                grains_models[j]->parse_entries(*this);
+                              }
+                              this->leave_subsection();
+                            }
+                        }
+                        this->leave_subsection();
+
+                      }
+
+                    for (size_t sub_coord_i = 0; sub_coord_i < n_coords; ++sub_coord_i)
+                      {
+                        std::cout << "sub_coord_i = " << sub_coord_i << std::endl;
+                        grains_systems[contour_i].emplace_back(grains_models);
+                      }
+
+                    /* // This is a temperature model value to look back in the path elements.
+                    if (!this->get_shared_pointers<Temperature::Interface>("temperature models", temperature_models) ||
+                        Pointer((coords_base + "/temperature model default entry").c_str()).Get(parameters) != nullptr)
+                      {
+                        temperature_models = default_temperature_models;
+
+                        // find the default value, which is the closest to the current path
+                        searchback = closest_named_value_in_path("temperature models");
+
+                        // if we can not find default value for the temperature model, skip it
+                        if (searchback < path.size())
+                          {
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/temperature models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/temperature models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("temperature models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("temperature models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/temperature model default entry").c_str()).Set(parameters,true);
+                          }
+                      }
+
+                    // now do the same for compositions
+                    std::vector<std::shared_ptr<Composition::Interface> > composition_models;
+                    if (!this->get_shared_pointers<Composition::Interface>("composition models", composition_models) ||
+                        Pointer((coords_base + "/composition model default entry").c_str()).Get(parameters) != nullptr)
+                      {
+                        composition_models = default_composition_models;
+
+
+                        // find the default value, which is the closest to the current path
+                        searchback = closest_named_value_in_path("composition models");
+
+                        // if we can not find default value for the temperature model, skip it
+                        if (searchback < path.size())
+                          {
+
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/composition models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/composition models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("temperature models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("composition models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/composition model default entry").c_str()).Set(parameters,true);
+                          }
+                      }
+
+                    // now do the same for grains
+                    std::vector<std::shared_ptr<Grains::Interface> > grains_models;
+                    if (!this->get_shared_pointers<Grains::Interface>("grains models", grains_models) ||
+                        Pointer((coords_base + "/grains model default entry").c_str()).Get(parameters) != nullptr)
+                      {
+                        grains_models = default_grains_models;
+
+
+                        // find the default value, which is the closest to the current path
+                        searchback = closest_named_value_in_path("grains models");
+
+                        // if we can not find default value for the temperature model, skip it
+                        if (searchback < path.size())
+                          {
+
+                            // copy the value, this unfortunately removes it.
+                            Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/grains models").c_str()).Get(parameters)->GetArray());
+
+                            // now copy it
+                            Value value2;
+                            value2.CopyFrom(value1, parameters.GetAllocator());
+
+                            // now we should have 2x the same value, so put it back and place it in the correct location.
+                            Pointer((this->get_full_json_path(path.size()-searchback) + "/grains models").c_str()).Set(parameters, value1);//.Get(parameters)->Set("temperature models", value1, parameters.GetAllocator());
+
+                            Pointer((coords_base).c_str()).Get(parameters)->AddMember("grains models", value2, parameters.GetAllocator());
+                            Pointer((coords_base + "/grains model default entry").c_str()).Set(parameters,true);
+                          }
+                      }*/
+                    //vector.emplace_back(length, thickness, top_trunctation, angle, temperature_models, composition_models, grains_models);
+                  }
+                  this->leave_subsection();
+                }
+            }
+            this->leave_subsection();
+          }
+          this->leave_subsection();
+        }
+
+      for (size_t contour_i = 0; contour_i < n_countours; ++contour_i)
+        {
+          for (size_t sub_contour_i = 0; sub_contour_i < points[contour_i].size(); ++sub_contour_i)
+            {
+              std::cout << "point: " << points[contour_i][sub_contour_i][0] << ":" << points[contour_i][sub_contour_i][1] << "->" << points[contour_i][sub_contour_i].get_coordinate_system() << ", thickness = " << thicknesses[contour_i][sub_contour_i] << ", top_truncation = " << top_truncations[contour_i][sub_contour_i]  << ", angle constraint = " << angle_constraints[contour_i][sub_contour_i]  << std::endl;
+            }
+          std::cout << std::endl;
+        }
+    }
+    this->leave_subsection();
+
+    // multiply by 10 for good measure.
+    if (this->coordinate_system->natural_coordinate_system() == CoordinateSystem::cartesian)
+      {
+        start_radius *= 10.0;
+      }
+
+
+    return  Objects::Contours<Features::SubductingPlateModels::Temperature::Interface,
+            Features::SubductingPlateModels::Composition::Interface,
+            Features::SubductingPlateModels::Grains::Interface> (points,depths,thicknesses,top_truncations,start_radius,angle_constraints,directions,temperature_systems,composition_systems, grains_systems);
   }
 
   template<>
@@ -1481,6 +1877,35 @@ namespace WorldBuilder
     return true;
   }
 
+
+
+  template<class T>
+  bool
+  Parameters::get_shared_pointers(const std::string &path, const std::string &name, std::vector<std::shared_ptr<T> > &vector)
+  {
+    vector.resize(0);
+    if (Pointer((path + "/" + name).c_str()).Get(parameters) != nullptr)
+      {
+        Value *array = Pointer((path  + "/" + name).c_str()).Get(parameters);
+
+        for (size_t i = 0; i < array->Size(); ++i )
+          {
+            const std::string base = (path + "/").append(name).append("/").append(std::to_string(i));
+
+            const std::string value = Pointer((base + "/model").c_str()).Get(parameters)->GetString();
+
+            vector.push_back(std::move(T::create(value, &world)));
+          }
+      }
+    else
+      {
+        return false;
+      }
+
+    return true;
+  }
+
+
   void
   Parameters::enter_subsection(const std::string &name)
   {
@@ -1574,7 +1999,7 @@ namespace WorldBuilder
         if (type == "array")
           {
             // the type is an array. Arrays always have an items, but can also
-            // have a oneOf (todo: or anyOf ...). Find out whether this is the case
+            // have a oneOf (TODO: or anyOf ...). Find out whether this is the case
             //collapse += path[i] + "/items";
             if (Pointer((base_path + "/items/oneOf").c_str()).Get(declarations) != nullptr)
               {

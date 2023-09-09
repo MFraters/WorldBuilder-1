@@ -31,7 +31,7 @@ namespace WorldBuilder
     }
 
 
-    // todo, should be possible to make this without the interface, since the Point knows the coord system.
+    // TODO, should be possible to make this without the interface, since the Point knows the coord system.
     NaturalCoordinate::NaturalCoordinate(const Point<3> &position,
                                          const CoordinateSystems::Interface &coordinate_system_)
     {

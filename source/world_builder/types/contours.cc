@@ -16,9 +16,13 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include <limits>
 #include <utility>
 
+#include "world_builder/nan.h"
+#include "world_builder/types/array.h"
 #include "world_builder/types/contours.h"
+#include "world_builder/types/point.h"
 
 
 namespace WorldBuilder
@@ -139,29 +143,76 @@ namespace WorldBuilder
               }
           }
 
-        prm.enter_subsection("properties");
+        prm.enter_subsection("items");
         {
           base = prm.get_full_json_path();
-          Pointer((base + "/length/type").c_str()).Set(declarations,"number");
+          Pointer((base + "/type").c_str()).Set(declarations,"object");
 
-          Pointer((base + "/thickness/type").c_str()).Set(declarations,"array");
-          Pointer((base + "/thickness/minItems").c_str()).Set(declarations,1);
-          Pointer((base + "/thickness/maxItems").c_str()).Set(declarations,2);
-          Pointer((base + "/thickness/items/type").c_str()).Set(declarations,"number");
+          prm.enter_subsection("properties");
+          {
+            base = prm.get_full_json_path();
+            //std::cout << "base = "  << base << std::endl;
+            Pointer((base + "/length/type").c_str()).Set(declarations,"number");
 
-          Pointer((base + "/top truncation/type").c_str()).Set(declarations,"array");
-          Pointer((base + "/top truncation/minItems").c_str()).Set(declarations,1);
-          Pointer((base + "/top truncation/maxItems").c_str()).Set(declarations,2);
-          Pointer((base + "/top truncation/items/type").c_str()).Set(declarations,"number");
+            Pointer((base + "/thickness/type").c_str()).Set(declarations,"number");
+            Pointer((base + "/thickness/default value").c_str()).Set(declarations,std::numeric_limits<double>::infinity());
 
-          Pointer((base + "/angle/type").c_str()).Set(declarations,"array");
-          Pointer((base + "/angle/minItems").c_str()).Set(declarations,1);
-          Pointer((base + "/angle/maxItems").c_str()).Set(declarations,2);
-          Pointer((base + "/angle/items/type").c_str()).Set(declarations,"number");
+            Pointer((base + "/top truncation/type").c_str()).Set(declarations,"number");
+            Pointer((base + "/top truncation/default value").c_str()).Set(declarations,0.0);
 
-          temperature_plugin_system->write_schema(prm, "temperature models", "");
-          composition_plugin_system->write_schema(prm, "composition models", "");
-          grains_plugin_system->write_schema(prm, "grains models", "");
+            Pointer((base + "/angle constraint/type").c_str()).Set(declarations,"number");
+            Pointer((base + "/angle constraint/default value").c_str()).Set(declarations,NaN::DQNAN);
+
+            temperature_plugin_system->write_schema(prm, "temperature models", "");
+            composition_plugin_system->write_schema(prm, "composition models", "");
+            grains_plugin_system->write_schema(prm, "grains models", "");
+
+            prm.enter_subsection("contour");
+            {
+              base = prm.get_full_json_path();
+              Pointer((base + "/type").c_str()).Set(declarations,"array");
+              Pointer((base + "/minItems").c_str()).Set(declarations,1);
+              Pointer((base + "/maxItems").c_str()).Set(declarations,100000);
+              Pointer((base + "/uniqueItems").c_str()).Set(declarations,false);
+              Pointer((base + "/documentation").c_str()).Set(declarations,documentation.c_str());
+
+              // set required values
+              Pointer((base + "/required/0").c_str()).Create(declarations);
+              Pointer((base + "/required/0").c_str()).Set(declarations, "coordinates");
+
+              prm.enter_subsection("items");
+              {
+                base = prm.get_full_json_path();
+                Pointer((base + "/type").c_str()).Set(declarations,"object");
+
+                prm.enter_subsection("properties");
+                {
+                  base = prm.get_full_json_path();
+                  //std::cout << "base = "  << base << std::endl;
+
+                  // write schema for coordinates (Array(Point<2>))
+                  Types::Array(Types::Point<2>()).write_schema(prm, "items", "Coordinates for the (sub) contour");
+
+                  Pointer((base + "/length/type").c_str()).Set(declarations,"number");
+
+                  Pointer((base + "/thickness/type").c_str()).Set(declarations,"number");
+
+                  Pointer((base + "/top truncation/type").c_str()).Set(declarations,"number");
+
+                  Pointer((base + "/angle constraint/type").c_str()).Set(declarations,"number");
+
+                  temperature_plugin_system->write_schema(prm, "temperature models", "");
+                  composition_plugin_system->write_schema(prm, "composition models", "");
+                  grains_plugin_system->write_schema(prm, "grains models", "");
+
+                }
+                prm.leave_subsection();
+              }
+              prm.leave_subsection();
+            }
+            prm.leave_subsection();
+          }
+          prm.leave_subsection();
         }
         prm.leave_subsection();
       }

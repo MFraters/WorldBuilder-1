@@ -67,10 +67,10 @@ namespace WorldBuilder
 
           // Declare entries of this plugin
           prm.declare_entry("min distance slab top", Types::Double(0),
-                            "todo The depth in meters from which the composition of this feature is present.");
+                            "TODO The depth in meters from which the composition of this feature is present.");
 
           prm.declare_entry("max distance slab top", Types::Double(std::numeric_limits<double>::max()),
-                            "todo The depth in meters to which the composition of this feature is present.");
+                            "TODO The depth in meters to which the composition of this feature is present.");
 
           prm.declare_entry("density", Types::Double(3300),
                             "The reference density of the subducting plate in $kg/m^3$");
@@ -173,7 +173,7 @@ namespace WorldBuilder
               // depth (execpt that you do not use average angles since they only have on angle). On recomputing
               // their result it seems to me (Menno) that it should have been `(1-z_scaled)` instead of `z_scaled`.
               // To avoid this whole problem we just use the depth directly since we have that.
-              // todo: get the local thickniss out of H, that prevents an other division.
+              // TODO: get the local thickniss out of H, that prevents an other division.
               // If we want to specify the bottom temperature, because we have defined a linear temperature increase in the
               // mantle and/or oceanic plate, we have to switch off adiabatic heating for now.
               // Todo: there may be a better way to deal with this.
@@ -192,7 +192,7 @@ namespace WorldBuilder
                          (exp((R - std::pow(R * R + i * i * Consts::PI * Consts::PI, 0.5)) * x_scaled))
                          * (sin(i * Consts::PI * z_scaled));
                 }
-              // todo: investigate whether this 273.15 should just be the surface temperature.
+              // TODO: investigate whether this 273.15 should just be the surface temperature.
               const double temperature = temp * (potential_mantle_temperature
                                                  + 2.0 * (potential_mantle_temperature - 273.15) * sum);
 

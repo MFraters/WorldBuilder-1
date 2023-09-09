@@ -61,7 +61,7 @@ namespace WorldBuilder
 
   namespace Objects
   {
-    // todo update function
+    // TODO update function
     template<class A, class B, class C>
     Segment<A,B,C>::Segment(const double default_length_,
                             const WorldBuilder::Point<2> &default_thickness_,

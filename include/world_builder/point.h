@@ -215,6 +215,7 @@ namespace WorldBuilder
       inline
       Point<dim> operator/(const double scalar) const
       {
+        WBAssert(scalar != 0.0, "Trying to divide by zero when doing a point division.");
         // initialize the array to zero.
         std::array<double,dim> array;
         const double one_over_scalar = 1/scalar;

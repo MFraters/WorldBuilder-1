@@ -936,7 +936,7 @@ TEST_CASE("WorldBuilder Coordinate Systems: Cartesian")
 
   std::unique_ptr<CoordinateSystems::Interface> cartesian(CoordinateSystems::Interface::create("cartesian",nullptr));
 
-  //todo:fix
+  //TODO:fix
   //cartesian->declare_entries();
 
   CHECK(cartesian->cartesian_to_natural_coordinates(std::array<double,3> {{1,2,3}}) == std::array<double,3> {{1,2,3}});
@@ -2792,7 +2792,7 @@ TEST_CASE("WorldBuilder Features: Fault")
   approval_tests.emplace_back(world3.composition(position, 10, 2));
   approval_tests.emplace_back(world3.composition(position, 10, 3));
   approval_tests.emplace_back(world3.composition(position, 10, 4));
-  //todo: recheck these results
+  //TODO: recheck these results
   approval_tests.emplace_back(world3.composition(position, std::sqrt(2) * 16.5e3 - 1, 0));
   approval_tests.emplace_back(world3.composition(position, std::sqrt(2) * 16.5e3 + 1, 0));
   approval_tests.emplace_back(world3.composition(position, std::sqrt(2) * 16.5e3 - 1, 1));
@@ -3426,7 +3426,7 @@ TEST_CASE("WorldBuilder Types: Coordinate System")
   CHECK(type_clone_natural->default_value == "1");
   CHECK(type_clone_natural->description == "test");
   CHECK(type_clone_natural->get_type() == Types::type::TYPE);
-  // todo: test the set value function.
+  // TODO: test the set value function.
 #undef TYPE
 }*/
 
@@ -5740,7 +5740,7 @@ TEST_CASE("WorldBuilder Utilities function: distance_point_from_curved_planes ca
 
   const std::unique_ptr<CoordinateSystems::Interface> cartesian_system = CoordinateSystems::Interface::create("cartesian", nullptr);;
 
-  //todo: fix
+  //TODO: fix
   //cartesian_system->declare_entries();
 
   Point<3> position(10,0,0,cartesian);

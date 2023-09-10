@@ -23,48 +23,36 @@ bibliography: paper.bib
 
 # Summary
 
-The geodynamic models can be divided in three broad classes. The first class are the simple synthetic models. This class which involve simplistic geometries for generic modeling and are easy to make and parameterize. These are good for simplified problems and benchmarks. The second class of models is the Data driven models. This class which consists of initial conditions (semi-)automatically derived from datasets like tomography. These are often used for instantaneous models. The third class of models are complex synthetic models. The case which blends complex 3D interpretation driven detailed geometrical features and thermal fields. This can be useful to parameterize instantaneous models or make setups for models starting in the past.  
-
-The Geodynamic World Builder (GWB) has been designed to make the third case significantly easier, but can also be used to design simple synthetic models and several types of datasets are supported to be used to setup models in a way which aligns with the GWB design philosophies.
-
-Besides setting up initial conditions for geodynamic models, the GWB can also be used to make detailed 3D visualizations of geologic and geodynamic settings.
+Geodynamic models can be broadly divided into three classes. The first class are synthetic process-oriented models, which feature simple geometries and are easy to set up and parameterize. The second class are data driven models, which derive their initial conditions (semi-)automatically from datasets like topography, or geophysical imaging like satellite images, seismic or electromagnetic tomography. The third and very common class of models are complex synthetic models. This class features complex geometrical features based on the modelers expectation of the geologic situation that are nevertheless parameterized and not data-based, because the purpose of the modeling study requires easy changes to the initial condition, for example to perform a parameter study. The Geodynamic World Builder (GWB) has been designed to simplify the creation of this third class of models, but can also be used to design simple synthetic models and several types of datasets are supported to be used to setup models in a way which aligns with the GWB design philosophies. Besides setting up initial conditions for geodynamic models, the GWB can also be used to make detailed 3D visualizations of geologic and geodynamic settings.
 
 # Statement of need
 
-The increase in available computational resources and new numerical methods and infrastructure, has started to enable the creation of numerical models which closer resemble or mimic actual location on the Earth in 3D with a much finer resolution. This also means that setting up these more detailed regional or global models, becomes exponentially more difficult, both in 2D, but especially in 3D. Furthermore, to properly investigate these models, often many smaller and bigger changes to the model need to be tested, which requires a way to change these models quickly and easily. Although successful attempts have been published, such model setups often have one or many of the following issues:
+The increased availabability of computational resources and new numerical methods and infrastructure, has enabled the creation of 3D numerical models which closer resemble or mimic actual location on the Earth with a much finer resolution. This also means that setting up these more detailed regional or global models, becomes increasingly difficult, both in 2D, but especially in 3D. Furthermore, to properly investigate these models, often many smaller and bigger changes to the model need to be tested, which requires a way to change these models quickly and easily. Although successful attempts have been published, such model setups often have one or many of the following issues:
 
-1. Code is not readable (even hard for their developers)
-2. Code/initial conditions is/are not modifiable (even hard for their developers)
-3. Code is not extendable
-4. Code is not portable or reproducible in other codes
-5. Code is not shareable which makes everyone reinvent the wheel.
+1. The configuration is not human-readable.
+2. The software is not easily modifiable and extendable.
+3. The model setup is not portable to other computing systems or reproducible in other software frameworks.
+4. The model setup is not shareable with other users.
 
-This is the problem the GWB was designed to solve. Furthermore, since the GWB comes with its own programs to visualize the constructed model through programs like Paraview, and creating the models requires no programming knowledge, it can be easily used to visualize tectonic and geodynamic settings for publication, teaching or discussion purposes. 
+These issues lead to a number of problems with the reproducibility and reliability of geodynamic modeling studies, which threaten to undermine the predictive power and usefulness of modeling results. The GWB was designed to solve this situation, by creating human readable, parameterized, portable, reproducible and shareable geodynamic model setups. As a side benefit, since the GWB comes with its own programs to visualize the constructed model through programs like Paraview, and creating the models requires no programming knowledge, it can be easily used to visualize tectonic and geodynamic settings for publications, teaching or public outreach. 
 
 # Methods
 
-The Geodynamic World Builder is designed to solve the problems stated in the pervious section through implementing a specific code an user design philosophy.
-## GWB Code Philosophy
-The code philosophy is build around the following points:
+The Geodynamic World Builder is designed to solve the problems stated in the previous section through implementing specific code and user design principles.
 
-1. A single text-based input file
-2. Code, language and platform independent
-    1. Supports **Linux**, **OSX** and **Windows**
-    2. Has official interfaces for **C++**, **C**, **FORTRAN** and **Python** coupling
-3. Safe to use in parallel codes
-4. Readable and extensible (modular) codes
-5. Strict version numbering to ensure reproducible results
+## GWB Code Principles
+GWB is build around the following principles: 1. A single, text-based, and human readable input file using a standard conforming JSON file. Following an established format like JSON allows for the use of pre-existing readers and writers in many common programming languages. 2. Software, language, and platform independent software that supports **Linux**, **OSX** and **Windows** and has official interfaces for coupling to **C++**, **C**, **FORTRAN** and **Python** software. 3. Support for parallel execution so that GWB can be easily used from laptops to modern supercomputers. 4. Readable and extensible software design through modern modular programming paradigms. 5. Strict version numbering of source and input files to ensure reproducible results.
 
-Following these points will help to create a clean, portable, extendable code with reproducible results. This is of course not everything needed to reach such results. For example, having integration and unit tests with high code coverage and automatic code indentation are important to keep the GWB in a healthy state.
+These principles are implemented in an object-oriented C++ code with the mentioned interfaces. All variable parts of the software are implemented as plugin systems using interface classes that decouple individual modules and allow to easily extend the code with new features. The code is extensively tested with unit and integration tests and continuously build and tested.
 
-## GWB User Philosophy
+## GWB Use Principles
 
-The user philosophy is build around the idea that users define tectonic features. These tectonic features can be parameterized by defining lines or areas where these features are in a map view. For example, a continental plate is an area on a map, so the user defines the area. A fault is a line on a map, so the user defines that line where the fault is. The user also provides information on the feature, such a thickness, which can be spatially variable, or dip angles. These parameters are then used to create the volume for the feature. Next users can attach one or many models to those volumes to define for example temperature or compositional variables. These can be very simple models, such as a uniform temperture distribution, or a more complex distrubution, such as a half space cooling model, or a McKenzie (ref) or mass conserving (ref) slab temperature model. 
+GWB's user philosophy is build around the idea that a complex model region can be split into individual tectonic features. These tectonic features can be parameterized by defining their areal extent or contour and their properties in a map view. For example, a continental plate can be defined as an area on a map. A fault is a line feature, so the user defines that fault line as a feature. The user also provides information on the properties of the feature, such as a fault or plate thickness, which can be spatially variable, or dip angles. These parameters are then used by the GWB world builder plugin to create the volume extent of the feature. Next users can attach one or many models to those volumes to define quantities like temperature or composition variables. These can be very simple models, such as a uniform temperature distribution, or a more complex distribution, such as a half space cooling model, or a McKenzie (ref) or mass conserving (ref) slab temperature model.
 
-All these parameterizations are set through a single input file. This file a JSON styled input file, which human read, write and editable. The main idea behind this design of the GWB so that users can easily create and modify complex parameterized initial conditions for their geodynamic or tectonic setting. 
+All these parameterizations are bundled in a single JSON styled input file, which is human readable, writeable and editable. The main idea behind this design of the GWB so that users can easily create and modify complex parameterized initial conditions for their geodynamic or tectonic setting, which has been illustrated in models as diverse as ... TODO list a number of GWB application cases with their paper here. 
 
 ## Example 
-Below we show an example input file for a cartesian model, which can be easily converted to a spherical model, such as shown in the figure below which also shows some extra capabilities.
+Below we show an example input file for a cartesian model of a subducting plate beneath an overriding ocean that specifies position, volume, temperature, and composition for both plates. This model can be easily extended to a spherical model with additional capabilities, such as shown in the example figure below, which was build using an input file of only 66 lines.
 
 ```json
 {
@@ -92,6 +80,7 @@ Below we show an example input file for a cartesian model, which can be easily c
 
 # Acknowledgements
 
+CIG, NSF projects Cascadia and FRES
 see todo
 
 # References

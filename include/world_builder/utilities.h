@@ -441,6 +441,18 @@ namespace WorldBuilder
       return glm::quaternion::mat3_cast(quat_average);
     }
 
+    std::vector<std::vector<std::vector<unsigned int> > >
+    create_contour_connectivity(const std::vector<WorldBuilder::Objects::BezierCurve> &contour_curves);
+
+
+    std::vector<std::array<std::array<Point<3>,4>,4>>
+                                                   create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
+                                                                                std::vector<double> depths,
+                                                                                std::vector<std::vector<double> > angle_contraints,
+                                                                                std::vector<std::vector<double> > thicknesses,
+                                                                                std::vector<std::vector<double> > top_truncation,
+                                                                                std::vector<std::vector<Point<2> > > directions);
+
   } // namespace Utilities
 } // namespace WorldBuilder
 

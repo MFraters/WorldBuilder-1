@@ -38,11 +38,17 @@ namespace WorldBuilder
       points = p;
       const size_t n_points = p.size();
       control_points.resize(n_points-1, {{p[0],p[0]}});
+      //std::cout << "n_points = " << n_points << std::endl;
       lengths.resize(n_points-1,NaN::DSNAN);
       angles.resize(n_points,NaN::DSNAN);
       std::vector<double> angle_constrains = angle_constrains_input;
       angle_constrains.resize(n_points,NaN::DQNAN);
 
+      //std::cout << "=====> angle contraints = ";
+      //for(size_t i =0; i < angle_constrains.size(); ++i){
+      //  std::cout << angle_constrains[i] << " ";
+      //}
+      //std::cout << std::endl;
       // if no angle is provided, compute the angle as the average angle between the previous and next point.
       // The first angle points at the second point and the last angle points at the second to last point.
       // The check points are set at a distance of 1/10th the line length from the point in the direction of the angle.
@@ -88,6 +94,13 @@ namespace WorldBuilder
           angles[n_points-1] = angle_constrains[n_points-1];
         }
 
+
+      //std::cout << "=====> angles = ";
+      //for(size_t i =0; i < angles.size(); ++i){
+      //  std::cout << angles[i] << " ";
+      //}
+      //std::cout << std::endl;
+
       if (points.size() > 2)
         {
           // next determine the location of the control points
@@ -99,7 +112,7 @@ namespace WorldBuilder
             const Point<2> &p1 = points[0];
             const Point<2> &p2 = points[1];
             const Point<2> &p3 = points[2];
-            const double length = (points[0]-points[1]).norm(); // can be squared
+            const double length = (points[0]-points[1]).norm(); // TODO: can be squared
             control_points[0][0][0] = cos(angles[0])*length*fraction_of_length+p1[0];
             control_points[0][0][1] = sin(angles[0])*length*fraction_of_length+p1[1];
             control_points[0][1][0] = cos(angles[1])*length*fraction_of_length+p2[0];
@@ -120,7 +133,7 @@ namespace WorldBuilder
             }
           }
 
-          for (size_t p_i = 1; p_i < n_points-2; ++p_i)
+          for (size_t p_i = 1; p_i < n_points-1; ++p_i)
             {
               const Point<2> &p1 = points[p_i];
               const Point<2> &p2 = points[p_i+1];
@@ -164,6 +177,16 @@ namespace WorldBuilder
                 }
             }
         }
+      else
+        {
+          control_points[0][0] = points[0];
+          control_points[0][1] = points[1];
+          //control_points[1][0] = points[0];
+          //control_points[1][1] = points[1];
+        }
+      //for(size_t p_i = 0; p_i < angles.size(); ++p_i){
+      //    std::cout << "p1 = " << points[0] << ", p2 = " << points[1] << ", p3 = " << points[2] << ", control points " << p_i << " = " << control_points[p_i][0] << ":" << control_points[p_i][1] << std::endl;
+      //}
     }
 
 
@@ -316,8 +339,8 @@ namespace WorldBuilder
               const double min_squared_distance_temp = (est_min_cp_end_0*est_min_cp_end_0)+(est_min_cp_end_1*est_min_cp_end_1);
               if (min_squared_distance_temp < min_squared_distance)
                 {
-                  //std::cout << "BC cp flag 101" << std::endl;
-                  if (est >= -1e-8 && est-1. <= 1e-8)
+                  //std::cout << "BC cp flag 101: est = " << est << std::endl;
+                  if (est >= -1e-8 && est-(control_points.size()-1) <= 1e-8)
                     {
                       //std::cout << "BC cp flag 102" << std::endl;
                       min_squared_distance = min_squared_distance_temp;
@@ -340,6 +363,7 @@ namespace WorldBuilder
                       tangent_point = Point<2>(-tangent_point[1],tangent_point[0],tangent_point.get_coordinate_system());
 
                       closest_point_on_curve.distance = sign*std::sqrt(min_squared_distance);
+                      //std::cout << "distance = " << closest_point_on_curve.distance << ", min_squared_distance = " << min_squared_distance << std::endl;
                       closest_point_on_curve.parametric_fraction = est;
                       closest_point_on_curve.interpolation_fraction = est;// TODO: improve // NaN::DSNAN; //arc_length(i,real_roots[root_i])/lengths[i];
                       closest_point_on_curve.index = cp_i;

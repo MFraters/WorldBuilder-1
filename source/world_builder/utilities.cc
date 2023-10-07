@@ -17,6 +17,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "world_builder/objects/bezier_curve.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -1216,6 +1217,219 @@ namespace WorldBuilder
 
       return data_string;
     }
+
+    std::vector<std::vector<std::vector<unsigned int> > >
+    create_contour_connectivity(const std::vector<WorldBuilder::Objects::BezierCurve> &contour_curves)
+    {
+      std::vector<std::vector<std::vector<unsigned int> > > connectivity;
+      //std::cout << "============================================= construct connectivity ========================================" << std::endl << std::endl;
+      const size_t n_curves = contour_curves.size();
+      WBAssertThrow(n_curves >= 2, "The countours object needs at least 2 conours.");
+      // first create the connectivity
+      // The connectivity is created by connecting each point with one or many points in a countour below. One poiont below can have many connections to a point above.
+      // Connect each point with the closest point on the contour below.
+      // Assumptions: Countours always get deeper and the points are ordered in the same direction.
+      //connectivity.resize(points.size()-1);
+      connectivity.resize(n_curves-1);
+      for (unsigned int contour_i = 0; contour_i < n_curves-1; contour_i++)
+        {
+          //std::cout << " ---------------- " << contour_i << "--------------------- " << std::endl;
+
+          const std::vector<Point<2> > &points_top = contour_curves[contour_i].get_points();
+          const std::vector<Point<2> > &points_bottom = contour_curves[contour_i+1].get_points();
+
+          connectivity[contour_i].resize(points_top.size());
+          // start with connecting the edge to prevent an if statement within the loop
+          connectivity[contour_i][0].emplace_back(0);
+
+          // now start connecting the rest
+          unsigned int top_entry_i = 0;
+          unsigned int bottom_entry_i = 0;
+          //std::cout << "start search for contour " << contour_i << ", contours[contour_i].second.size() = " << points_top.size() << ",  contours[contour_i+1].second.size() = " <<  (points_bottom.size())-1 << std::endl;
+          while (top_entry_i < points_top.size()-1 && bottom_entry_i < points_bottom.size()-1)
+            {
+              //std::cout << "top_entry_i: " << top_entry_i << ", bottom_entry_i: " << bottom_entry_i << std::endl;
+              // compute distances
+              // between the current top point and the next down point.
+              double distance_1 = bottom_entry_i < points_bottom.size()-1 ? points_top[top_entry_i].distance(points_bottom[bottom_entry_i+1]) : std::numeric_limits<double>::infinity();
+              double distance_2 = top_entry_i < points_top.size()-1 ? points_top[top_entry_i+1].distance(points_bottom[top_entry_i]) : std::numeric_limits<double>::infinity();
+              double distance_3 = top_entry_i < points_top.size()-1 && bottom_entry_i < points_bottom.size()-1 ? points_top[top_entry_i+1].distance(points_bottom[bottom_entry_i+1]) : std::numeric_limits<double>::infinity();
+
+              //std::cout << "top = " << points_top[top_entry_i] << ", bottom: " << points_bottom[bottom_entry_i]  << ", distance_1 = " << distance_1 << std::endl;
+              //std::cout << "d1 = " << points_top[top_entry_i] << " to " << points_bottom[bottom_entry_i+1] << std::endl;
+              //std::cout << "d2 = " << points_top[top_entry_i+1] << " to " << points_bottom[bottom_entry_i] << std::endl;
+              //std::cout << "d3 = " << points_top[top_entry_i+1] << " to " << points_bottom[bottom_entry_i+1] << std::endl;
+              if (distance_1 < distance_2 && distance_1 < distance_3)
+                {
+                  //std::cout<<"Smallest number is 1: d1 = " << distance_1 << ", d2 = " << distance_2 << ", d3 = " << distance_3 << std::endl;
+                  bottom_entry_i += 1;
+                }
+              else if (distance_2<distance_3) //compare distance_2 and num1
+                {
+                  //std::cout<<"Smallest number is 2: d1 = " << distance_1 << ", d2 = " << distance_2 << ", d3 = " << distance_3 << std::endl;
+                  top_entry_i += 1;
+                }
+              else
+                {
+                  //std::cout<<"Smallest number is 3: d1 = " << distance_1 << ", d2 = " << distance_2 << ", d3 = " << distance_3 << std::endl;
+                  top_entry_i += 1;
+                  bottom_entry_i += 1;
+                }
+
+              connectivity[contour_i][top_entry_i].emplace_back(bottom_entry_i);
+
+              //std::cout << "connectivity[" << contour_i << "][" <<top_entry_i << "] emplace back: " << bottom_entry_i << std::endl << std::endl;
+            }
+
+          //top_entry_i++;
+          // if there are any unconnected points in the top curve left, connect them to the last point in the bottom curve.
+          for (; top_entry_i < points_top.size()-1;)
+            {
+              ++top_entry_i;
+              //std::cout << "connectivity[" << contour_i << "][" <<top_entry_i << "] emplace back: " << bottom_entry_i << std::endl << std::endl;
+              connectivity[contour_i][top_entry_i].emplace_back(bottom_entry_i);
+            }
+
+          // if there are any unconnected points in the bottom curve left, connect them to the last point in the top curve.
+          for (; bottom_entry_i < points_bottom.size()-1;)
+            {
+              ++bottom_entry_i;
+              //std::cout << "connectivity[" << contour_i << "][" <<top_entry_i << "] emplace back: " << bottom_entry_i << std::endl << std::endl;
+              connectivity[contour_i][top_entry_i].emplace_back(bottom_entry_i);
+            }
+
+        }
+
+
+      /*for (size_t i = 0; i < connectivity.size(); ++i)
+        {
+          std::cout << std::endl << "i: " << i;
+          for (size_t j = 0; j < connectivity[i].size(); ++j)
+            {
+              std::cout << ", j " << j << ": [";
+              for (size_t k = 0; k < connectivity[i][j].size(); ++k)
+                {
+                  std::cout  << connectivity[i][j][k] << ", ";
+                }
+              std::cout << "]";
+            }
+          std::cout << std::endl;
+        }
+      std::cout << std::endl;*/
+
+      return connectivity;
+
+    }
+
+    std::vector<std::array<std::array<Point<3>,4>,4>>
+                                                   create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
+                                                                                std::vector<double> depths,
+                                                                                std::vector<std::vector<double> > angle_contraints,
+                                                                                std::vector<std::vector<double> > thicknesses,
+                                                                                std::vector<std::vector<double> > top_truncation,
+                                                                                std::vector<std::vector<Point<2> > > directions)
+    {
+      // Fist we create a connectivity array
+      const std::vector<std::vector<std::vector<unsigned int> > > connectivity = create_contour_connectivity(contour_curves);
+
+      std::vector<std::array<std::array<Point<3>,4>,4>> patches;
+
+      // we create patches from left to right, top to bottom
+      for (size_t depth_i = 0; depth_i < depths.size()-1; ++depth_i)
+        {
+          const std::vector<Point<2> > &points_top = contour_curves[depth_i].get_points();
+          const std::vector<std::array<Point<2>,2 > > &control_points_top = contour_curves[depth_i].get_control_points();
+          const std::vector<Point<2> > &points_bottom = contour_curves[depth_i+1].get_points();
+          const std::vector<std::array<Point<2>,2 > > &control_points_bottom = contour_curves[depth_i+1].get_control_points();
+          for (size_t point_i = 0; point_i < points_top.size(); ++point_i)
+            {
+
+              // We need the two points (or one) points in the bottom contour curve to form a patch
+              // We do this by finding the closest point below for this and the next point
+              // TODO: refactor to also allow spherical
+
+              std::array<std::array<Point<3>,4>,4> patch;
+              patch[0][0] = Point<3>(points_top[point_i][0],points_top[point_i][1],depths[depth_i],cartesian);
+              patch[0][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+              patch[0][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+              patch[0][3] = Point<3>(points_top[point_i+1][0],points_top[point_i+1][1],depths[depth_i],cartesian);
+
+              patch[3][0] = Point<3>(points_bottom[point_i][0],points_bottom[point_i][1],depths[depth_i],cartesian);
+              patch[3][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+              patch[3][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+              patch[3][3] = Point<3>(points_bottom[point_i+1][0],points_bottom[point_i+1][1],depths[depth_i],cartesian);
+
+              // compute control points for the middle two rows.
+              // left bezier curve
+              {
+                const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+                {points_top[point_i],points_bottom[point_i]},
+                {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
+                ).get_control_points();
+
+                // we need to compute depths for these constraints
+                const double left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                const double left_middle_top_depth = depths[depth_i] + left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                const double left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                const double left_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+
+                patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],left_middle_top_depth,cartesian);
+                patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],left_middle_bottom_depth,cartesian);
+              }
+              // compute right bezier curve
+              {
+                const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+                {points_top[point_i+1],points_bottom[point_i+1]},
+                {{angle_contraints[depth_i][point_i+1],angle_contraints[depth_i+1][point_i+1]}}
+                ).get_control_points();
+
+                // we need to compute depths for these constraints
+                const double right_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                const double right_middle_top_depth = depths[depth_i] + left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                const double right_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                const double right_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+
+                patch[1][3] = Point<3>(control_points[0][0][0],control_points[0][0][1],right_middle_top_depth,cartesian);
+                patch[2][3] = Point<3>(control_points[0][1][0],control_points[0][1][1],right_middle_bottom_depth,cartesian);
+              }
+              // compute middle left bezier curve
+              // for that we first need an angle constraints
+              const double top_middle_left_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+              const double top_middle_left_angle = angle_contraints[depth_i][point_i] + top_middle_left_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
+              const double top_middle_right_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+              const double top_middle_right_angle = angle_contraints[depth_i][point_i] + top_middle_right_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
+
+
+              const double bottom_middle_left_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+              const double bottom_middle_left_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_left_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
+              const double bottom_middle_right_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+              const double bottom_middle_right_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_right_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
+
+              // now we can compute the middle left and right bezier curves.
+
+              // middle left bezier curve
+              const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+              {points_top[point_i],points_bottom[point_i]},
+              {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
+              ).get_control_points();
+
+              // we need to compute depths for these constraints
+              const double middle_left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+              const double middle_left_middle_top_depth = depths[depth_i] + middle_left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+              const double middle_left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+              const double middle_left_middle_bottom_depth = depths[depth_i] + middle_left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+
+              patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],depths[depth_i],cartesian);
+              patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],depths[depth_i],cartesian);
+
+              //patches.emplace_back({{}});
+            }
+        }
+
+
+      return patches;
+    }
+
 
     template std::array<double,2> convert_point_to_array<2>(const Point<2> &point_);
     template std::array<double,3> convert_point_to_array<3>(const Point<3> &point_);

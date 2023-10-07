@@ -67,7 +67,7 @@ namespace WorldBuilder
     {}
 
     template<class A, class B, class C>
-    Contours<A,B,C>::Contours(const std::vector<std::vector<Point<2> > > &points_,
+    Contours<A,B,C>::Contours(const std::vector<std::vector<Point<2> > > &points,
                               const std::vector<double> depths_,
                               const std::vector<std::vector<double> > &thicknesses_,
                               const std::vector<std::vector<double> > &top_truncation_,
@@ -78,7 +78,6 @@ namespace WorldBuilder
                               std::vector<std::vector<std::vector<std::shared_ptr<B> > > > composition_systems_,
                               std::vector<std::vector<std::vector<std::shared_ptr<C> > > > grains_systems_)
       :
-      points(points_),
       depths(depths_),
       angle_contraints(angle_contraints_),
       thicknesses(thicknesses_),
@@ -564,7 +563,6 @@ namespace WorldBuilder
                         }
                     }
                 }
-
               distance_along_surface[curve_i][point_i] = distance_along_surface[curve_i-1][lowest_angle_point]+lowest_angle_distance;
               /*
               // find the closest points on the previous curve.
@@ -753,6 +751,30 @@ namespace WorldBuilder
         (check_point_cartesian.get_array()[0] < 153e3 && check_point_cartesian.get_array()[0] > 147e3
          && check_point_cartesian.get_array()[1] < 53e3 && check_point_cartesian.get_array()[1] > 47e3
          && check_point_cartesian.get_array()[2] < 278e3 && check_point_cartesian.get_array()[2] > 272e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 103e3 && check_point_cartesian.get_array()[0] > 97e3
+         && check_point_cartesian.get_array()[1] < 53e3 && check_point_cartesian.get_array()[1] > 47e3
+         && check_point_cartesian.get_array()[2] < 257e3 && check_point_cartesian.get_array()[2] > 252e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 78e3 && check_point_cartesian.get_array()[0] > 72e3
+         && check_point_cartesian.get_array()[1] < 53e3 && check_point_cartesian.get_array()[1] > 47e3
+         && check_point_cartesian.get_array()[2] < 207e3 && check_point_cartesian.get_array()[2] > 202e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 280e3 && check_point_cartesian.get_array()[0] > 270e3
+         && check_point_cartesian.get_array()[1] < 55e3 && check_point_cartesian.get_array()[1] > 45e3
+         && check_point_cartesian.get_array()[2] < 305e3 && check_point_cartesian.get_array()[2] > 295e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 460e3 && check_point_cartesian.get_array()[0] > 440e3
+         && check_point_cartesian.get_array()[1] < 55e3 && check_point_cartesian.get_array()[1] > 45e3
+         && check_point_cartesian.get_array()[2] < 185e3 && check_point_cartesian.get_array()[2] > 175e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 110e3 && check_point_cartesian.get_array()[0] > 90e3
+         && check_point_cartesian.get_array()[1] < 200e3 && check_point_cartesian.get_array()[1] > 180e3
+         && check_point_cartesian.get_array()[2] < 455e3 && check_point_cartesian.get_array()[2] > 445e3)
+        ||
+        (check_point_cartesian.get_array()[0] < 110e3 && check_point_cartesian.get_array()[0] > 90e3
+         && check_point_cartesian.get_array()[1] < 100e3 && check_point_cartesian.get_array()[1] > 80e3
+         && check_point_cartesian.get_array()[2] < 455e3 && check_point_cartesian.get_array()[2] > 445e3)
       )
         debug_output = true;
       const CoordinateSystem natural_coordinate_system = coordinate_system->natural_coordinate_system();
@@ -782,6 +804,8 @@ namespace WorldBuilder
                       << ", depths[curve_i+1] = " << depths[curve_i+1] << ", max_thickness_on_curve[curve_i+1] = " << max_thickness_on_curve[curve_i+1] << "(" << depths[curve_i+1]+max_thickness_on_curve[curve_i+1]  << ")" << std::endl;
           if (check_point_depth > depths[curve_i]-max_thickness_on_curve[curve_i] && check_point_depth < depths[curve_i+1]+max_thickness_on_curve[curve_i+1])
             {
+              if (debug_output)
+                std::cout << "==> flag 1" << std::endl;
               // potientially in range. Compute the distance for the point to the curve above and below.
               ClosestPointOnCurve closest_point_above = contour_curves[curve_i].closest_point_on_curve_segment(check_point_surface_2d);
               if (!(closest_point_above.distance < std::numeric_limits<double>::infinity()))
@@ -806,12 +830,29 @@ namespace WorldBuilder
                           << ", point: " << closest_point_below.point
                           << std::endl;
 
+              // since we need three points to make a curve, also add the point above the above point (curve_i-1). If curve_i == 0, add curve_i+2 instead.
+              // One of them should be garantteed to exist since three contours are required.
+              bool third_curve_above = curve_i == 0 ? false : true;
+              ClosestPointOnCurve closest_point_third = contour_curves[third_curve_above ? curve_i-1 : curve_i+2].closest_point_on_curve_segment(check_point_surface_2d);
+
+              if (debug_output)
+                std::cout << "==> closest_point_third (" << curve_i+1 << "), "
+                          << "distance: " << closest_point_third.distance
+                          << ", index: " << closest_point_third.index
+                          << ", parametric_fraction: " << closest_point_third.parametric_fraction
+                          << ", interpolation_fraction: " << closest_point_third.interpolation_fraction
+                          << ", point: " << closest_point_third.point
+                          << std::endl;
+
+              if (!(closest_point_third.distance < std::numeric_limits<double>::infinity()))
+                continue;
+
               // get angle above and below and make a bezier curve out of it
               std::vector<double> local_angle_contraints =
               {
                 // above ()
-                (contour_curves[curve_i].angles[closest_point_above.index+1]-contour_curves[curve_i].angles[closest_point_above.index]) *closest_point_above.interpolation_fraction+contour_curves[curve_i].angles[closest_point_above.index],
-                (contour_curves[curve_i+1].angles[closest_point_below.index+1]-contour_curves[curve_i+1].angles[closest_point_below.index]) *closest_point_below.interpolation_fraction+contour_curves[curve_i+1].angles[closest_point_below.index]
+                (contour_curves[curve_i].angles[closest_point_above.index+1]+contour_curves[curve_i].angles[closest_point_above.index]) *closest_point_above.interpolation_fraction+contour_curves[curve_i].angles[closest_point_above.index],
+                (contour_curves[curve_i+1].angles[closest_point_below.index+1]+contour_curves[curve_i+1].angles[closest_point_below.index]) *closest_point_below.interpolation_fraction+contour_curves[curve_i+1].angles[closest_point_below.index]
               };
 
               // get 3D location of closest point above and below
@@ -845,9 +886,39 @@ namespace WorldBuilder
               // with it should be.
               // TODO: other option is to let spline go through the point, but on the other hand that assumes that the
               // closest point to the surface is directly above it, which may not always (or even most of the time) be true.
-              const std::vector<Point<2> > local_points = {closest_point_above.point,closest_point_below.point};
+              std::vector<Point<2> > local_points = {closest_point_above.point,closest_point_below.point};
+              if (third_curve_above)
+                {
+                  local_points.emplace(local_points.begin(), closest_point_third.point);
+                  local_angle_contraints.emplace(local_angle_contraints.begin(),
+                                                 (contour_curves[curve_i-1].angles[closest_point_third.index+1]+contour_curves[curve_i-1].angles[closest_point_third.index]) *closest_point_third.interpolation_fraction+contour_curves[curve_i-1].angles[closest_point_third.index]);
+
+                  if (debug_output)
+                    std::cout << "interpl. angle "
+                              << std::endl << ", third: " << local_angle_contraints[0] << " = (" << contour_curves[curve_i-1].angles[closest_point_third.index+1] << "-" << contour_curves[curve_i-1].angles[closest_point_third.index] << ") *" << closest_point_third.interpolation_fraction << "+" << contour_curves[curve_i-1].angles[closest_point_third.index] << ")"
+                              << std::endl << ", above: " << local_angle_contraints[1] << " = (" << contour_curves[curve_i].angles[closest_point_above.index] << ":" << contour_curves[curve_i].angles[closest_point_above.index+1] << ", " << closest_point_above.interpolation_fraction << ")"
+                              << std::endl << ", below: " << local_angle_contraints[2] << " = (" << contour_curves[curve_i+1].angles[closest_point_below.index] << ":" << contour_curves[curve_i+1].angles[closest_point_below.index+1] << ", " << closest_point_below.interpolation_fraction<< ")"
+                              << std::endl << ", closest_point_above_3D_local: " << closest_point_above_3D_local << ", closest_point_below_3D_local: " << closest_point_below_3D_local
+                              << std::endl;
+
+                }
+              else
+                {
+                  local_points.emplace_back(closest_point_third.point);
+                  local_angle_contraints.emplace_back(
+                    (contour_curves[curve_i+2].angles[closest_point_third.index+1]-contour_curves[curve_i+2].angles[closest_point_third.index]) *closest_point_third.interpolation_fraction+contour_curves[curve_i+2].angles[closest_point_third.index]);
+
+                  if (debug_output)
+                    std::cout << "interpl. angle "
+                              << std::endl << ", above: " << local_angle_contraints[0] << " = (" << contour_curves[curve_i].angles[closest_point_above.index] << ":" << contour_curves[curve_i].angles[closest_point_above.index+1] << ", " << closest_point_above.interpolation_fraction << ")"
+                              << std::endl << ", below: " << local_angle_contraints[1] << " = (" << contour_curves[curve_i+1].angles[closest_point_below.index] << ":" << contour_curves[curve_i+1].angles[closest_point_below.index+1] << ", " << closest_point_below.interpolation_fraction<< ")"
+                              << std::endl << ", third: " << local_angle_contraints[2] << " = (" << contour_curves[curve_i+2].angles[closest_point_third.index+1] << "-" << contour_curves[curve_i+2].angles[closest_point_third.index] << ") *" << closest_point_third.interpolation_fraction << "+" << contour_curves[curve_i+2].angles[closest_point_third.index] << ")"
+                              << std::endl << ", closest_point_above_3D_local: " << closest_point_above_3D_local << ", closest_point_below_3D_local: " << closest_point_below_3D_local
+                              << std::endl;
+
+                }
               if (debug_output)
-                std::cout << "closest_point_above = " << closest_point_above.point << ", closest_point_below = " << closest_point_below.point << ", check_point_surface_2d = " << check_point_surface_2d << std::endl;
+                std::cout << "closest_point_above = " << closest_point_above.point << ", cp center = " << (closest_point_above.point+closest_point_below.point)/2.0 << ", closest_point_below = " << closest_point_below.point << ", check_point_surface_2d = " << check_point_surface_2d << std::endl;
               ClosestPointOnCurve closest_point_local = BezierCurve(local_points,local_angle_contraints).closest_point_on_curve_segment(check_point_surface_2d);
               if (debug_output)
                 std::cout << "==> closest_point_local "
@@ -857,18 +928,20 @@ namespace WorldBuilder
                           << ", interpolation_fraction: " << closest_point_local.interpolation_fraction
                           << ", point: " << closest_point_local.point
                           << std::endl;
-              if (closest_point_local.distance < std::numeric_limits<double>::infinity())
+              if (((closest_point_local.index > 0 && third_curve_above) || (closest_point_local.index < 1 && !third_curve_above)) && closest_point_local.distance < std::numeric_limits<double>::infinity())
                 {
                   // so now we know where the "closest point on the surface" is. Compute the distance between it and the check point.
                   //const double closest_point_on_surface_depth = depths[curve_i+1]*closest_point_local.interpolation_fraction+depths[curve_i]; // correct
-                  const double closest_point_on_surface_depth = depths[curve_i+1]*closest_point_local.parametric_fraction+depths[curve_i]; //approx
+                  const double closest_point_on_surface_depth = (depths[curve_i+1]-depths[curve_i])*closest_point_local.parametric_fraction+depths[curve_i]; //approx // TODO: use correct version instead of approximate
                   const Point<3> closest_point_on_surface = Point<3>(closest_point_local.point[0],closest_point_local.point[1],start_radius-closest_point_on_surface_depth,cartesian);
                   const double distance = (closest_point_on_surface-check_point_cartesian).norm();
                   // deterimine the sign: up is negative, down is positive (kind of represents a local depth system)
                   const double sign = closest_point_on_surface_depth > check_point_depth ? -1. : 1.;
                   const double final_distance = only_positive && sign < 0. ? std::numeric_limits<double>::infinity() : sign*distance;
                   if (debug_output)
-                    std::cout << "interpolated depth:" << closest_point_on_surface_depth << ", closest_point_on_bezier_surface: " << closest_point_on_surface << ", distance = " << distance << ", sign = " << sign << ", final_distance = " << final_distance << ", min_distance = " << min_distance << std::endl;
+                    std::cout << "interpolated depth:" << closest_point_on_surface_depth << ", closest_point_on_bezier_surface: " << closest_point_on_surface
+                              << ", distance = " << distance << ", sign = " << sign << ", final_distance = " << final_distance << ", min_distance = " << min_distance
+                              << ", start_radius = " << start_radius << ", curve_i = " << curve_i << ", depths = " << depths[curve_i] << ":" << depths[curve_i+1] << std::endl;
                   if (std::abs(final_distance) < min_distance)
                     {
                       min_distance = final_distance;

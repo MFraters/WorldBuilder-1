@@ -440,11 +440,11 @@ namespace WorldBuilder
 
           contours = prm.get_contours("contours", default_temperature_models, default_composition_models, default_grains_models);
 
-          property_nodes.resize(contours.points.size());
-          for (size_t i = 0; i < contours.points.size(); ++i)
+          property_nodes.resize(contours.thicknesses.size());
+          for (size_t i = 0; i < contours.thicknesses.size(); ++i)
             {
-              property_nodes[i].resize(contours.points[i].size());
-              for (size_t j = 0; j < contours.points[i].size(); ++j)
+              property_nodes[i].resize(contours.thicknesses[i].size());
+              for (size_t j = 0; j < contours.thicknesses[i].size(); ++j)
                 {
                   property_nodes[i][j] = ModelSystems
                   {
@@ -454,7 +454,7 @@ namespace WorldBuilder
                   };
                 }
             }
-          property_nodes.resize(contours.points.size());
+          property_nodes.resize(contours.thicknesses.size());
         }
 
     }

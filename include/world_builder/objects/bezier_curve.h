@@ -63,13 +63,50 @@ namespace WorldBuilder
         ClosestPointOnCurve closest_point_on_curve_segment(const Point<2> &p) const;
 
         /**
-         * @brief
+         * @brief // TODO
          *
          * @param i
          * @param x
          * @return Point<2>
          */
         Point<2> operator()(const size_t i, const double x) const;
+
+        /**
+         * @brief // TODO
+         *
+         */
+        inline
+        const std::vector<Point<2> > &get_points() const
+        {
+          return points;
+        }
+        /**
+         * @brief // TODO
+         *
+         */
+        inline
+        const std::vector<Point<2> > &get_points()
+        {
+          return points;
+        }
+        /**
+         * @brief // TODO
+         *
+         */
+        inline
+        const std::vector<std::array<Point<2>,2 > > &get_control_points() const
+        {
+          return control_points;
+        }
+        /**
+         * @brief // TODO
+         *
+         */
+        inline
+        const std::vector<std::array<Point<2>,2 > > &get_control_points()
+        {
+          return control_points;
+        }
 
         std::vector<double> angles;
       private:

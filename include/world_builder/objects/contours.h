@@ -39,11 +39,11 @@ namespace WorldBuilder
     {
       DistanceInterpolationData() : signed_distance_from_bezier_surface(std::numeric_limits<double>::infinity()),
         distance_along_surface(std::numeric_limits<double>::infinity()),
-        curve_above_index(NaN::DSNAN),
-        curve_above_section_index(NaN::DSNAN),
+        curve_above_index(0),
+        curve_above_section_index(0),
         curve_above_interplation_fraction(NaN::DSNAN),
-        curve_below_index(NaN::DSNAN),
-        curve_below_section_index(NaN::DSNAN),
+        curve_below_index(0),
+        curve_below_section_index(0),
         curve_below_interplation_fraction(NaN::DSNAN),
         curve_local_interpolation_fraction(NaN::DSNAN) {}
       /**
@@ -136,7 +136,6 @@ namespace WorldBuilder
          */
         std::vector<WorldBuilder::Objects::BezierCurve> contour_curves;
 
-        std::vector<std::vector<Point<2> > > points; // TODO: probably do no need to store this one.
         std::vector<double> depths;
         std::vector<std::vector<double> > angle_contraints;
         std::vector<std::vector<double> > thicknesses;

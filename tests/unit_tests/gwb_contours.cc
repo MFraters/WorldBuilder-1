@@ -17,11 +17,14 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "world_builder/coordinate_system.h"
+#include "world_builder/objects/bezier_curve.h"
 #define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 
 #include "doctest/doctest.h"
 
 #include "world_builder/objects/contours.h"
+#include "world_builder/utilities.h"
 
 using namespace WorldBuilder;
 using doctest::Approx;
@@ -120,3 +123,49 @@ TEST_CASE("Contours")
     }
 
 }*/
+
+TEST_CASE("Contours: Connectivity")
+{
+  std::vector<Objects::BezierCurve> curves =
+  {
+    Objects::BezierCurve(
+    {
+      Point<2>(1.,5.,cartesian),
+      Point<2>(3.,5.,cartesian),
+      Point<2>(4.,6.,cartesian),
+      Point<2>(5.,5.5,cartesian),
+      Point<2>(6.5,4.5,cartesian),
+      Point<2>(8.,5.5,cartesian),
+    }),
+    Objects::BezierCurve(
+    {
+      Point<2>(4.5,3.75,cartesian),
+      Point<2>(5.5,3.75,cartesian),
+    }),
+    Objects::BezierCurve(
+    {
+      Point<2>(1.,2.,cartesian),
+      Point<2>(3.,2.,cartesian),
+      Point<2>(4.5,1.,cartesian),
+      Point<2>(5.5,1.5,cartesian),
+      Point<2>(6.5,3.5,cartesian),
+      Point<2>(8,2.,cartesian),
+    }),
+  };
+  const std::vector<std::vector<std::vector<unsigned int> > > computed_connectivity = Utilities::create_contour_connectivity(curves);
+  const std::vector<std::vector<std::vector<unsigned int> > > reference_connectivity = {{{0},{0},{1},{1},{1},{1}},{{0, 1, 2},{3, 4, 5}}};
+
+  REQUIRE(computed_connectivity.size() == reference_connectivity.size());
+  for (size_t i = 0; i < computed_connectivity.size(); ++i)
+    {
+      REQUIRE(computed_connectivity[i].size() == reference_connectivity[i].size());
+      for (size_t j = 0; j < computed_connectivity[i].size(); ++j)
+        {
+          REQUIRE(computed_connectivity[i][j].size() == reference_connectivity[i][j].size());
+          for (size_t k = 0; k < computed_connectivity[i][j].size(); ++k)
+            {
+              CHECK(computed_connectivity[i][j][k] == reference_connectivity[i][j][k]);
+            }
+        }
+    }
+}

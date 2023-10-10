@@ -169,3 +169,190 @@ TEST_CASE("Contours: Connectivity")
         }
     }
 }
+
+TEST_CASE("Bezier Curve: approximate length")
+{
+  using doctest::Approx;
+  Objects::BezierCurve curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,1.0,cartesian)});
+  CHECK(1.0 == Approx(curve.approximate_length(1)));
+  CHECK(1.0 == Approx(curve.approximate_length(2)));
+  CHECK(1.0 == Approx(curve.approximate_length(3)));
+  CHECK(1.0 == Approx(curve.approximate_length(10)));
+
+
+  curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(1.0,0.0,cartesian)});
+  CHECK(1.0 == Approx(curve.approximate_length(1)));
+  CHECK(1.0 == Approx(curve.approximate_length(2)));
+  CHECK(1.0 == Approx(curve.approximate_length(3)));
+  CHECK(1.0 == Approx(curve.approximate_length(10)));
+
+  curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(1.0,1.0,cartesian)});
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(1)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(2)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(3)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(4)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(5)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(6)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(7)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(8)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(9)));
+  CHECK(std::sqrt(2) == Approx(curve.approximate_length(10)));
+
+  curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),
+                                Point<2>(0.0,1.0,cartesian),
+                                Point<2>(0.0,2.0,cartesian)
+                               });
+
+  size_t counter = 0;
+  for (auto control_point_i : curve.get_control_points())
+    {
+      counter++;
+    }
+  CHECK(2. == Approx(curve.approximate_length(1)));
+  CHECK(2. == Approx(curve.approximate_length(2)));
+  CHECK(2. == Approx(curve.approximate_length(3)));
+  CHECK(2. == Approx(curve.approximate_length(4)));
+  CHECK(2. == Approx(curve.approximate_length(5)));
+  CHECK(2. == Approx(curve.approximate_length(6)));
+  CHECK(2. == Approx(curve.approximate_length(7)));
+  CHECK(2. == Approx(curve.approximate_length(8)));
+  CHECK(2. == Approx(curve.approximate_length(9)));
+  CHECK(2. == Approx(curve.approximate_length(10)));
+
+
+  curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),
+                                Point<2>(1.0,1.0,cartesian),
+                                Point<2>(2.0,2.0,cartesian)
+                               });
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(1)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(2)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(3)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(4)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(5)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(6)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(7)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(8)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(9)));
+  CHECK(2.*std::sqrt(2) == Approx(curve.approximate_length(10)));
+
+
+  curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),
+                                Point<2>(1.0,1.0,cartesian),
+                                Point<2>(2.0,3.0,cartesian)
+                               });
+  CHECK(3.6502815399 == Approx(curve.approximate_length(1)));
+  CHECK(3.6514377005 == Approx(curve.approximate_length(2)));
+  CHECK(3.8413917324 == Approx(curve.approximate_length(10)));
+  CHECK(3.8469724468 == Approx(curve.approximate_length(100)));
+  CHECK(3.847156369 == Approx(curve.approximate_length(200)));
+  CHECK(3.847156369 == Approx(curve.approximate_length(1000)));
+  CHECK(3.847156369 == Approx(curve.approximate_length(2000)));
+  CHECK(3.847156369 == Approx(curve.approximate_length(10000)));
+  CHECK(3.847156369 == Approx(curve.approximate_length(20000)));
+}
+
+
+
+TEST_CASE("Bezier Curve: length map")
+{
+  using doctest::Approx;
+  {
+    Objects::BezierCurve curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,10.0,cartesian)});
+
+    const std::vector<std::vector<double> > parameter_to_length_map = curve.compute_parameter_to_length_map(5);
+    const double arc_length = parameter_to_length_map[parameter_to_length_map.size()-1][parameter_to_length_map[0].size()-1];
+    CHECK(10. == Approx(arc_length));
+    CHECK(parameter_to_length_map.size() == 1);
+    CHECK(parameter_to_length_map[0].size() == 6);
+    CHECK(parameter_to_length_map[0][0] == Approx(0.00)); // 0
+    CHECK(parameter_to_length_map[0][1] == Approx(1.04)); // 0.2
+    CHECK(parameter_to_length_map[0][2] == Approx(3.52)); // 0.4
+    CHECK(parameter_to_length_map[0][3] == Approx(6.48)); // 0.6
+    CHECK(parameter_to_length_map[0][4] == Approx(8.96)); // 0.8
+    CHECK(parameter_to_length_map[0][5] == Approx(10.0)); // 1.0
+
+    CHECK(curve.distance_to_t(parameter_to_length_map,-1) == Approx(-0.1));
+    CHECK(curve.distance_to_t(parameter_to_length_map,0.0) == Approx(0.0));
+    CHECK(curve.distance_to_t(parameter_to_length_map,1) == Approx(0.1923076923));
+    CHECK(curve.distance_to_t(parameter_to_length_map,1.04) == Approx(0.2));
+    CHECK(curve.distance_to_t(parameter_to_length_map,2) == Approx(0.2774193548));
+    CHECK(curve.distance_to_t(parameter_to_length_map,3.52) == Approx(0.4));
+    CHECK(curve.distance_to_t(parameter_to_length_map,4) == Approx(0.4324324324));
+    CHECK(curve.distance_to_t(parameter_to_length_map,5) == Approx(0.5));
+    CHECK(curve.distance_to_t(parameter_to_length_map,6) == Approx(0.5675675676));
+    CHECK(curve.distance_to_t(parameter_to_length_map,6.48) == Approx(0.6));
+    CHECK(curve.distance_to_t(parameter_to_length_map,8) == Approx(0.7225806452));
+    CHECK(curve.distance_to_t(parameter_to_length_map,8.96) == Approx(0.8));
+    CHECK(curve.distance_to_t(parameter_to_length_map,9) == Approx(0.8076923077));
+    CHECK(curve.distance_to_t(parameter_to_length_map,10.0) == Approx(1.0));
+    CHECK(curve.distance_to_t(parameter_to_length_map,11) == Approx(1.1));
+  }
+  {
+    Objects::BezierCurve curve = Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,10.0,cartesian),Point<2>(0.0,20.0,cartesian)});
+
+    const std::vector<std::vector<double> > parameter_to_length_map = curve.compute_parameter_to_length_map(5);
+    const double arc_length = parameter_to_length_map[parameter_to_length_map.size()-1][parameter_to_length_map[0].size()-1];
+    CHECK(20. == Approx(arc_length));
+    CHECK(parameter_to_length_map.size() == 2);
+    CHECK(parameter_to_length_map[0].size() == 6);
+    CHECK(parameter_to_length_map[0][0] == Approx(0.000)); // 0
+    CHECK(parameter_to_length_map[0][1] == Approx(1.616)); // 0.2
+    CHECK(parameter_to_length_map[0][2] == Approx(3.808)); // 0.4
+    CHECK(parameter_to_length_map[0][3] == Approx(6.192)); // 0.6
+    CHECK(parameter_to_length_map[0][4] == Approx(8.384)); // 0.8
+    CHECK(parameter_to_length_map[0][5] == Approx(10.0)); // 1.0
+    CHECK(parameter_to_length_map[1][1] == Approx(11.616)); // 1.2
+    CHECK(parameter_to_length_map[1][2] == Approx(13.808)); // 1.4
+    CHECK(parameter_to_length_map[1][3] == Approx(16.192)); // 1.6
+    CHECK(parameter_to_length_map[1][4] == Approx(18.384)); // 1.8
+    CHECK(parameter_to_length_map[1][5] == Approx(20.0)); // 2.0
+
+    CHECK(curve.distance_to_t(parameter_to_length_map,-1) == Approx(-0.05));
+    CHECK(curve.distance_to_t(parameter_to_length_map,0.0) == Approx(0.0));
+    CHECK(curve.distance_to_t(parameter_to_length_map,1) == Approx(0.1237623762));
+    CHECK(curve.distance_to_t(parameter_to_length_map,1.616) == Approx(0.2));
+    CHECK(curve.distance_to_t(parameter_to_length_map,2) == Approx(0.2350364964));
+    CHECK(curve.distance_to_t(parameter_to_length_map,3.808) == Approx(0.4));
+    CHECK(curve.distance_to_t(parameter_to_length_map,4) == Approx(0.4161073826));
+    CHECK(curve.distance_to_t(parameter_to_length_map,5) == Approx(0.5));
+    CHECK(curve.distance_to_t(parameter_to_length_map,6) == Approx(0.5838926174));
+    CHECK(curve.distance_to_t(parameter_to_length_map,6.192) == Approx(0.6));
+    CHECK(curve.distance_to_t(parameter_to_length_map,8) == Approx(0.7649635036));
+    CHECK(curve.distance_to_t(parameter_to_length_map,8.384) == Approx(0.8));
+    CHECK(curve.distance_to_t(parameter_to_length_map,9) == Approx(0.8762376238));
+    CHECK(curve.distance_to_t(parameter_to_length_map,10.0) == Approx(1.0));
+
+    CHECK(curve.distance_to_t(parameter_to_length_map,11) == Approx(1.1893939394));
+    CHECK(curve.distance_to_t(parameter_to_length_map,11.616) == Approx(1.2));
+    CHECK(curve.distance_to_t(parameter_to_length_map,12) == Approx(1.2350364964));
+    CHECK(curve.distance_to_t(parameter_to_length_map,13.808) == Approx(1.4));
+    CHECK(curve.distance_to_t(parameter_to_length_map,14) == Approx(1.4161073826));
+    CHECK(curve.distance_to_t(parameter_to_length_map,15) == Approx(1.5));
+    CHECK(curve.distance_to_t(parameter_to_length_map,16) == Approx(1.5838926174));
+    CHECK(curve.distance_to_t(parameter_to_length_map,16.192) == Approx(1.6));
+    CHECK(curve.distance_to_t(parameter_to_length_map,18) == Approx(1.7649635036));
+    CHECK(curve.distance_to_t(parameter_to_length_map,18.384) == Approx(1.8));
+    CHECK(curve.distance_to_t(parameter_to_length_map,19) == Approx(1.8762376238));
+    CHECK(curve.distance_to_t(parameter_to_length_map,20.0) == Approx(2.0));
+    CHECK(curve.distance_to_t(parameter_to_length_map,21) == Approx(2.05));
+  }
+}
+
+
+
+TEST_CASE("Bezier Curve: create_patches_from_contours")
+{
+  using doctest::Approx;
+  {
+    std::vector<Objects::BezierCurve> curves = 
+    {
+      Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,10.0,cartesian)}),
+    Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,0.5,cartesian),Point<2>(0.0,20.0,cartesian)})
+    };
+    std::vector<double> depths = {0,10};
+
+    Utilities::create_patches_from_contours(curves, depths,{},{},{},{});
+    
+  }
+
+}

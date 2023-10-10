@@ -17,7 +17,9 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "world_builder/assert.h"
 #include "world_builder/objects/bezier_curve.h"
+#include "world_builder/point.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -1324,11 +1326,49 @@ namespace WorldBuilder
     std::vector<std::array<std::array<Point<3>,4>,4>>
                                                    create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
                                                                                 std::vector<double> depths,
-                                                                                std::vector<std::vector<double> > angle_contraints,
+                                                                                std::vector<std::vector<double> > downward_angle_contraints,
                                                                                 std::vector<std::vector<double> > thicknesses,
                                                                                 std::vector<std::vector<double> > top_truncation,
                                                                                 std::vector<std::vector<Point<2> > > directions)
     {
+      // find the contour which has the most points
+      // also compute the length of each curve
+      double contour_most_points = 0;
+      for (const Objects::BezierCurve &contour_i : contour_curves)
+        {
+          if (contour_i.get_points().size()>contour_most_points)
+            {
+              contour_most_points = contour_i.get_points().size();
+            }         
+        }
+        WBAssertThrow(contour_most_points > 0, "Contours do not have enough points.");
+
+      // create new contours with this many points, distributed more or less evenly
+      std::vector<WorldBuilder::Objects::BezierCurve> evenly_distributed_contour_curves;
+      std::vector<std::vector<double> > evenly_distributed_angle_contraints;
+      for (size_t contour_i = 0; contour_i < contour_curves.size(); ++contour_i)
+        {
+          // compute the length and create t to length map
+          const std::vector<std::vector<double> > parameter_to_length_map = contour_curves[contour_i].compute_parameter_to_length_map(5);
+          const double arc_length = parameter_to_length_map[parameter_to_length_map.size()-1][parameter_to_length_map[0].size()-1];
+
+          // create new contours
+          std::vector<Point<2>> contour_points;
+          contour_points.reserve(contour_most_points);
+          std::vector<double> contour_angles;
+          contour_angles.reserve(contour_most_points);
+          const double segment_length = arc_length/(contour_most_points-1);
+          for(size_t point_i = 0; point_i < contour_most_points; ++point_i){
+            const double distance = segment_length*point_i;
+            const double parameter_t = contour_curves[contour_i].distance_to_t(parameter_to_length_map, distance);
+            //std::cout << "distance = " << distance << ", parameter_t = " << parameter_t << std::endl;
+            //auto point = contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t);
+            //std::cout << "point = " << point << ", contour_most_points = " << contour_most_points << ",segment_length = " << segment_length << std::endl;
+            contour_points.emplace_back(contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t));
+            contour_angles.emplace_back(std::isfinite(downward_angle_contraints[contour_i][(size_t)parameter_t]) && std::isfinite(downward_angle_contraints[contour_i][(size_t)parameter_t+1]) ? downward_angle_contraints[contour_i][(size_t)parameter_t] : downward_angle_contraints[contour_i][(size_t)parameter_t]);
+          }
+          evenly_distributed_contour_curves.emplace_back(Objects::BezierCurve(contour_points));
+        }
       // Fist we create a connectivity array
       const std::vector<std::vector<std::vector<unsigned int> > > connectivity = create_contour_connectivity(contour_curves);
 
@@ -1348,16 +1388,16 @@ namespace WorldBuilder
               // We do this by finding the closest point below for this and the next point
               // TODO: refactor to also allow spherical
 
-              std::array<std::array<Point<3>,4>,4> patch;
-              patch[0][0] = Point<3>(points_top[point_i][0],points_top[point_i][1],depths[depth_i],cartesian);
-              patch[0][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
-              patch[0][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
-              patch[0][3] = Point<3>(points_top[point_i+1][0],points_top[point_i+1][1],depths[depth_i],cartesian);
-
-              patch[3][0] = Point<3>(points_bottom[point_i][0],points_bottom[point_i][1],depths[depth_i],cartesian);
-              patch[3][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
-              patch[3][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
-              patch[3][3] = Point<3>(points_bottom[point_i+1][0],points_bottom[point_i+1][1],depths[depth_i],cartesian);
+              //std::array<std::array<Point<3>,4>,4> patch;
+              //patch[0][0] = Point<3>(points_top[point_i][0],points_top[point_i][1],depths[depth_i],cartesian);
+              //patch[0][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+              //patch[0][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+              //patch[0][3] = Point<3>(points_top[point_i+1][0],points_top[point_i+1][1],depths[depth_i],cartesian);
+//
+              //patch[3][0] = Point<3>(points_bottom[point_i][0],points_bottom[point_i][1],depths[depth_i],cartesian);
+              //patch[3][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+              //patch[3][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+              //patch[3][3] = Point<3>(points_bottom[point_i+1][0],points_bottom[point_i+1][1],depths[depth_i],cartesian);
 
               // compute control points for the middle two rows.
               // left bezier curve
@@ -1373,8 +1413,8 @@ namespace WorldBuilder
                 const double left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
                 const double left_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
 
-                patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],left_middle_top_depth,cartesian);
-                patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],left_middle_bottom_depth,cartesian);
+                //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],left_middle_top_depth,cartesian);
+                //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],left_middle_bottom_depth,cartesian);
               }
               // compute right bezier curve
               {
@@ -1385,12 +1425,12 @@ namespace WorldBuilder
 
                 // we need to compute depths for these constraints
                 const double right_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-                const double right_middle_top_depth = depths[depth_i] + left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                const double right_middle_top_depth = depths[depth_i] + right_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
                 const double right_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-                const double right_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+                const double right_middle_bottom_depth = depths[depth_i] + right_middle_bottom_fraction*(depths[depth_i+1]-depths[depth_i]);
 
-                patch[1][3] = Point<3>(control_points[0][0][0],control_points[0][0][1],right_middle_top_depth,cartesian);
-                patch[2][3] = Point<3>(control_points[0][1][0],control_points[0][1][1],right_middle_bottom_depth,cartesian);
+                //patch[1][3] = Point<3>(control_points[0][0][0],control_points[0][0][1],right_middle_top_depth,cartesian);
+                //patch[2][3] = Point<3>(control_points[0][1][0],control_points[0][1][1],right_middle_bottom_depth,cartesian);
               }
               // compute middle left bezier curve
               // for that we first need an angle constraints
@@ -1419,8 +1459,8 @@ namespace WorldBuilder
               const double middle_left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
               const double middle_left_middle_bottom_depth = depths[depth_i] + middle_left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
 
-              patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],depths[depth_i],cartesian);
-              patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],depths[depth_i],cartesian);
+              //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],depths[depth_i],cartesian);
+              //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],depths[depth_i],cartesian);
 
               //patches.emplace_back({{}});
             }

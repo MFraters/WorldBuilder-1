@@ -124,7 +124,7 @@ namespace WorldBuilder
               const bool side_of_line_2 =  (p1[0] - p2[0]) * (p3[1] - p1[1])
                                            - (p1[1] - p2[1]) * (p3[0] - p1[0])
                                            < 0;
-              if (side_of_line_1 == side_of_line_2)
+              if (side_of_line_1 != side_of_line_2)
                 {
                   // use a 180 degree rotated angle to create this control_point
                   control_points[0][1][0] = cos(angles[1]+Consts::PI)*length*fraction_of_length+p2[0];
@@ -193,9 +193,12 @@ namespace WorldBuilder
     Point<2>
     BezierCurve::operator()(const size_t i, const double t) const
     {
-      WBAssert(i < points.size()-1 && i < control_points.size() ,
+      WBAssert(i < points.size() && i < control_points.size()+1 ,
                "Trying to access index " << i << ", but points.size() = " << points.size() << ", and control_points = " << control_points.size() << ".");
-      return (1-t)*(1-t)*(1-t)*points[i] + 3*(1-t)*(1-t)*t*control_points[i][0] + 3.*(1-t)*t*t*control_points[i][1]+t*t*t*points[i+1];
+      return i < points.size()-1 && i < control_points.size() ? 
+      (1-t)*(1-t)*(1-t)*points[i] + 3*(1-t)*(1-t)*t*control_points[i][0] + 3.*(1-t)*t*t*control_points[i][1]+t*t*t*points[i+1]
+      :
+      points[i];
     }
 
 

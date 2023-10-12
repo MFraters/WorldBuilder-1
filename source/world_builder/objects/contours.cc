@@ -72,14 +72,14 @@ namespace WorldBuilder
                               const std::vector<std::vector<double> > &thicknesses_,
                               const std::vector<std::vector<double> > &top_truncation_,
                               const double start_radius_, // Todo: check if can be removed
-                              const std::vector<std::vector<double> > &angle_contraints_,
+                              const std::vector<std::vector<double> > &vertical_angle_contraints_,
                               const std::vector<std::vector<Point<2> > > &directions_,
                               std::vector<std::vector<std::vector<std::shared_ptr<A> > > > temperature_systems_,
                               std::vector<std::vector<std::vector<std::shared_ptr<B> > > > composition_systems_,
                               std::vector<std::vector<std::vector<std::shared_ptr<C> > > > grains_systems_)
       :
       depths(depths_),
-      angle_contraints(angle_contraints_),
+      vertical_angle_contraints(vertical_angle_contraints_),
       thicknesses(thicknesses_),
       top_truncation(top_truncation_),
       directions(directions_),
@@ -97,16 +97,16 @@ namespace WorldBuilder
         }
 
       // if angle contrainst is empty fill it with the right amount of entries and set the values to signaling nan.
-      if (angle_contraints.size() == 0)
+      if (vertical_angle_contraints.size() == 0)
         {
-          angle_contraints = angle_contraints_horizontal;
+          vertical_angle_contraints = angle_contraints_horizontal;
         }
 
-      WBAssertThrow(angle_contraints.size() == points.size(),
-                    "Error: incorrect number of curves in angle contstrains: " << angle_contraints.size() << ". Expected: " << points.size());
-      for (size_t curve_i = 0; curve_i < angle_contraints.size(); ++curve_i)
-        WBAssertThrow(angle_contraints[curve_i].size() == points[curve_i].size(),
-                      "Error: incorrect number of points in curve " << curve_i << " in angle contstrains: " << angle_contraints[curve_i].size()
+      WBAssertThrow(vertical_angle_contraints.size() == points.size(),
+                    "Error: incorrect number of curves in angle contstrains: " << vertical_angle_contraints.size() << ". Expected: " << points.size());
+      for (size_t curve_i = 0; curve_i < vertical_angle_contraints.size(); ++curve_i)
+        WBAssertThrow(vertical_angle_contraints[curve_i].size() == points[curve_i].size(),
+                      "Error: incorrect number of points in curve " << curve_i << " in angle contstrains: " << vertical_angle_contraints[curve_i].size()
                       << ". Expected: " << points[curve_i].size());
 
       for (size_t curve_i = 0; curve_i < n_curves; ++curve_i)

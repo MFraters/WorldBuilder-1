@@ -21,6 +21,7 @@
 #include "world_builder/objects/bezier_curve.h"
 #include "world_builder/point.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -1323,14 +1324,16 @@ namespace WorldBuilder
 
     }
 
-    std::vector<std::array<std::array<Point<3>,4>,4>>
-                                                   create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
-                                                                                std::vector<double> depths,
-                                                                                std::vector<std::vector<double> > downward_angle_contraints,
-                                                                                std::vector<std::vector<double> > thicknesses,
-                                                                                std::vector<std::vector<double> > top_truncation,
-                                                                                std::vector<std::vector<Point<2> > > directions)
+    std::vector<std::vector<std::array<std::array<Point<3>,4>,4>>>
+    create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
+                                 std::vector<double> depths,
+                                 std::vector<std::vector<double> > downward_angle_contraints,
+                                 std::vector<std::vector<double> > thicknesses,
+                                 std::vector<std::vector<double> > top_truncation,
+                                 std::vector<std::vector<Point<2> > > directions)
     {
+      const double degree_to_rad = Consts::PI/180.0;
+
       // find the contour which has the most points
       // also compute the length of each curve
       double contour_most_points = 0;
@@ -1339,9 +1342,9 @@ namespace WorldBuilder
           if (contour_i.get_points().size()>contour_most_points)
             {
               contour_most_points = contour_i.get_points().size();
-            }         
+            }
         }
-        WBAssertThrow(contour_most_points > 0, "Contours do not have enough points.");
+      WBAssertThrow(contour_most_points > 0, "Contours do not have enough points.");
 
       // create new contours with this many points, distributed more or less evenly
       std::vector<WorldBuilder::Objects::BezierCurve> evenly_distributed_contour_curves;
@@ -1358,113 +1361,278 @@ namespace WorldBuilder
           std::vector<double> contour_angles;
           contour_angles.reserve(contour_most_points);
           const double segment_length = arc_length/(contour_most_points-1);
-          for(size_t point_i = 0; point_i < contour_most_points; ++point_i){
-            const double distance = segment_length*point_i;
-            const double parameter_t = contour_curves[contour_i].distance_to_t(parameter_to_length_map, distance);
-            //std::cout << "distance = " << distance << ", parameter_t = " << parameter_t << std::endl;
-            //auto point = contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t);
-            //std::cout << "point = " << point << ", contour_most_points = " << contour_most_points << ",segment_length = " << segment_length << std::endl;
-            contour_points.emplace_back(contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t));
-            contour_angles.emplace_back(std::isfinite(downward_angle_contraints[contour_i][(size_t)parameter_t]) && std::isfinite(downward_angle_contraints[contour_i][(size_t)parameter_t+1]) ? downward_angle_contraints[contour_i][(size_t)parameter_t] : downward_angle_contraints[contour_i][(size_t)parameter_t]);
-          }
-          evenly_distributed_contour_curves.emplace_back(Objects::BezierCurve(contour_points));
-        }
-      // Fist we create a connectivity array
-      const std::vector<std::vector<std::vector<unsigned int> > > connectivity = create_contour_connectivity(contour_curves);
-
-      std::vector<std::array<std::array<Point<3>,4>,4>> patches;
-
-      // we create patches from left to right, top to bottom
-      for (size_t depth_i = 0; depth_i < depths.size()-1; ++depth_i)
-        {
-          const std::vector<Point<2> > &points_top = contour_curves[depth_i].get_points();
-          const std::vector<std::array<Point<2>,2 > > &control_points_top = contour_curves[depth_i].get_control_points();
-          const std::vector<Point<2> > &points_bottom = contour_curves[depth_i+1].get_points();
-          const std::vector<std::array<Point<2>,2 > > &control_points_bottom = contour_curves[depth_i+1].get_control_points();
-          for (size_t point_i = 0; point_i < points_top.size(); ++point_i)
+          for (size_t point_i = 0; point_i < contour_most_points; ++point_i)
             {
+              const double distance = segment_length*point_i;
+              const double parameter_t = contour_curves[contour_i].distance_to_t(parameter_to_length_map, distance);
+              //std::cout << "distance = " << distance << ", parameter_t = " << parameter_t << std::endl;
+              //auto point = contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t);
+              //std::cout << "point = " << point << ", contour_most_points = " << contour_most_points << ",segment_length = " << segment_length << std::endl;
+              contour_points.emplace_back(contour_curves[contour_i](parameter_t,parameter_t-(size_t)parameter_t));
+              contour_angles.emplace_back(downward_angle_contraints[contour_i][(size_t)parameter_t] + (parameter_t-(size_t)parameter_t) * (downward_angle_contraints[contour_i][(size_t)parameter_t+1]-downward_angle_contraints[contour_i][(size_t)parameter_t]));
+              std::cout << "contour_points = " << contour_points[contour_points.size()-1] << ", contour_angles = " << contour_angles[contour_points.size()-1] << std::endl;
+            }
+          evenly_distributed_contour_curves.emplace_back(Objects::BezierCurve(contour_points));
+          evenly_distributed_angle_contraints.emplace_back(contour_angles);
+        }
 
-              // We need the two points (or one) points in the bottom contour curve to form a patch
-              // We do this by finding the closest point below for this and the next point
-              // TODO: refactor to also allow spherical
-
-              //std::array<std::array<Point<3>,4>,4> patch;
-              //patch[0][0] = Point<3>(points_top[point_i][0],points_top[point_i][1],depths[depth_i],cartesian);
-              //patch[0][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
-              //patch[0][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
-              //patch[0][3] = Point<3>(points_top[point_i+1][0],points_top[point_i+1][1],depths[depth_i],cartesian);
-//
-              //patch[3][0] = Point<3>(points_bottom[point_i][0],points_bottom[point_i][1],depths[depth_i],cartesian);
-              //patch[3][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
-              //patch[3][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
-              //patch[3][3] = Point<3>(points_bottom[point_i+1][0],points_bottom[point_i+1][1],depths[depth_i],cartesian);
-
-              // compute control points for the middle two rows.
-              // left bezier curve
+      // find the vector pointing to next point down
+      std::vector<std::vector<std::array<std::array<Point<3>,4>,4>>> patches(evenly_distributed_contour_curves.size()-1);
+      for (size_t contour_i = 0; contour_i < evenly_distributed_contour_curves.size()-1; ++contour_i)
+        {
+          patches[contour_i].resize(contour_most_points-1);
+          for (size_t point_i = 0; point_i < contour_most_points-1; ++point_i)
+            {
+              std::cout << "------------------------------" << point_i << "---------------------------------" << std::endl;
+              std::array<Point<2>, 4> top_points =
               {
-                const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
-                {points_top[point_i],points_bottom[point_i]},
-                {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
-                ).get_control_points();
+                {
+                  evenly_distributed_contour_curves[contour_i].get_points()[point_i],
+                  evenly_distributed_contour_curves[contour_i].get_control_points()[point_i][0],
+                  evenly_distributed_contour_curves[contour_i].get_control_points()[point_i][1],
+                  evenly_distributed_contour_curves[contour_i].get_points()[point_i+1]
+                }
+              };
 
-                // we need to compute depths for these constraints
-                const double left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-                const double left_middle_top_depth = depths[depth_i] + left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
-                const double left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-                const double left_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
-
-                //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],left_middle_top_depth,cartesian);
-                //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],left_middle_bottom_depth,cartesian);
-              }
-              // compute right bezier curve
+              std::array<double,4> top_angles =
               {
-                const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
-                {points_top[point_i+1],points_bottom[point_i+1]},
-                {{angle_contraints[depth_i][point_i+1],angle_contraints[depth_i+1][point_i+1]}}
-                ).get_control_points();
+                {
+                  evenly_distributed_angle_contraints[contour_i][point_i],
+                  evenly_distributed_angle_contraints[contour_i][point_i]+1./3.*(evenly_distributed_angle_contraints[contour_i][point_i+1]-evenly_distributed_angle_contraints[contour_i][point_i]),
+                  evenly_distributed_angle_contraints[contour_i][point_i]+2./3.*(evenly_distributed_angle_contraints[contour_i][point_i+1]-evenly_distributed_angle_contraints[contour_i][point_i]),
+                  evenly_distributed_angle_contraints[contour_i][point_i+1]
+                }
+              };
 
-                // we need to compute depths for these constraints
-                const double right_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-                const double right_middle_top_depth = depths[depth_i] + right_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
-                const double right_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-                const double right_middle_bottom_depth = depths[depth_i] + right_middle_bottom_fraction*(depths[depth_i+1]-depths[depth_i]);
+              std::cout << "top angle 2 = " << evenly_distributed_angle_contraints[contour_i][point_i]+1./3.*(evenly_distributed_angle_contraints[contour_i][point_i+1]-evenly_distributed_angle_contraints[contour_i][point_i])
+                        << ", 1:" << evenly_distributed_angle_contraints[contour_i][point_i] << "+ 1/3.*(" << evenly_distributed_angle_contraints[contour_i][point_i+1] << "-" << evenly_distributed_angle_contraints[contour_i][point_i] << ")" << std::endl;
 
-                //patch[1][3] = Point<3>(control_points[0][0][0],control_points[0][0][1],right_middle_top_depth,cartesian);
-                //patch[2][3] = Point<3>(control_points[0][1][0],control_points[0][1][1],right_middle_bottom_depth,cartesian);
-              }
-              // compute middle left bezier curve
-              // for that we first need an angle constraints
-              const double top_middle_left_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-              const double top_middle_left_angle = angle_contraints[depth_i][point_i] + top_middle_left_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
-              const double top_middle_right_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-              const double top_middle_right_angle = angle_contraints[depth_i][point_i] + top_middle_right_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
+              std::cout << "top angle 3 = " << evenly_distributed_angle_contraints[contour_i][point_i]+2./3.*(evenly_distributed_angle_contraints[contour_i][point_i+1]-evenly_distributed_angle_contraints[contour_i][point_i])
+                        << ", 1:" << evenly_distributed_angle_contraints[contour_i][point_i] << "+ 1/3.*(" << evenly_distributed_angle_contraints[contour_i][point_i+1] << "-" << evenly_distributed_angle_contraints[contour_i][point_i] << ")" << std::endl;
+
+              std::array<Point<2>, 4> bottom_points =
+              {
+                {
+                  evenly_distributed_contour_curves[contour_i+1].get_points()[point_i],
+                  evenly_distributed_contour_curves[contour_i+1].get_control_points()[point_i][0],
+                  evenly_distributed_contour_curves[contour_i+1].get_control_points()[point_i][1],
+                  evenly_distributed_contour_curves[contour_i+1].get_points()[point_i+1]
+                }
+              };
+
+              std::array<double,4> bottom_angles =
+              {
+                {
+                  evenly_distributed_angle_contraints[contour_i+1][point_i],
+                  evenly_distributed_angle_contraints[contour_i+1][point_i]+1./3.*(evenly_distributed_angle_contraints[contour_i+1][point_i+1]-evenly_distributed_angle_contraints[contour_i+1][point_i]),
+                  evenly_distributed_angle_contraints[contour_i+1][point_i]+2./3.*(evenly_distributed_angle_contraints[contour_i+1][point_i+1]-evenly_distributed_angle_contraints[contour_i+1][point_i]),
+                  evenly_distributed_angle_contraints[contour_i+1][point_i+1]
+                }
+              };
+
+              std::cout << "bottom angle 2 = " << evenly_distributed_angle_contraints[contour_i+1][point_i]+1./3.*(evenly_distributed_angle_contraints[contour_i+1][point_i+1]-evenly_distributed_angle_contraints[contour_i+1][point_i])
+                        << ", 1:" << evenly_distributed_angle_contraints[contour_i+1][point_i] << "+ 1/3.*(" << evenly_distributed_angle_contraints[contour_i+1][point_i+1] << "-" << evenly_distributed_angle_contraints[contour_i+1][point_i] << ")" << std::endl;
+
+              std::cout << "bottom angle 3 = " << evenly_distributed_angle_contraints[contour_i+1][point_i]+2./3.*(evenly_distributed_angle_contraints[contour_i+1][point_i+1]-evenly_distributed_angle_contraints[contour_i+1][point_i])
+                        << ", 1:" << evenly_distributed_angle_contraints[contour_i+1][point_i] << "+ 1/3.*(" << evenly_distributed_angle_contraints[contour_i+1][point_i+1] << "-" << evenly_distributed_angle_contraints[contour_i+1][point_i] << ")" << std::endl;
 
 
-              const double bottom_middle_left_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-              const double bottom_middle_left_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_left_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
-              const double bottom_middle_right_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-              const double bottom_middle_right_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_right_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
+              for (size_t i = 0; i < 4; ++i)
+                {
+                  // one downard strip of patch
+                  const Point<3> up_point = Point<3>(top_points[i][0],top_points[i][1],depths[contour_i],cartesian);
+                  const Point<3> down_point = Point<3>(bottom_points[i][0],bottom_points[i][1],depths[contour_i+1],cartesian);
 
-              // now we can compute the middle left and right bezier curves.
+                  patches[contour_i][point_i][0][i] = up_point;
+                  patches[contour_i][point_i][3][i] = down_point;
 
-              // middle left bezier curve
-              const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
-              {points_top[point_i],points_bottom[point_i]},
-              {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
-              ).get_control_points();
+                  const double simple_3d_length = (down_point-up_point).norm();
 
-              // we need to compute depths for these constraints
-              const double middle_left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
-              const double middle_left_middle_top_depth = depths[depth_i] + middle_left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
-              const double middle_left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
-              const double middle_left_middle_bottom_depth = depths[depth_i] + middle_left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+                  {
+                    // compute the upper control point
 
-              //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],depths[depth_i],cartesian);
-              //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],depths[depth_i],cartesian);
+                    std::cout << "===================a=======================\nflag 1: i="<< i << ", down_point_2d-up_point_2d = "
+                              << bottom_points[i]-top_points[i] << ", bottom_points[i] = " << bottom_points[i] << ", top_points[i] = " << top_points[i]
+                              << ", angle = " << top_angles[i] << std::endl;
+                    // TODO: This next_point_2d vector should probably be replaced with the normal to the curve at this point.
+                    const Point<2> next_point_2d = (bottom_points[i]-top_points[i])/(bottom_points[i]-top_points[i]).norm();
+                    const Point<3> first_control_point_3d_unrotated = Point<3>(next_point_2d[0]*simple_3d_length*0.1,next_point_2d[1]*simple_3d_length*0.1,0,cartesian);
+                    // the vector_first_control_point_3d is the control piont for 0 degree dip.
+                    // Now rotate with the needed angle.
+                    // TODO: implement spherical by changing the depth in spherical coordinates and then
+                    // convert to cartesian and subtract the point by the point which has a changed depth.
+                    Point<3> y_axis = Point<3>(0,0,1,cartesian);
+                    Point<3> x_axis = first_control_point_3d_unrotated/first_control_point_3d_unrotated.norm();
+                    const double angle = top_angles[i]*degree_to_rad;
 
-              //patches.emplace_back({{}});
+                    // compute location of point in 2D plane
+                    const Point<2> first_control_point_2d_origin(x_axis * first_control_point_3d_unrotated,
+                                                                 y_axis * first_control_point_3d_unrotated,
+                                                                 cartesian);
+                    // rotate 2D point with the provided angle.
+                    const Point<2> first_control_point_2d_origin_rotated = Point<2>(
+                                                                             first_control_point_2d_origin[0]*cos(angle)-first_control_point_2d_origin[1]*sin(angle),
+                                                                             first_control_point_2d_origin[0]*sin(angle)-first_control_point_2d_origin[1]*cos(angle),
+                                                                             cartesian);
+                    // now move it back to 3d
+                    const Point<3> first_control_point_3d = up_point + x_axis*first_control_point_2d_origin_rotated[0] + y_axis*first_control_point_2d_origin_rotated[1];
+
+
+                    std::cout << "control_point_3d_unrotated = " << first_control_point_3d_unrotated
+                              << ", control_point_2d_origin = " << first_control_point_2d_origin
+                              <<  ", control_point_2d_origin_rotated = " << first_control_point_2d_origin_rotated
+                              << ", control_point_3d = " << first_control_point_3d
+                              << ", x:y axis = " << x_axis << ":" << y_axis << std::endl;
+                    patches[contour_i][point_i][1][i] = first_control_point_3d;
+                  }
+
+                  {
+                    // compute the bottom control point
+
+                    std::cout << "====================b======================\nflag 1: up_point_2d-down_point_2d = " << top_points[i]-bottom_points[i]
+                              << ", bottom_points[i] = " << bottom_points[i] << ", top_points[i] = " << top_points[i]
+                              << ", angle = " << bottom_angles[i] << std::endl;
+                    // TODO: This next_point_2d vector should probably be replaced with the normal to the curve at this point.
+                    const Point<2> next_point_2d = (top_points[i]-bottom_points[i])/(top_points[i]-bottom_points[i]).norm();
+                    const Point<3> second_control_point_3d_unrotated = Point<3>(next_point_2d[0]*simple_3d_length*0.1,next_point_2d[1]*simple_3d_length*0.1,0,cartesian);
+                    // the vector_first_control_point_3d is the control piont for 0 degree dip.
+                    // Now rotate with the needed angle.
+                    // TODO: implement spherical by changing the depth in spherical coordinates and then
+                    // convert to cartesian and subtract the point by the point which has a changed depth.
+                    Point<3> y_axis = Point<3>(0,0,1,cartesian);
+                    Point<3> x_axis = second_control_point_3d_unrotated/second_control_point_3d_unrotated.norm();
+                    const double angle = -bottom_angles[i]*degree_to_rad;
+
+                    // compute location of point in 2D plane
+                    const Point<2> second_control_point_2d_origin(x_axis * second_control_point_3d_unrotated,
+                                                                  y_axis * second_control_point_3d_unrotated,
+                                                                  cartesian);
+                    // rotate 2D point with the provided angle.
+                    const Point<2> second_control_point_2d_origin_rotated = Point<2>(
+                                                                              second_control_point_2d_origin[0]*cos(angle)-second_control_point_2d_origin[1]*sin(angle),
+                                                                              second_control_point_2d_origin[0]*sin(angle)-second_control_point_2d_origin[1]*cos(angle),
+                                                                              cartesian);
+                    // now move it back to 3d
+                    const Point<3> second_control_point_3d = down_point + x_axis*second_control_point_2d_origin_rotated[0] + y_axis*second_control_point_2d_origin_rotated[1];
+
+
+                    std::cout << "control_point_3d_unrotated = " << second_control_point_3d_unrotated
+                              << ", control_point_2d_origin = " << second_control_point_2d_origin
+                              <<  ", control_point_2d_origin_rotated = " << second_control_point_2d_origin_rotated
+                              << ", control_point_3d = " << second_control_point_3d
+                              << ", x:y axis = " << x_axis << ":" << y_axis << std::endl;
+                    patches[contour_i][point_i][2][i] = second_control_point_3d;
+                  }
+                }
+
+              for (size_t i = 0; i < 4; ++i)
+                {
+                  for (size_t j = 0; j < 4; ++j)
+                    {
+                      WBAssert(patches[contour_i][point_i][i][j].get_coordinate_system() != invalid, "coord is not set for " << i << ":" << j);
+                      std::cout << patches[contour_i][point_i][i][j] << " | ";
+                    }
+                  std::cout << std::endl;
+                }
             }
         }
+
+      /*
+            // Fist we create a connectivity array
+            const std::vector<std::vector<std::vector<unsigned int> > > connectivity = create_contour_connectivity(contour_curves);
+
+
+            // we create patches from left to right, top to bottom
+            for (size_t depth_i = 0; depth_i < depths.size()-1; ++depth_i)
+              {
+                const std::vector<Point<2> > &points_top = contour_curves[depth_i].get_points();
+                const std::vector<std::array<Point<2>,2 > > &control_points_top = contour_curves[depth_i].get_control_points();
+                const std::vector<Point<2> > &points_bottom = contour_curves[depth_i+1].get_points();
+                const std::vector<std::array<Point<2>,2 > > &control_points_bottom = contour_curves[depth_i+1].get_control_points();
+                for (size_t point_i = 0; point_i < points_top.size(); ++point_i)
+                  {
+
+                    // We need the two points (or one) points in the bottom contour curve to form a patch
+                    // We do this by finding the closest point below for this and the next point
+                    // TODO: refactor to also allow spherical
+
+                    //std::array<std::array<Point<3>,4>,4> patch;
+                    //patch[0][0] = Point<3>(points_top[point_i][0],points_top[point_i][1],depths[depth_i],cartesian);
+                    //patch[0][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+                    //patch[0][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+                    //patch[0][3] = Point<3>(points_top[point_i+1][0],points_top[point_i+1][1],depths[depth_i],cartesian);
+      //
+                    //patch[3][0] = Point<3>(points_bottom[point_i][0],points_bottom[point_i][1],depths[depth_i],cartesian);
+                    //patch[3][1] = Point<3>(control_points_top[point_i][0][0],control_points_top[point_i][0][1],depths[depth_i],cartesian);
+                    //patch[3][2] = Point<3>(control_points_top[point_i][1][0],control_points_top[point_i][1][1],depths[depth_i],cartesian);
+                    //patch[3][3] = Point<3>(points_bottom[point_i+1][0],points_bottom[point_i+1][1],depths[depth_i],cartesian);
+
+                    // compute control points for the middle two rows.
+                    // left bezier curve
+                    {
+                      const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+                      {points_top[point_i],points_bottom[point_i]},
+                      {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
+                      ).get_control_points();
+
+                      // we need to compute depths for these constraints
+                      const double left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                      const double left_middle_top_depth = depths[depth_i] + left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                      const double left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                      const double left_middle_bottom_depth = depths[depth_i] + left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+
+                      //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],left_middle_top_depth,cartesian);
+                      //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],left_middle_bottom_depth,cartesian);
+                    }
+                    // compute right bezier curve
+                    {
+                      const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+                      {points_top[point_i+1],points_bottom[point_i+1]},
+                      {{angle_contraints[depth_i][point_i+1],angle_contraints[depth_i+1][point_i+1]}}
+                      ).get_control_points();
+
+                      // we need to compute depths for these constraints
+                      const double right_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                      const double right_middle_top_depth = depths[depth_i] + right_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                      const double right_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                      const double right_middle_bottom_depth = depths[depth_i] + right_middle_bottom_fraction*(depths[depth_i+1]-depths[depth_i]);
+
+                      //patch[1][3] = Point<3>(control_points[0][0][0],control_points[0][0][1],right_middle_top_depth,cartesian);
+                      //patch[2][3] = Point<3>(control_points[0][1][0],control_points[0][1][1],right_middle_bottom_depth,cartesian);
+                    }
+                    // compute middle left bezier curve
+                    // for that we first need an angle constraints
+                    const double top_middle_left_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                    const double top_middle_left_angle = angle_contraints[depth_i][point_i] + top_middle_left_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
+                    const double top_middle_right_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                    const double top_middle_right_angle = angle_contraints[depth_i][point_i] + top_middle_right_fraction*(angle_contraints[depth_i][point_i+1]-angle_contraints[depth_i][point_i]);
+
+
+                    const double bottom_middle_left_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                    const double bottom_middle_left_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_left_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
+                    const double bottom_middle_right_fraction = contour_curves[depth_i+1].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                    const double bottom_middle_right_angle = angle_contraints[depth_i+1][point_i] + bottom_middle_right_fraction*(angle_contraints[depth_i+1][point_i+1]-angle_contraints[depth_i+1][point_i]);
+
+                    // now we can compute the middle left and right bezier curves.
+
+                    // middle left bezier curve
+                    const std::vector<std::array<Point<2>,2 > > control_points = Objects::BezierCurve(
+                    {points_top[point_i],points_bottom[point_i]},
+                    {{angle_contraints[depth_i][point_i],angle_contraints[depth_i+1][point_i]}}
+                    ).get_control_points();
+
+                    // we need to compute depths for these constraints
+                    const double middle_left_middle_top_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][0]).interpolation_fraction;
+                    const double middle_left_middle_top_depth = depths[depth_i] + middle_left_middle_top_fraction*(depths[depth_i+1]-depths[depth_i]);
+                    const double middle_left_middle_bottom_fraction = contour_curves[depth_i].closest_point_on_curve_segment(control_points_top[point_i][1]).interpolation_fraction;
+                    const double middle_left_middle_bottom_depth = depths[depth_i] + middle_left_middle_bottom_depth*(depths[depth_i+1]-depths[depth_i]);
+
+                    //patch[1][0] = Point<3>(control_points[0][0][0],control_points[0][0][1],depths[depth_i],cartesian);
+                    //patch[2][0] = Point<3>(control_points[0][1][0],control_points[0][1][1],depths[depth_i],cartesian);
+
+                    //patches.emplace_back({{}});
+                  }
+              }*/
 
 
       return patches;

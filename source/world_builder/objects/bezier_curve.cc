@@ -195,10 +195,10 @@ namespace WorldBuilder
     {
       WBAssert(i < points.size() && i < control_points.size()+1 ,
                "Trying to access index " << i << ", but points.size() = " << points.size() << ", and control_points = " << control_points.size() << ".");
-      return i < points.size()-1 && i < control_points.size() ? 
-      (1-t)*(1-t)*(1-t)*points[i] + 3*(1-t)*(1-t)*t*control_points[i][0] + 3.*(1-t)*t*t*control_points[i][1]+t*t*t*points[i+1]
-      :
-      points[i];
+      return i < points.size()-1 && i < control_points.size() ?
+             (1-t)*(1-t)*(1-t)*points[i] + 3*(1-t)*(1-t)*t*control_points[i][0] + 3.*(1-t)*t*t*control_points[i][1]+t*t*t*points[i+1]
+             :
+             points[i];
     }
 
 

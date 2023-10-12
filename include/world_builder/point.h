@@ -116,6 +116,17 @@ namespace WorldBuilder
        * with a Cartesian coordinate system.
        */
       inline
+      Point()
+        :
+        point(std::array<double,dim>()),
+        coordinate_system(invalid)
+      {}
+
+      /**
+       * Constructor. Constructs a Point at (0,0) in 2d or (0,0,0) in 3d
+       * with a Cartesian coordinate system.
+       */
+      inline
       Point(CoordinateSystem coordinate_system_)
         :
         point(std::array<double,dim>()),

@@ -100,7 +100,7 @@ namespace WorldBuilder
                  const std::vector<std::vector<double> > &thicknesses,
                  const std::vector<std::vector<double> > &top_truncation,
                  const double start_radius,
-                 const std::vector<std::vector<double> > &angle_contraints,
+                 const std::vector<std::vector<double> > &vertical_angle_contraints,
                  const std::vector<std::vector<Point<2> > > &directions,
                  std::vector<std::vector<std::vector<std::shared_ptr<A> > > > temperature_systems,
                  std::vector<std::vector<std::vector<std::shared_ptr<B> > > > composition_systems,
@@ -137,7 +137,7 @@ namespace WorldBuilder
         std::vector<WorldBuilder::Objects::BezierCurve> contour_curves;
 
         std::vector<double> depths;
-        std::vector<std::vector<double> > angle_contraints;
+        std::vector<std::vector<double> > vertical_angle_contraints;
         std::vector<std::vector<double> > thicknesses;
         std::vector<std::vector<double> > top_truncation;
         std::vector<std::vector<Point<2> > > directions;

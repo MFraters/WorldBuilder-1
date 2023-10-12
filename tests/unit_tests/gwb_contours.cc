@@ -344,15 +344,15 @@ TEST_CASE("Bezier Curve: create_patches_from_contours")
 {
   using doctest::Approx;
   {
-    std::vector<Objects::BezierCurve> curves = 
+    std::vector<Objects::BezierCurve> curves =
     {
-      Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,10.0,cartesian)}),
-    Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,0.5,cartesian),Point<2>(0.0,20.0,cartesian)})
+      Objects::BezierCurve({Point<2>(0.0,0.0,cartesian),Point<2>(0.0,10.0,cartesian),Point<2>(0.0,20.0,cartesian)}),
+      Objects::BezierCurve({Point<2>(10.0,0.0,cartesian),Point<2>(10.0,10.0,cartesian),Point<2>(10.0,20.0,cartesian)})
     };
     std::vector<double> depths = {0,10};
 
-    Utilities::create_patches_from_contours(curves, depths,{},{},{},{});
-    
+    Utilities::create_patches_from_contours(curves, depths, {{0,45,90.},{0,45,90}}, {}, {}, {});
+
   }
 
 }

@@ -19,6 +19,7 @@
 
 #include "world_builder/coordinate_system.h"
 #include "world_builder/objects/bezier_curve.h"
+#include "world_builder/objects/bezier_surface_patches.h"
 #define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 
 #include "doctest/doctest.h"
@@ -351,7 +352,7 @@ TEST_CASE("Bezier Curve: create_patches_from_contours")
     };
     std::vector<double> depths = {0,10};
 
-    Utilities::create_patches_from_contours(curves, depths, {{0,45,90.},{0,45,90}}, {}, {}, {});
+    Objects::BezierSurfacePatches(curves, depths, {{0,45,90.},{0,45,90}}, {}, {}, {});
 
   }
 

@@ -18,7 +18,9 @@
 */
 #include "world_builder/objects/contours.h"
 #include "world_builder/assert.h"
+#include "world_builder/objects/bezier_surface_patches.h"
 #include "world_builder/utilities.h"
+#include "world_builder/objects/bezier_surface_patch.h"
 
 #include <iostream>
 #include <limits>
@@ -90,16 +92,16 @@ namespace WorldBuilder
     {
       bool bool_cartesian = points[0][0].get_coordinate_system() == cartesian;
       const size_t n_curves = points.size();
-      std::vector<std::vector<double> > angle_contraints_horizontal(points.size());
+      std::vector<std::vector<double> > angle_contraints_vertical(points.size());
       for (size_t i = 0; i < points.size(); ++i)
         {
-          angle_contraints_horizontal[i].resize(points[i].size(),NaN::DQNAN);
+          angle_contraints_vertical[i].resize(points[i].size(),NaN::DQNAN);
         }
 
       // if angle contrainst is empty fill it with the right amount of entries and set the values to signaling nan.
       if (vertical_angle_contraints.size() == 0)
         {
-          vertical_angle_contraints = angle_contraints_horizontal;
+          vertical_angle_contraints = angle_contraints_vertical;
         }
 
       WBAssertThrow(vertical_angle_contraints.size() == points.size(),
@@ -111,7 +113,7 @@ namespace WorldBuilder
 
       for (size_t curve_i = 0; curve_i < n_curves; ++curve_i)
         {
-          contour_curves.emplace_back(BezierCurve(points[curve_i],angle_contraints_horizontal[curve_i]));
+          contour_curves.emplace_back(BezierCurve(points[curve_i]));
           std::cout << "     angles (" << contour_curves[curve_i].angles.size() << ") " << curve_i << ":" << std::endl;
           for (size_t angle_i = 0; angle_i < contour_curves[curve_i].angles.size(); ++angle_i)
             {
@@ -142,10 +144,10 @@ namespace WorldBuilder
       // (which is checked afterwards).
       if (directions.size() == 0)
         {
-          directions.resize(angle_contraints.size()-1, {});
+          directions.resize(vertical_angle_contraints.size()-1, {});
           for (size_t curve_i = 0; curve_i < directions.size(); ++curve_i)
             {
-              for (size_t point_i = 0; point_i < angle_contraints[curve_i].size(); ++point_i)
+              for (size_t point_i = 0; point_i < vertical_angle_contraints[curve_i].size(); ++point_i)
                 {
                   // find the closest point below and point to it
                   directions[curve_i].emplace_back(contour_curves[curve_i+1].closest_point_on_curve_segment(points[curve_i][point_i]).point);
@@ -154,9 +156,9 @@ namespace WorldBuilder
         }
       else if (directions.size() == 1 && directions[0].size() == 0)
         {
-          directions.resize(angle_contraints.size()-1, {});
+          directions.resize(vertical_angle_contraints.size()-1, {});
           for (size_t curve_i = 0; curve_i < directions.size(); ++curve_i)
-            directions[curve_i].resize(angle_contraints[curve_i].size(),directions[0][0]);
+            directions[curve_i].resize(vertical_angle_contraints[curve_i].size(),directions[0][0]);
         }
 
 
@@ -264,10 +266,10 @@ namespace WorldBuilder
         {
           std::cout << "ct flag 50" << std::endl;
           // first set the angles at the top
-          for (size_t point_i = 0; point_i < angle_contraints[0].size(); ++point_i)
+          for (size_t point_i = 0; point_i < vertical_angle_contraints[0].size(); ++point_i)
             {
               std::cout << "ct flag 51" << std::endl;
-              if (std::isnan(angle_contraints[0][point_i]))
+              if (std::isnan(vertical_angle_contraints[0][point_i]))
                 {
                   std::cout << "ct flag 52: points[0][point_i].coordiante_system()=" << points[0][point_i].get_coordinate_system() << std::endl;
                   // The first angle at each point is determined by the angle of the closest point below and the closest point below that
@@ -320,7 +322,7 @@ namespace WorldBuilder
                   const double diff_angle = top_b_angle-top_bb_angle;
 
                   std::cout << "ct flag 61" << std::endl;
-                  angle_contraints[0][point_i] = top_b_angle+0.5*diff_angle;
+                  vertical_angle_contraints[0][point_i] = top_b_angle+0.5*diff_angle;
 
 
 
@@ -330,17 +332,17 @@ namespace WorldBuilder
                              << ", top_b_angle = " << top_b_angle << "(" << (top_b_angle) *180/M_PI << ")"
                              << ", top_bb_angle = " << top_bb_angle << "(" << (top_bb_angle) *180/M_PI << ")"
                              << ", diff_angle = " << diff_angle << "(" << (diff_angle) *180/M_PI << ")"
-                             << ", top_angle = " << angle_contraints[0][point_i] << "(" << (angle_contraints[0][point_i]) *180/M_PI << ")" << std::endl;
+                             << ", top_angle = " << vertical_angle_contraints[0][point_i] << "(" << (vertical_angle_contraints[0][point_i]) *180/M_PI << ")" << std::endl;
                 }
             }
 
           std::cout << "-----------------------------" << std::endl;
           // next loop over all curves up to the last one and set the angles
-          for (size_t curve_i = 1; curve_i < angle_contraints.size()-1; ++curve_i)
+          for (size_t curve_i = 1; curve_i < vertical_angle_contraints.size()-1; ++curve_i)
             {
-              for (size_t point_i = 0; point_i < angle_contraints[curve_i].size(); ++point_i)
+              for (size_t point_i = 0; point_i < vertical_angle_contraints[curve_i].size(); ++point_i)
                 {
-                  if (std::isnan(angle_contraints[curve_i][point_i]))
+                  if (std::isnan(vertical_angle_contraints[curve_i][point_i]))
                     {
                       // The first angle at each point is determined by the angle of the closest point below and the closest point below that
                       ClosestPointOnCurve closest_point_above = contour_curves[curve_i-1].closest_point_on_curve_segment(points[curve_i][point_i]);
@@ -381,7 +383,7 @@ namespace WorldBuilder
                       const double top_b_angle = atan2((point_b_2d-basis_point_2d)[1],(point_b_2d-basis_point_2d)[0])+M_PI;
                       const double diff_angle = top_a_angle-top_b_angle;
 
-                      angle_contraints[curve_i][point_i] = (top_a_angle+top_b_angle)*0.5;
+                      vertical_angle_contraints[curve_i][point_i] = (top_a_angle+top_b_angle)*0.5;
 
 
                       std::cout  << ", basis_point: " << basis_point << ", point_a: " << point_a  << ", point_b: " << point_b
@@ -390,17 +392,17 @@ namespace WorldBuilder
                                  << ", top_a_angle = " << top_a_angle << "(" << (top_a_angle) *180/M_PI << ")"
                                  << ", top_b_angle = " << top_b_angle << "(" << (top_b_angle) *180/M_PI << ")"
                                  << ", diff_angle = " << diff_angle << "(" << (diff_angle) *180/M_PI << ")"
-                                 << ", angle = " << angle_contraints[curve_i][point_i] << "(" << (angle_contraints[curve_i][point_i]) *180/M_PI << ")" << std::endl;
+                                 << ", angle = " << vertical_angle_contraints[curve_i][point_i] << "(" << (vertical_angle_contraints[curve_i][point_i]) *180/M_PI << ")" << std::endl;
                     }
                 }
             }
 
           std::cout << "-----------------------------" << std::endl;
           // lastly loop over the points of the last cruve
-          const size_t last_index = angle_contraints.size()-1;
-          for (size_t point_i = 0; point_i < angle_contraints[last_index].size(); ++point_i)
+          const size_t last_index = vertical_angle_contraints.size()-1;
+          for (size_t point_i = 0; point_i < vertical_angle_contraints[last_index].size(); ++point_i)
             {
-              if (std::isnan(angle_contraints[last_index][point_i]))
+              if (std::isnan(vertical_angle_contraints[last_index][point_i]))
                 {
                   // The first angle at each point is determined by the angle of the closest point below and the closest point below that
                   ClosestPointOnCurve closest_point_above = contour_curves[last_index-1].closest_point_on_curve_segment(points[last_index][point_i]);
@@ -443,7 +445,7 @@ namespace WorldBuilder
                   //const double top_aa_angle = atan2((point_a_2d-point_aa_2d)[1],(point_a_2d-point_aa_2d)[0]);
                   const double diff_angle = top_a_angle-top_aa_angle;
 
-                  angle_contraints[last_index][point_i] = top_a_angle+0.5*diff_angle;
+                  vertical_angle_contraints[last_index][point_i] = top_a_angle+0.5*diff_angle;
 
 
 
@@ -453,7 +455,7 @@ namespace WorldBuilder
                              << ", top_a_angle = " << top_a_angle << "(" << (top_a_angle) *180/M_PI << ")"
                              << ", top_aa_angle = " << top_aa_angle << "(" << (top_aa_angle) *180/M_PI << ")"
                              << ", diff_angle = " << diff_angle << "(" << (diff_angle) *180/M_PI << ")"
-                             << ", top_angle = " << angle_contraints[last_index][point_i] << "(" << (angle_contraints[last_index][point_i]) *180/M_PI << ")" << std::endl;
+                             << ", top_angle = " << vertical_angle_contraints[last_index][point_i] << "(" << (vertical_angle_contraints[last_index][point_i]) *180/M_PI << ")" << std::endl;
                 }
             }
         }
@@ -462,7 +464,18 @@ namespace WorldBuilder
           WBAssertThrow(false, "you provided only two lines, this has not been implemented yet.");
         }
 
+      /**
+       * @brief \\TODO: Create patches here!
+       *
+       */
+      BezierSurfacePatches patches =
+        Objects::BezierSurfacePatches(contour_curves,
+                                                depths,
+                                                vertical_angle_contraints,
+                                                {}, {}, {});
+                                                std::vector<std::vector<Objects::BezierSurfacePatch>> surface_patches;
 
+      //const Objects::BezierSurfacePatch surface_patches = Objects::BezierSurfacePatch(patches[0][0]);
       std::cout << "============================================= construct distance along surface ========================================" << std::endl << std::endl;
       distance_along_surface.resize(n_curves);
       // the distance on curve_i == 0 is zero, so start with curve 1
@@ -647,11 +660,11 @@ namespace WorldBuilder
 
 
       std::cout << "angles constraints: " << std::endl;
-      for (size_t curve_i = 0; curve_i < angle_contraints.size(); ++curve_i)
+      for (size_t curve_i = 0; curve_i < vertical_angle_contraints.size(); ++curve_i)
         {
-          for (size_t point_i = 0; point_i < angle_contraints[curve_i].size(); ++point_i)
+          for (size_t point_i = 0; point_i < vertical_angle_contraints[curve_i].size(); ++point_i)
             {
-              std::cout << angle_contraints[curve_i][point_i]*180.0/Consts::PI  << " ";
+              std::cout << vertical_angle_contraints[curve_i][point_i]*180.0/Consts::PI  << " ";
             }
           std::cout << std::endl;
         }

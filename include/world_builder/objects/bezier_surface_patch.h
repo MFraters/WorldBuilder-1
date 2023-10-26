@@ -21,14 +21,16 @@ This file is part of the World Builder.
 #define WORLD_BUILDER_OBJECTS_BEZIER_SURFACE_PATCH_H
 
 #include "world_builder/objects/closest_point_on_curve.h"
-#include "world_builder/point.h"
 #include <array>
 #include <vector>
 
 namespace WorldBuilder
 {
+  template <int dim> class Point;
+
   namespace Objects
   {
+    class BezierCurve;
 
     constexpr size_t grid_points = 10;
     constexpr double grid_distance = 1./(grid_points-1);
@@ -40,6 +42,13 @@ namespace WorldBuilder
     class BezierSurfacePatch
     {
       public:
+
+        /**
+         * // TODO
+         */
+        BezierSurfacePatch(){
+
+        };
 
         /**
          * // TODO
@@ -76,6 +85,14 @@ namespace WorldBuilder
          * @return Point<2>
          */
         Point<2> operator()(const size_t i, const double x) const;
+
+    //    std::vector<std::vector<Objects::BezierSurfacePatch>>
+    //create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
+    //                             std::vector<double> depths,
+    //                             std::vector<std::vector<double> > downward_angle_contraints,
+    //                             std::vector<std::vector<double> > thicknesses,
+    //                             std::vector<std::vector<double> > top_truncation,
+    //                             std::vector<std::vector<Point<2> > > directions);
 
       private:
         std::array<std::array<Point<3>,4>,4> control_points;

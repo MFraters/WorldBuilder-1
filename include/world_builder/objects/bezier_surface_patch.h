@@ -46,7 +46,8 @@ namespace WorldBuilder
         /**
          * // TODO
          */
-        BezierSurfacePatch(){
+        BezierSurfacePatch()
+        {
 
         };
 
@@ -86,13 +87,13 @@ namespace WorldBuilder
          */
         Point<2> operator()(const size_t i, const double x) const;
 
-    //    std::vector<std::vector<Objects::BezierSurfacePatch>>
-    //create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
-    //                             std::vector<double> depths,
-    //                             std::vector<std::vector<double> > downward_angle_contraints,
-    //                             std::vector<std::vector<double> > thicknesses,
-    //                             std::vector<std::vector<double> > top_truncation,
-    //                             std::vector<std::vector<Point<2> > > directions);
+        //    std::vector<std::vector<Objects::BezierSurfacePatch>>
+        //create_patches_from_contours(std::vector<WorldBuilder::Objects::BezierCurve> contour_curves,
+        //                             std::vector<double> depths,
+        //                             std::vector<std::vector<double> > downward_angle_contraints,
+        //                             std::vector<std::vector<double> > thicknesses,
+        //                             std::vector<std::vector<double> > top_truncation,
+        //                             std::vector<std::vector<Point<2> > > directions);
 
       private:
         std::array<std::array<Point<3>,4>,4> control_points;

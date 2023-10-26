@@ -470,10 +470,10 @@ namespace WorldBuilder
        */
       BezierSurfacePatches patches =
         Objects::BezierSurfacePatches(contour_curves,
-                                                depths,
-                                                vertical_angle_contraints,
-                                                {}, {}, {});
-                                                std::vector<std::vector<Objects::BezierSurfacePatch>> surface_patches;
+                                      depths,
+                                      vertical_angle_contraints,
+                                      {}, {}, {});
+      std::vector<std::vector<Objects::BezierSurfacePatch>> surface_patches;
 
       //const Objects::BezierSurfacePatch surface_patches = Objects::BezierSurfacePatch(patches[0][0]);
       std::cout << "============================================= construct distance along surface ========================================" << std::endl << std::endl;

@@ -468,7 +468,7 @@ namespace WorldBuilder
        * @brief \\TODO: Create patches here!
        *
        */
-      BezierSurfacePatches patches =
+      patches =
         Objects::BezierSurfacePatches(contour_curves,
                                       depths,
                                       vertical_angle_contraints,

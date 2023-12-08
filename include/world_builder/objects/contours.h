@@ -29,6 +29,7 @@ This file is part of the World Builder.
 #include "world_builder/objects/bezier_curve.h"
 #include "world_builder/coordinate_systems/interface.h"
 #include "world_builder/objects/natural_coordinate.h"
+#include "world_builder/objects/bezier_surface_patches.h"
 #include "world_builder/point.h"
 
 namespace WorldBuilder
@@ -166,6 +167,7 @@ namespace WorldBuilder
          */
         //std::vector<std::pair<double,double> > depth_ranges;
 
+        BezierSurfacePatches patches;
 
         /**
          * @brief Stores which grid points a single grid point connects to the contour below it.

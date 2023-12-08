@@ -44,7 +44,7 @@ namespace WorldBuilder
         /**
          * // TODO
          */
-        //BezierSurfacePatches(){};
+        BezierSurfacePatches() {};
         /**
          * // TODO
          */

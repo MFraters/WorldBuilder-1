@@ -19,7 +19,9 @@
 
 #include "world_builder/coordinate_system.h"
 #include "world_builder/objects/bezier_curve.h"
+#include "world_builder/objects/bezier_surface_patch.h"
 #include "world_builder/objects/bezier_surface_patches.h"
+#include "world_builder/point.h"
 #define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
 
 #include "doctest/doctest.h"
@@ -340,6 +342,24 @@ TEST_CASE("Bezier Curve: length map")
 }
 
 
+TEST_CASE("Bezier Patch")
+{
+  using doctest::Approx;
+  {
+    auto control_points = std::array<std::array<Point<3>,4>,4> {{{{Point<3>(0.,0,0,cartesian),Point<3>(0.,1,0,cartesian),Point<3>(0.,2,0,cartesian),Point<3>(0.,3,0,cartesian)}},
+        {Point<3>(0.,0,1,cartesian),Point<3>(0.,1,1.,cartesian),Point<3>(0.,2,1.,cartesian),Point<3>(0.,3,1.,cartesian)},
+        {Point<3>(0.,0,2,cartesian),Point<3>(0.,1,2.,cartesian),Point<3>(0.,2,2.,cartesian),Point<3>(0.,3,2.,cartesian)},
+        {Point<3>(0.,0,3,cartesian),Point<3>(0.,1,3.,cartesian),Point<3>(0.,2,3.,cartesian),Point<3>(0.,3,3.,cartesian)}}};
+    
+    auto patch = Objects::BezierSurfacePatch(control_points);
+
+    CHECK(patch.point_on_surface(0, 0) == Point<3>(0,0,0,cartesian));
+    CHECK(patch.point_on_surface(0.5, 0) == Point<3>(0.5,0,0,cartesian));
+
+
+  }
+
+}
 
 TEST_CASE("Bezier Curve: create_patches_from_contours")
 {
@@ -352,7 +372,9 @@ TEST_CASE("Bezier Curve: create_patches_from_contours")
     };
     std::vector<double> depths = {0,10};
 
-    Objects::BezierSurfacePatches(curves, depths, {{0,45,90.},{0,45,90}}, {}, {}, {});
+    auto patches = Objects::BezierSurfacePatches(curves, depths, {{0,45,90.},{0,450,900}}, {}, {}, {});
+
+
 
   }
 

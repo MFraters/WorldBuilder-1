@@ -17,13 +17,12 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_BUILDER_FEATURES_CONTINENTAL_PLATE_MODELS_VELOCITY_UNIFORM_H
-#define WORLD_BUILDER_FEATURES_CONTINENTAL_PLATE_MODELS_VELOCITY_UNIFORM_H
+#ifndef WORLD_BUILDER_FEATURES_FAULT_MODELS_VELOCITY_UNIFORM_RAW_H
+#define WORLD_BUILDER_FEATURES_FAULT_MODELS_VELOCITY_UNIFORM_RAW_H
 
 
-#include "world_builder/features/continental_plate_models/velocity/interface.h"
+#include "world_builder/features/fault_models/velocity/interface.h"
 #include "world_builder/features/feature_utilities.h"
-#include "world_builder/objects/surface.h"
 
 
 namespace WorldBuilder
@@ -31,29 +30,28 @@ namespace WorldBuilder
 
   namespace Features
   {
-    using namespace FeatureUtilities;
-    namespace ContinentalPlateModels
+    namespace FaultModels
     {
       namespace Velocity
       {
         /**
-         * This class represents a continental plate and can implement submodules
+         * This class represents a subducting plate and can implement submodules
          * for velocity and composition. These submodules determine what
          * the returned velocity or composition of the velocity and composition
          * functions of this class will be.
          */
-        class Uniform final: public Interface
+        class UniformRaw final: public Interface
         {
           public:
             /**
              * constructor
              */
-            Uniform(WorldBuilder::World *world);
+            UniformRaw(WorldBuilder::World *world);
 
             /**
              * Destructor
              */
-            ~Uniform() override final;
+            ~UniformRaw() override final;
 
             /**
              * declare and read in the world builder file into the parameters class
@@ -64,7 +62,7 @@ namespace WorldBuilder
             /**
              * declare and read in the world builder file into the parameters class
              */
-            void parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates) override final;
+            void parse_entries(Parameters &prm) override final;
 
 
             /**
@@ -72,26 +70,25 @@ namespace WorldBuilder
              * gravity and current velocity.
              */
             std::array<double,3> get_velocity(const Point<3> &position,
-                                              const Objects::NaturalCoordinate &position_in_natural_coordinates,
                                               const double depth,
                                               const double gravity,
                                               std::array<double,3> velocity,
                                               const double feature_min_depth,
-                                              const double feature_max_depth) const override final;
+                                              const double feature_max_depth,
+                                              const WorldBuilder::Utilities::PointDistanceFromCurvedPlanes &distance_from_planes,
+                                              const AdditionalParameters &additional_parameters) const override final;
 
 
           private:
-            // uniform velocity submodule parameters
+            // uniform raw velocity submodule parameters
             double min_depth;
-            Objects::Surface min_depth_surface;
             double max_depth;
-            Objects::Surface max_depth_surface;
             std::array<double,3> velocity;
             Operations operation;
 
         };
       } // namespace Velocity
-    } // namespace ContinentalPlateModels
+    } // namespace FaultModels
   } // namespace Features
 } // namespace WorldBuilder
 

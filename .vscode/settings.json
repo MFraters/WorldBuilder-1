@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "*.wb": "jsonc"
+        "*.wb": "jsonc",
+        "array": "cpp"
     },
     "json.validate.enable": true,
     "json.schemas": [

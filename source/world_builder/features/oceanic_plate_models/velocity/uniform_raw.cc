@@ -17,7 +17,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "world_builder/features/oceanic_plate_models/velocity/uniform.h"
+#include "world_builder/features/oceanic_plate_models/velocity/uniform_raw.h"
 
 #include "world_builder/nan.h"
 #include "world_builder/types/array.h"
@@ -38,7 +38,7 @@ namespace WorldBuilder
     {
       namespace Velocity
       {
-        Uniform::Uniform(WorldBuilder::World *world_)
+        UniformRaw::UniformRaw(WorldBuilder::World *world_)
           :
           min_depth(NaN::DSNAN),
           max_depth(NaN::DSNAN),
@@ -46,14 +46,14 @@ namespace WorldBuilder
         operation(Operations::REPLACE)
         {
           this->world = world_;
-          this->name = "uniform";
+          this->name = "uniform raw";
         }
 
-        Uniform::~Uniform()
+        UniformRaw::~UniformRaw()
           = default;
 
         void
-        Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
+        UniformRaw::declare_entries(Parameters &prm, const std::string & /*unused*/)
         {
           // Document plugin and require entries if needed.
           // Add `velocity` and to the required parameters.
@@ -73,7 +73,7 @@ namespace WorldBuilder
         }
 
         void
-        Uniform::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+        UniformRaw::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
         {
 
           min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));
@@ -89,7 +89,7 @@ namespace WorldBuilder
 
 
         std::array<double,3>
-        Uniform::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
+        UniformRaw::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
                               const Objects::NaturalCoordinate &position_in_natural_coordinates,
                               const double depth,
                               const double  /*gravity*/,
@@ -116,7 +116,7 @@ namespace WorldBuilder
           return velocity_;
         }
 
-        WB_REGISTER_FEATURE_OCEANIC_PLATE_VELOCITY_MODEL(Uniform, uniform)
+        WB_REGISTER_FEATURE_OCEANIC_PLATE_VELOCITY_MODEL(UniformRaw, uniform raw)
       } // namespace Velocity
     } // namespace OceanicPlateModels
   } // namespace Features

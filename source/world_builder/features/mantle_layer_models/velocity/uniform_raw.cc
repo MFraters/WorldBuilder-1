@@ -17,7 +17,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "world_builder/features/continental_plate_models/velocity/uniform.h"
+#include "world_builder/features/mantle_layer_models/velocity/uniform_raw.h"
 
 
 #include "world_builder/nan.h"
@@ -26,7 +26,7 @@
 #include "world_builder/types/object.h"
 #include "world_builder/types/one_of.h"
 #include "world_builder/types/value_at_points.h"
-#include <vector>
+
 
 namespace WorldBuilder
 {
@@ -35,11 +35,11 @@ namespace WorldBuilder
 
   namespace Features
   {
-    namespace ContinentalPlateModels
+    namespace MantleLayerModels
     {
       namespace Velocity
       {
-        Uniform::Uniform(WorldBuilder::World *world_)
+        UniformRaw::UniformRaw(WorldBuilder::World *world_)
           :
           min_depth(NaN::DSNAN),
           max_depth(NaN::DSNAN),
@@ -47,36 +47,36 @@ namespace WorldBuilder
         operation(Operations::REPLACE)
         {
           this->world = world_;
-          this->name = "uniform";
+          this->name = "uniform raw";
         }
 
-        Uniform::~Uniform()
+        UniformRaw::~UniformRaw()
           = default;
 
         void
-        Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
+        UniformRaw::declare_entries(Parameters &prm, const std::string & /*unused*/)
         {
           // Document plugin and require entries if needed.
-          // Add `velocity` to the required parameters.
+          // Add `velocity` and to the required parameters.
           prm.declare_entry("", Types::Object({"velocity"}),
                             "Uniform velocity model. Set the velocity to a constant value.");
 
           // Declare entries of this plugin
           prm.declare_entry("min depth", Types::OneOf(Types::Double(0),Types::Array(Types::ValueAtPoints(0., 2.))),
-                            "The depth in meters from which the composition of this feature is present.");
+                            "The depth in meters from which the velocity of this feature is present.");
 
           prm.declare_entry("max depth", Types::OneOf(Types::Double(std::numeric_limits<double>::max()),Types::Array(Types::ValueAtPoints(std::numeric_limits<double>::max(), 2.))),
-                            "The depth in meters to which the composition of this feature is present.");
+                            "The depth in meters to which the velocity of this feature is present.");
 
           prm.declare_entry("velocity", Types::Array(Types::Double(0.0),3,3),
                             "The velocity in meter per year");
 
+
         }
 
         void
-        Uniform::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+        UniformRaw::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
         {
-
           min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));
           min_depth = min_depth_surface.minimum;
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
@@ -90,21 +90,21 @@ namespace WorldBuilder
 
 
         std::array<double,3>
-        Uniform::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
+        UniformRaw::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
                               const Objects::NaturalCoordinate &position_in_natural_coordinates,
                               const double depth,
                               const double  /*gravity*/,
                               std::array<double,3> velocity_,
-                              const double /*feature_min_depth*/,
-                              const double /*feature_max_depth*/) const
+                              const double  /*feature_min_depth*/,
+                              const double  /*feature_max_depth*/) const
         {
-          const double min_depth_local = min_depth_surface.constant_value ? min_depth : min_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
-          const double max_depth_local = max_depth_surface.constant_value ? max_depth : max_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
-          if (depth <= max_depth_local &&  depth >= min_depth_local)
+
+          if (depth <= max_depth && depth >= min_depth)
             {
-              if (depth <= max_depth && depth >= min_depth)
+              const double min_depth_local = min_depth_surface.constant_value ? min_depth : min_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
+              const double max_depth_local = max_depth_surface.constant_value ? max_depth : max_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
+              if (depth <= max_depth_local &&  depth >= min_depth_local)
                 {
-                  //std::cout << "velocity_ = " << velocity_[0] << ":" << velocity_[1] << ":" << velocity_[2] << ", velocity = " << velocity[0] << ":" << velocity[1] << ":" << velocity[2]  << ", apply = " << apply_operation(operation,velocity_[0],velocity[0])<< std::endl;
                   return {{
                       apply_operation(operation,velocity_[0],velocity[0]),
                       apply_operation(operation,velocity_[1],velocity[1]),
@@ -113,12 +113,13 @@ namespace WorldBuilder
                   };
                 }
             }
+
           return velocity_;
         }
 
-        WB_REGISTER_FEATURE_CONTINENTAL_PLATE_VELOCITY_MODEL(Uniform, uniform)
+        WB_REGISTER_FEATURE_MANTLE_LAYER_VELOCITY_MODEL(UniformRaw, uniform raw)
       } // namespace Velocity
-    } // namespace ContinentalPlateModels
+    } // namespace MantleLayerModels
   } // namespace Features
 } // namespace WorldBuilder
 

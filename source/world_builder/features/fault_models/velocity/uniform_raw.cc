@@ -17,15 +17,14 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "world_builder/features/mantle_layer_models/velocity/uniform.h"
+#include "world_builder/features/fault_models/velocity/uniform_raw.h"
 
 
 #include "world_builder/nan.h"
 #include "world_builder/types/array.h"
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
-#include "world_builder/types/one_of.h"
-#include "world_builder/types/value_at_points.h"
+#include "world_builder/utilities.h"
 
 
 namespace WorldBuilder
@@ -35,11 +34,11 @@ namespace WorldBuilder
 
   namespace Features
   {
-    namespace MantleLayerModels
+    namespace FaultModels
     {
       namespace Velocity
       {
-        Uniform::Uniform(WorldBuilder::World *world_)
+        UniformRaw::UniformRaw(WorldBuilder::World *world_)
           :
           min_depth(NaN::DSNAN),
           max_depth(NaN::DSNAN),
@@ -47,14 +46,14 @@ namespace WorldBuilder
         operation(Operations::REPLACE)
         {
           this->world = world_;
-          this->name = "uniform";
+          this->name = "uniform raw";
         }
 
-        Uniform::~Uniform()
+        UniformRaw::~UniformRaw()
           = default;
 
         void
-        Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
+        UniformRaw::declare_entries(Parameters &prm, const std::string & /*unused*/)
         {
           // Document plugin and require entries if needed.
           // Add `velocity` and to the required parameters.
@@ -62,25 +61,22 @@ namespace WorldBuilder
                             "Uniform velocity model. Set the velocity to a constant value.");
 
           // Declare entries of this plugin
-          prm.declare_entry("min depth", Types::OneOf(Types::Double(0),Types::Array(Types::ValueAtPoints(0., 2.))),
-                            "The depth in meters from which the velocity of this feature is present.");
+          prm.declare_entry("min distance fault center", Types::Double(0),
+                            "The distance in meters from which the composition of this feature is present.");
 
-          prm.declare_entry("max depth", Types::OneOf(Types::Double(std::numeric_limits<double>::max()),Types::Array(Types::ValueAtPoints(std::numeric_limits<double>::max(), 2.))),
-                            "The depth in meters to which the velocity of this feature is present.");
+          prm.declare_entry("max distance fault center", Types::Double(std::numeric_limits<double>::max()),
+                            "The distance in meters to which the composition of this feature is present.");
 
           prm.declare_entry("velocity", Types::Array(Types::Double(0.0),3,3),
                             "The velocity in meter per year");
 
-
         }
 
         void
-        Uniform::parse_entries(Parameters &prm, const std::vector<Point<2>> &coordinates)
+        UniformRaw::parse_entries(Parameters &prm)
         {
-          min_depth_surface = Objects::Surface(prm.get("min depth",coordinates));
-          min_depth = min_depth_surface.minimum;
-          max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
-          max_depth = max_depth_surface.maximum;
+          min_depth = prm.get<double>("min distance fault center");
+          max_depth = prm.get<double>("max distance fault center");
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
           std::vector<double> velocity_vec = prm.get_vector<double>("velocity");
           velocity[0] = velocity_vec[0];
@@ -90,36 +86,31 @@ namespace WorldBuilder
 
 
         std::array<double,3>
-        Uniform::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
-                              const Objects::NaturalCoordinate &position_in_natural_coordinates,
-                              const double depth,
+        UniformRaw::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
+                              const double  /*depth*/,
                               const double  /*gravity*/,
                               std::array<double,3> velocity_,
                               const double  /*feature_min_depth*/,
-                              const double  /*feature_max_depth*/) const
+                              const double  /*feature_max_depth*/,
+                              const WorldBuilder::Utilities::PointDistanceFromCurvedPlanes &distance_from_plane,
+                              const AdditionalParameters & /*additional_parameters*/) const
         {
 
-          if (depth <= max_depth && depth >= min_depth)
+          if (std::fabs(distance_from_plane.distance_from_plane) <= max_depth && std::fabs(distance_from_plane.distance_from_plane) >= min_depth)
             {
-              const double min_depth_local = min_depth_surface.constant_value ? min_depth : min_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
-              const double max_depth_local = max_depth_surface.constant_value ? max_depth : max_depth_surface.local_value(position_in_natural_coordinates.get_surface_point()).interpolated_value;
-              if (depth <= max_depth_local &&  depth >= min_depth_local)
-                {
-                  return {{
-                      apply_operation(operation,velocity_[0],velocity[0]),
-                      apply_operation(operation,velocity_[1],velocity[1]),
-                      apply_operation(operation,velocity_[2],velocity[2])
-                    }
-                  };
+              return {{
+                  apply_operation(operation,velocity_[0],velocity[0]),
+                  apply_operation(operation,velocity_[1],velocity[1]),
+                  apply_operation(operation,velocity_[2],velocity[2])
                 }
+              };
             }
-
           return velocity_;
         }
 
-        WB_REGISTER_FEATURE_MANTLE_LAYER_VELOCITY_MODEL(Uniform, uniform)
+        WB_REGISTER_FEATURE_FAULT_VELOCITY_MODEL(UniformRaw, uniform raw)
       } // namespace Velocity
-    } // namespace MantleLayerModels
+    } // namespace FaultModels
   } // namespace Features
 } // namespace WorldBuilder
 

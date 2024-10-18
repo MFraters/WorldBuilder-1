@@ -17,8 +17,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_BUILDER_FEATURES_OCEANIC_PLATE_MODELS_VELOCITY_UNIFORM_H
-#define WORLD_BUILDER_FEATURES_OCEANIC_PLATE_MODELS_VELOCITY_UNIFORM_H
+#ifndef WORLD_BUILDER_FEATURES_OCEANIC_PLATE_MODELS_VELOCITY_UNIFORM_RAW_H
+#define WORLD_BUILDER_FEATURES_OCEANIC_PLATE_MODELS_VELOCITY_UNIFORM_RAW_H
 
 
 #include "world_builder/features/oceanic_plate_models/velocity/interface.h"
@@ -41,18 +41,18 @@ namespace WorldBuilder
          * the returned velocity or composition of the velocity and composition
          * functions of this class will be.
          */
-        class Uniform final: public Interface
+        class UniformRaw final: public Interface
         {
           public:
             /**
              * constructor
              */
-            Uniform(WorldBuilder::World *world);
+            UniformRaw(WorldBuilder::World *world);
 
             /**
              * Destructor
              */
-            ~Uniform() override final;
+            ~UniformRaw() override final;
 
             /**
              * declare and read in the world builder file into the parameters class
@@ -80,7 +80,7 @@ namespace WorldBuilder
 
 
           private:
-            // uniform velocity submodule parameters
+            // uniform raw velocity submodule parameters
             double min_depth;
             Objects::Surface min_depth_surface;
             double max_depth;

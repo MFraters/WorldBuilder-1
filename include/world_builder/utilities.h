@@ -299,7 +299,10 @@ namespace WorldBuilder
         segment(NaN::ISNAN),
         average_angle(NaN::DSNAN),
         depth_reference_surface(NaN::DSNAN),
-        closest_trench_point(Point<3>(coordinate_system))
+        closest_trench_point(Point<3>(coordinate_system)),
+        x_axis(Point<3>(coordinate_system)),
+        y_axis(Point<3>(coordinate_system)),
+        local_angle(NaN::DSNAN)
       {}
 
       /**
@@ -350,6 +353,12 @@ namespace WorldBuilder
        * The closest point on the trench line in cartesian coordinates.
        */
       Point<3> closest_trench_point;
+
+      Point<3> x_axis;
+
+      Point<3> y_axis;
+
+      double local_angle;
     };
 
     /**
@@ -399,6 +408,9 @@ namespace WorldBuilder
      * the point (looking from the start of segment/section), the distance
      * of the point from the plane and the distance of the point along the plane,
      * and the average angle of the closest segment/section.
+     *
+     * Note that some values in the returned PointDistanceFromCurvedPlanes struct will be nan
+     * if the point is not on any line segment.
      */
     PointDistanceFromCurvedPlanes distance_point_from_curved_planes(const Point<3> &check_point,
                                                                     const Objects::NaturalCoordinate &check_point_natural,

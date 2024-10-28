@@ -426,11 +426,8 @@ namespace WorldBuilder
       double fraction_CPL_P1P2 = std::numeric_limits<double>::infinity();
 
       // get an estimate for the closest point between P1 and P2.
-      //constexpr double parts = 1;
-      //constexpr double one_div_parts = 1./parts;
-      //double minimum_distance_to_reference_point = std::numeric_limits<double>::infinity();
-      //const size_t number_of_points = point_list.size();
-
+      // Note that this can return a point with x and y being nan ifthe the closest point
+      // doesn't fall on the segment.
       const Objects::ClosestPointOnCurve closest_point_on_curve = bezier_curve.closest_point_on_curve_segment(check_point_surface_2d);
       Point<2> closest_point_on_line_2d = closest_point_on_curve.point;
 
@@ -444,6 +441,9 @@ namespace WorldBuilder
 
       const Point<3> closest_point_on_line_cartesian(coordinate_system->natural_to_cartesian_coordinates(closest_point_on_line_surface.get_array()),cartesian);
 
+      Point<3> y_axis = Point<3>(NaN::DSNAN,NaN::DSNAN,NaN::DSNAN,cartesian);
+      Point<3> x_axis = Point<3>(NaN::DSNAN,NaN::DSNAN,NaN::DSNAN,cartesian);
+      double local_angle = NaN::DSNAN;
       if (!std::isnan(closest_point_on_line_2d[0]))
         {
           i_section_min_distance = closest_point_on_curve.index;
@@ -480,8 +480,8 @@ namespace WorldBuilder
 
           // These are the mostly likely cases for the x and y axis, so initialize them to these values. They will be checked
           // in the else statement or replaced in the if statement.
-          Point<3> y_axis = closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian;
-          Point<3> x_axis = closest_point_on_line_cartesian - check_point_surface_cartesian;
+          y_axis = closest_point_on_line_cartesian - closest_point_on_line_bottom_cartesian;
+          x_axis = closest_point_on_line_cartesian - check_point_surface_cartesian;
 
           // This are accounting for corner cases.
           // If the point to check is exactly on or below the line, we can not compute the x-axis with this method.
@@ -589,6 +589,10 @@ namespace WorldBuilder
                   return_values.average_angle = total_average_angle;
                   return_values.depth_reference_surface = 0.0;
                   return_values.closest_trench_point = closest_point_on_line_cartesian;
+                  return_values.x_axis = x_axis;
+                  return_values.y_axis = y_axis;
+                  return_values.local_angle = fraction_CPL_P1P2 * (plane_segment_angles[original_next_section][0][0]
+                                                                   - plane_segment_angles[original_current_section][0][0]);
                   return return_values;
                 }
             }
@@ -785,7 +789,10 @@ namespace WorldBuilder
                                                                                     - plane_segment_lengths[original_current_section][current_segment]);
 
               if (interpolated_segment_length < 1e-14)
-                continue;
+                {
+                  local_angle = interpolated_angle_top;
+                  continue;
+                }
 
               WBAssert(!std::isnan(interpolated_angle_top),
                        "Internal error: The interpolated_angle_top variable is not a number: " << interpolated_angle_top);
@@ -795,11 +802,12 @@ namespace WorldBuilder
               // will deal with separately. The first one is if the angle is
               // constant. The second one is if the angle changes.
               const double difference_in_angle_along_segment = interpolated_angle_top - interpolated_angle_bottom;
-
+              double check_point_angle = NaN::DSNAN;
               if (std::fabs(difference_in_angle_along_segment) < 1e-8)
                 {
                   // The angle is constant. It is easy find find the end of
                   // this segment and the distance.
+                  local_angle = interpolated_angle_top;
                   if (std::fabs(interpolated_segment_length) > std::numeric_limits<double>::epsilon())
                     {
                       end_segment[0] += interpolated_segment_length * std::sin(degree_90_to_rad - interpolated_angle_top);
@@ -960,9 +968,9 @@ namespace WorldBuilder
                   // Furthermore, when the check point is at the same location as
                   // the center of the circle, we count that point as belonging
                   // to the top of the top segment (0 degree).
-                  double check_point_angle = std::fabs(CPCR_norm) < std::numeric_limits<double>::epsilon() ? 2.0 * Consts::PI : (check_point_2d[0] <= center_circle[0]
-                                             ? std::acos(dot_product/(CPCR_norm * radius_angle_circle))
-                                             : 2.0 * Consts::PI - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
+                  check_point_angle = std::fabs(CPCR_norm) < std::numeric_limits<double>::epsilon() ? 2.0 * Consts::PI : (check_point_2d[0] <= center_circle[0]
+                                      ? std::acos(dot_product/(CPCR_norm * radius_angle_circle))
+                                      : 2.0 * Consts::PI - std::acos(dot_product/(CPCR_norm * radius_angle_circle)));
                   check_point_angle = difference_in_angle_along_segment >= 0 ? Consts::PI - check_point_angle : 2.0 * Consts::PI - check_point_angle;
 
                   // In the case that it is exactly 2 * pi, bring it back to zero
@@ -1010,6 +1018,7 @@ namespace WorldBuilder
                   total_average_angle = (std::fabs(total_average_angle) < std::numeric_limits<double>::epsilon() ? 0 : total_average_angle /
                                          (total_length + new_along_plane_distance));
                   depth_reference_surface = new_depth_reference_surface;
+                  local_angle = check_point_angle;
                 }
 
               // increase average angle
@@ -1025,6 +1034,7 @@ namespace WorldBuilder
       WBAssert(!std::isnan(depth_reference_surface), "depth_reference_surface is not a number: " << depth_reference_surface << ".");
 
       PointDistanceFromCurvedPlanes return_values(natural_coordinate.get_coordinate_system());
+      // note that some values will be nan if the point is not on any line segment.
       return_values.distance_from_plane = distance;
       return_values.distance_along_plane = along_plane_distance;
       return_values.fraction_of_section = section_fraction;
@@ -1034,6 +1044,9 @@ namespace WorldBuilder
       return_values.average_angle = total_average_angle;
       return_values.depth_reference_surface = depth_reference_surface;
       return_values.closest_trench_point = closest_point_on_line_cartesian;
+      return_values.x_axis = x_axis;
+      return_values.y_axis = y_axis;
+      return_values.local_angle = local_angle;
       return return_values;
     }
 

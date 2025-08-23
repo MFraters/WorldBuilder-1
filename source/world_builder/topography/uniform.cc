@@ -38,8 +38,12 @@ namespace WorldBuilder
       = default;
 
     void
-    Uniform::declare_entries(Parameters &/*prm*/, const std::string & /*unused*/)
+    Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
     {
+      prm.declare_entry("", Types::Object(),
+                        "Uniform gravity model. It returns the gravity vector in a Cartesian coordinate system at "
+                        "a given position, which has a constant magitude for the whole domain. The vector points "
+                        "down in cartesian coordinates and to the center of the sphere in spherical coordinates.");
       // Nothing to declare.
     }
 
@@ -58,7 +62,7 @@ namespace WorldBuilder
                             const Objects::NaturalCoordinate &/*position_in_natural_coordinates*/,
                             const double /*depth*/) const
     {
-      return 0;
+      return 10e3;
     }
 
     Uniform::SurfaceType

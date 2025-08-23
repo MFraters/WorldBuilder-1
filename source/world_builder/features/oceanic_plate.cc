@@ -306,7 +306,12 @@ namespace WorldBuilder
                         output[entry_in_output[i_property]+2] = velocity[2];
                         break;
                       }
-                      break;
+                      case 6: // topography
+                      {
+                        // the topography is not handled by the individual features.
+                        break;
+                      }
+
                       default:
                       {
                         WBAssertThrow(false,

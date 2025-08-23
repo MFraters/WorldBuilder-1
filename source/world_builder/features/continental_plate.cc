@@ -295,6 +295,11 @@ namespace WorldBuilder
                         //std::cout << "vel=" << output[entry_in_output[i_property]] << ":" << output[entry_in_output[i_property]+1] << ":" << output[entry_in_output[i_property]+2] << std::endl;
                         break;
                       }
+                      case 6: // topography
+                      {
+                        // the topography is not handled by the individual features.
+                        break;
+                      }
                       default:
                       {
                         WBAssertThrow(false,

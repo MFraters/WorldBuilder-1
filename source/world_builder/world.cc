@@ -313,10 +313,15 @@ namespace WorldBuilder
               n_output_entries += 3;
               break;
             }
+            case 6: // topography (1 entry)
+            {
+              n_output_entries += 1;
+              break;
+            }
             default:
               WBAssertThrow(false,
                             "Internal error: Unimplemented property provided. " <<
-                            "Only temperature (1), composition (2), grains (3), tag (4) or velocity (5) are allowed. "
+                            "Only temperature (1), composition (2), grains (3), tag (4), velocity (5) or topography are allowed. "
                             "Provided property number was: " << property[0]);
           }
       }
@@ -399,11 +404,16 @@ namespace WorldBuilder
               counter += 3;
               break;
             }
+            case 6: // topography
+            {
+              counter += 1;
+              break;
+            }
             default:
             {
               WBAssert(false,
                        "Internal error: Unimplemented property provided by internal process. " <<
-                       "Only temperature (1), composition (2), grains (3), tag (4) or velocity (5) are allowed. "
+                       "Only temperature (1), composition (2), grains (3), tag (4), velocity (5) or topography are allowed. "
                        "Provided property number was: " << property[0]);
             }
           }
@@ -485,10 +495,17 @@ namespace WorldBuilder
               properties_local.emplace_back(properties[i_property]);
               break;
             }
+            case 6: // topography
+            {
+              entry_in_output.emplace_back(output.size());
+              output.emplace_back(this->parameters.topography_model->get_topography(point, natural_coordinate, depth));
+              properties_local.emplace_back(properties[i_property]);
+              break;
+            }
             default:
               WBAssertThrow(false,
                             "Internal error: Unimplemented property provided. " <<
-                            "Only temperature (1), composition (2), grains (3), tag (4) or velocity (5) are allowed. "
+                            "Only temperature (1), composition (2), grains (3), tag (4), velocity (5) or topography (6) are allowed. "
                             "Provided property number was: " << properties[i_property][0]);
           }
       }

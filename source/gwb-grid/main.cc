@@ -971,37 +971,58 @@ int main(int argc, char **argv)
             {
               if (compress_size)
                 {
-                  for (size_t i = 1; i <= n_cell_x + 1; ++i)
-                    for (size_t j = 1; j <= n_cell_y + 1; ++j)
-                      for (size_t k = 1; k <= n_cell_z + 1; ++k)
+                  //size_t index = 1;
+                  //const unsigned properties[1][3] = {{6,0,0}}; // topography
+                  const std::vector<std::array<unsigned ,3>> properties({{{6,0,0}}}); // topography
+                  const double ref_domain_height = outer_radius - inner_radius;
+                  const double ref_cell_height = ref_domain_height / static_cast<double>(n_cell_z);
+                  pool.parallel_for(0, n_cell_x*n_cell_y*n_cell_z, [&] (size_t index)
+                  {
+                    const size_t i = (index-1) / ((n_cell_y)*(n_cell_z))+1;
+                    const size_t j = ((index-1) / (n_cell_z)) % (n_cell_y)+1;
+                    const size_t k = (index-1) % (n_cell_z)+1;
+                    //for (size_t i = 1; i <= n_cell_x + 1; ++i)
+                    {
+                      std::array<double,3> coords;
+                      //for (size_t j = 1; j <= n_cell_y + 1; ++j)
+                      {
+                        const double longitude = x_min + (static_cast<double>(i) - 1.0) * dlong;
+                        const double latitude = y_min + (static_cast<double>(j) - 1.0) * dlat;
+                        const double cos_longitude = cos(longitude);
+                        const double sin_longitude = sin(longitude);
+                        const double cos_latitude = cos(latitude);
+                        const double sin_latitude = sin(latitude);
+                        //for (size_t k = 1; k <= n_cell_z + 1; ++k)
                         {
-                          grid_x[counter] = x_min + (static_cast<double>(i) - 1.0) * dlong;
-                          grid_y[counter] = y_min + (static_cast<double>(j) - 1.0) * dlat;
-                          const double longitude = grid_x[counter];
-                          const double latitutde = grid_y[counter];
-                          domain_height[counter] = outer_radius - inner_radius;
-                          cell_height[counter] = domain_height[counter] / static_cast<double>(n_cell_z);
-                          grid_z[counter] = inner_radius + (static_cast<double>(k) - 1.0) * cell_height[counter];
-                          grid_depth_wrt_surface[counter] = domain_height[counter] - (static_cast<double>(k) - 1.0) * cell_height[counter];
-                          const double radius = grid_z[counter];
+                          //std::cout << index << ", i:it = " << i << ":" << it << ", j:jt = " << j << ":" << jt << ", k:kt = " << k << ":" << kt << std::endl;
+                          //WBAssertThrow(i == it && j == jt && k == kt, "wrong indices to counnter: countter = " << index << ", i:it = " << i << ":" << it << ", j:jt = " << j << ":" << jt << ", k:kt = " << k << ":" << kt );
+                          grid_x[index] = longitude;
+                          grid_y[index] = latitude;
+                          //domain_height[counter] = outer_radius - inner_radius;
+                          //cell_height[counter] = domain_height[counter] / static_cast<double>(n_cell_z);
+                          grid_z[index] = inner_radius + (static_cast<double>(k) - 1.0) * ref_cell_height;
+                          grid_depth_wrt_surface[index] = ref_domain_height - (static_cast<double>(k) - 1.0) * ref_cell_height;
+                          const double radius = grid_z[index];
 
-                          const double x = radius * std::cos(latitutde) * std::cos(longitude);
-                          const double y = radius * std::cos(latitutde) * std::sin(longitude);
-                          const double z = radius * std::sin(latitutde);
+                          const double x = radius * cos_latitude * cos_longitude;
+                          const double y = radius * cos_latitude * sin_longitude;
+                          const double z = radius * sin_latitude;
+                          coords = {{x,y,z}};
                           // todo: actual position if that is what we decide on?
-                          std::vector<std::array<unsigned ,3>> properties;
-                          properties.push_back({{6,0,0}}); // topography
-                          const std::array<double,3> coords = {{x,y,z}};
-                          const double topography = world->properties(coords, grid_depth_wrt_surface[counter],properties)[0];
+                          const double topography = world->properties(coords, grid_depth_wrt_surface[index],properties)[0];
                           //std::cout << counter << ": topography 1 = " << topography << ", x:y:z = " << x <<":" << y <<":" << z  << ", radius = " << radius << ", lat:long = " << latitutde << ":" << longitude << ", x_min:y_max = " << x_min <<":" << y_min << std::endl;
                           //WBAssertThrow(counter < 100, "stop");
-                          domain_height[counter] = outer_radius + topography - inner_radius;
-                          cell_height[counter] = domain_height[counter] / static_cast<double>(n_cell_z);
-                          grid_z[counter] = inner_radius + (static_cast<double>(k) - 1.0) * cell_height[counter];
-                          grid_depth_wrt_surface[counter]   = domain_height[counter] - (static_cast<double>(k) - 1.0) * cell_height[counter];
-                          grid_depth_wrt_reference[counter] = domain_height[counter] - (static_cast<double>(k) - 1.0) * cell_height[counter] - topography;
-                          counter++;
+                          domain_height[index] = outer_radius + topography - inner_radius;
+                          cell_height[index] = domain_height[index] / static_cast<double>(n_cell_z);
+                          grid_z[index] = inner_radius + (static_cast<double>(k) - 1.0) * cell_height[index];
+                          grid_depth_wrt_surface[index]   = domain_height[index] - (static_cast<double>(k) - 1.0) * cell_height[index];
+                          grid_depth_wrt_reference[index] = domain_height[index] - (static_cast<double>(k) - 1.0) * cell_height[index] - topography;
+                          index++;
                         }
+                      }
+                    }
+                  }
+                                   );
                 }
               else
                 {
@@ -1122,24 +1143,30 @@ int main(int argc, char **argv)
             {
               if (compress_size)
                 {
-                  for (size_t i = 1; i <= n_cell_x; ++i)
-                    {
-                      for (size_t j = 1; j <= n_cell_y; ++j)
-                        {
-                          for (size_t k = 1; k <= n_cell_z; ++k)
-                            {
-                              grid_connectivity[counter][0] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][1] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][2] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][3] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][4] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][5] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][6] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k;
-                              grid_connectivity[counter][7] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k;
-                              counter++;
-                            }
-                        }
-                    }
+                  //for (size_t i = 1; i <= n_cell_x; ++i)
+                  //  {
+                  //    for (size_t j = 1; j <= n_cell_y; ++j)
+                  //      {
+                  //        for (size_t k = 1; k <= n_cell_z; ++k)
+                  //          {
+                  pool.parallel_for(0, n_cell_x*n_cell_y*n_cell_z, [&] (size_t index)
+                  {
+                    const size_t i = (index-1) / ((n_cell_y)*(n_cell_z))+1;
+                    const size_t j = ((index-1) / (n_cell_z)) % (n_cell_y)+1;
+                    const size_t k = (index-1) % (n_cell_z)+1;
+                    grid_connectivity[index][0] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1;
+                    grid_connectivity[index][1] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1;
+                    grid_connectivity[index][2] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1;
+                    grid_connectivity[index][3] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1;
+                    grid_connectivity[index][4] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k;
+                    grid_connectivity[index][5] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k;
+                    grid_connectivity[index][6] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k;
+                    grid_connectivity[index][7] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k;
+                    index++;
+                  });
+                  //           }
+                  //       }
+                  //   }
                 }
               else
                 {

@@ -798,8 +798,9 @@ namespace WorldBuilder
                 WBAssertThrow(layer_type != LayerType::MAX_LAYERTYPE, "Could not find litho1.0 layer type " << rest_of_string);
                 for (size_t index = 0; index < n_nodes; ++index )
                   {
+                    const std::vector<Point<2>> scaled_polygon = Utilities::get_scaled_polygon(addition_points,1.5);
                     // only add the point if it is actually in the feature
-                    if (Utilities::polygon_contains_point(Utilities::get_scaled_polygon(addition_points,1.5), Point<2>(Datasets::LITHO1_0::coordinates_lat_long[index*2+1],Datasets::LITHO1_0::coordinates_lat_long[index*2],CoordinateSystem::spherical)))
+                    if (Utilities::polygon_contains_point(scaled_polygon, Point<2>(Datasets::LITHO1_0::coordinates_lat_long[index*2+1],Datasets::LITHO1_0::coordinates_lat_long[index*2],CoordinateSystem::spherical)))
                       {
                         const size_t global_index = index*n_layers+static_cast<size_t> (layer_type);
                         result.first.emplace_back(Datasets::LITHO1_0::depths[global_index]);
@@ -1218,29 +1219,44 @@ namespace WorldBuilder
 
     Value *array1 = Pointer((strict_base  + "/" + name).c_str()).Get(parameters);
 
-    for (size_t i = 0; i < array1->Size(); ++i )
+    for (unsigned int i = 0; i < array1->Size(); ++i )
       {
         const std::string base = (strict_base + "/").append(name).append("/").append(std::to_string(i));
-        Value *array2 = Pointer((base).c_str()).Get(parameters);
+        //Value *array2 = Pointer((base).c_str()).Get(parameters);
 
         // Not sure why cppcheck it is generating the warning
         // Filed a question at: https://sourceforge.net/p/cppcheck/discussion/general/thread/429759f85e/
         // cppcheck-suppress constStatement
-        std::vector<Point<2> > sub_vector(array2->Size(),Point<2>(NaN::DSNAN,NaN::DSNAN,coordinate_system->natural_coordinate_system()));
-        for (size_t j = 0; j < array2->Size(); ++j )
+        //std::vector<Point<2> > sub_vector(array2->Size(),Point<2>(NaN::DSNAN,NaN::DSNAN,coordinate_system->natural_coordinate_system()));
+        //std::cout << "Flag 1" << std::endl << std::endl;
+        //auto array2 = array1->FindMember(name.c_str());
+        //std::cout << "Flag 1.2" << std::endl << std::endl;
+        auto array2 = array1->GetArray();//FindMember(std::to_string(i).c_str());
+        //std::cout << "Flag 2" << std::endl;
+        //std::vector<Point<2> > sub_vector(array1->FindMember(name.c_str())->value.FindMember(std::to_string(i).c_str())->value.Size(),Point<2>(NaN::DSNAN,NaN::DSNAN,coordinate_system->natural_coordinate_system()));
+        std::vector<Point<2> > sub_vector(array2[i].Size(),Point<2>(NaN::DSNAN,NaN::DSNAN,coordinate_system->natural_coordinate_system()));
+        //std::cout << "Flag 3" << std::endl;
+        //for (size_t j = 0; j < array1->FindMember(name.c_str())->value.FindMember(std::to_string(i).c_str())->value.Size(); ++j )
+        for (unsigned int j = 0; j < array2[i].Size(); ++j )
           {
-            const std::string base_extended = base + "/" + std::to_string(j);
+            //const std::string base_extended = base + "/" + std::to_string(j);
 
-            WBAssertThrow(Pointer((base_extended).c_str()).Get(parameters)->Size() == 2,
+            auto array3 = array2[i].GetArray();//FindMember(std::to_string(j).c_str());
+            //WBAssertThrow(Pointer((base_extended).c_str()).Get(parameters)->Size() == 2,
+            //              "Array " << i << " is supposed to be a 2d point, but the inner array dimensions of "
+            //              << j << " is " << Pointer((base_extended).c_str()).Get(parameters)->Size() << '.');
+            WBAssertThrow(array3[j].Size() == 2,
                           "Array " << i << " is supposed to be a 2d point, but the inner array dimensions of "
-                          << j << " is " << Pointer((base_extended).c_str()).Get(parameters)->Size() << '.');
+                          << j << " is " << array3[j].Size() << '.');
             double value1;
             double value2;
 
             try
               {
-                value1 = Pointer((base_extended + "/0").c_str()).Get(parameters)->GetDouble();
-                value2 = Pointer((base_extended + "/1").c_str()).Get(parameters)->GetDouble();
+                //value1 = Pointer((base_extended + "/0").c_str()).Get(parameters)->GetDouble();
+                //value2 = Pointer((base_extended + "/1").c_str()).Get(parameters)->GetDouble();
+                value1 = array3[j].GetArray()[0].GetDouble();//Pointer((base_extended + "/0").c_str()).Get(parameters)->GetDouble();
+                value2 = array3[j].GetArray()[1].GetDouble();//Pointer((base_extended + "/1").c_str()).Get(parameters)->GetDouble();
               }
             catch (...)
               {

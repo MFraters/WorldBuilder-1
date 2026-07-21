@@ -634,7 +634,7 @@ int main(int argc, char **argv)
       /**
        * Begin making the grid
        */
-      std::vector<std::array<unsigned int,3>> topo_input = {{{6,0,0}}};
+      const std::vector<std::array<unsigned int,3>> topo_input = {{{6,0,0}}};
       std::cout << "[4/6] Building the grid...                        \r";
       std::cout.flush();
       WBAssertThrow(dim == 2 || dim == 3, "Dimension should be 2d or 3d.");

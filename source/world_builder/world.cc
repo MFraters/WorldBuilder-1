@@ -514,9 +514,12 @@ namespace WorldBuilder
     const Objects::NaturalCoordinate natural_coordinate = Objects::NaturalCoordinate(point,*(this->parameters.coordinate_system));
 
     // create output vector
-    std::vector<double> output(World::properties_output_size(properties));
-    std::vector<size_t> entry_in_output(properties.size());
-    std::vector<std::array<unsigned int,3>> properties_local(properties.size());
+    std::vector<double> output;
+    output.reserve(World::properties_output_size(properties));
+    std::vector<size_t> entry_in_output;
+    entry_in_output.reserve(properties.size());
+    std::vector<std::array<unsigned int,3>> properties_local;
+    properties_local.reserve(properties.size());
     const double gravity_norm = this->parameters.gravity_model->gravity_norm(point);
     for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
       {

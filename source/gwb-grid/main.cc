@@ -1915,6 +1915,7 @@ int main(int argc, char **argv)
           pool.parallel_for(0, n_p, [&] (size_t i)
           {
             thread_local static  std::vector<double> output(world->properties_output_size(properties));
+            output.clear();
 
             const std::array<double,2> coords = {{grid_x[i], grid_z[i]}};
             world->properties(coords, grid_depth_wrt_surface[i],properties,output);
@@ -1940,6 +1941,7 @@ int main(int argc, char **argv)
           pool.parallel_for(0, n_p, [&] (size_t i)
           {
             thread_local static  std::vector<double> output(world->properties_output_size(properties));
+            output.clear();
             const std::array<double,3> coords = {{grid_x[i], grid_y[i], grid_z[i]}};
             world->properties(coords, grid_depth_wrt_surface[i],properties,output);
             data_set[2][i] = output[0];

@@ -537,16 +537,17 @@ namespace WorldBuilder
 
     // create output vector
     static WorldBuilder::Utilities::ScratchSpace<std::vector<size_t>> entry_in_output_space;
-    typename WorldBuilder::Utilities::ScratchSpace<std::vector<size_t>>::ScopedScratchObject entry_in_output_scratch(entry_in_output_space);
+    typename WorldBuilder::Utilities::ScratchSpace<std::vector<size_t>>::template ScopedScratchObject entry_in_output_scratch(entry_in_output_space);
     std::vector<size_t> &entry_in_output = entry_in_output_scratch;
     entry_in_output.resize(properties.size(), 0);
-    std::fill(entry_in_output.begin(),entry_in_output.end(),0);
+    std::fill(entry_in_output.begin(), entry_in_output.end(), 0);
 
     static WorldBuilder::Utilities::ScratchSpace<std::vector<std::array<unsigned int,3>>> properties_local_space;
-    typename WorldBuilder::Utilities::ScratchSpace<std::vector<std::array<unsigned int,3>>>::ScopedScratchObject properties_local_scratch(properties_local_space);
+    typename WorldBuilder::Utilities::ScratchSpace<std::vector<std::array<unsigned int,3>>>::template ScopedScratchObject properties_local_scratch(properties_local_space);
     std::vector<std::array<unsigned int, 3>> &properties_local = properties_local_scratch;
     properties_local.resize(properties.size(), {{0,0,0}});
-    std::fill(properties_local.begin(),properties_local.end(), std::array<unsigned int,3>({{0u,0u,0u}}));
+    std::fill(properties_local.begin(), properties_local.end(), std::array<unsigned int,3>({{0u,0u,0u}}));
+
 
     const double gravity_norm = this->parameters.gravity_model->gravity_norm(point);
     size_t output_location_index = 0;

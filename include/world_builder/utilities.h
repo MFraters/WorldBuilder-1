@@ -68,7 +68,7 @@ namespace WorldBuilder
 
         T &get_object_from_pool()
         {
-          std::lock_guard<std::mutex> lock(mutex);
+          //std::lock_guard<std::mutex> lock(mutex);
           for (auto &pair : object_list)
             if (pair.second == false)
               {
@@ -82,7 +82,7 @@ namespace WorldBuilder
 
         void return_object_to_pool (T &t)
         {
-          std::lock_guard<std::mutex> lock(mutex);
+          //std::lock_guard<std::mutex> lock(mutex);
           for (auto &pair : object_list)
             if (&pair.first == &t)
               {
@@ -94,9 +94,10 @@ namespace WorldBuilder
 
       private:
         std::mutex mutex;
-        std::list<std::pair<T,bool>> object_list;
+        static thread_local std::list<std::pair<T,bool>> object_list;
     };
 
+    template<typename T> thread_local std::list<std::pair<T,bool>> ScratchSpace<T>::object_list = {};
 
     /**
      * provide a short way to test if two doubles are equal.

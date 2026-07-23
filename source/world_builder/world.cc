@@ -18,6 +18,7 @@
 */
 
 #include "world_builder/world.h"
+#include "world_builder/utilities.h"
 
 
 #include "world_builder/config.h"
@@ -34,6 +35,7 @@
 #include "world_builder/types/point.h"
 #include "world_builder/types/int.h"
 
+#include <array>
 #include <iostream>
 #include <world_builder/coordinate_system.h>
 #include <world_builder/objects/distance_from_surface.h>
@@ -534,10 +536,18 @@ namespace WorldBuilder
     const Objects::NaturalCoordinate natural_coordinate = Objects::NaturalCoordinate(point,*(this->parameters.coordinate_system));
 
     // create output vector
-    //thread_local static std::vector<size_t> entry_in_output(properties.size(),0);
-    //thread_local static std::vector<std::array<unsigned int,3>> properties_local(properties.size(),{{0,0,0}});
-    std::vector<size_t> entry_in_output(properties.size(),0);
-    std::vector<std::array<unsigned int,3>> properties_local(properties.size(), {{0,0,0}});
+    static WorldBuilder::Utilities::ScratchSpace<std::vector<size_t>> entry_in_output_space;
+    ScratchSpace<std::vector<size_t>>::ScopedScratchObject entry_in_output_scratch(entry_in_output_space);
+    std::vector<size_t> &entry_in_output = entry_in_output_scratch;
+    entry_in_output.resize(properties.size(), 0);
+    std::fill(entry_in_output.begin(),entry_in_output.end(),0);
+
+    static WorldBuilder::Utilities::ScratchSpace<std::vector<std::array<unsigned int,3>>> properties_local_space;
+    ScratchSpace<std::vector<std::array<unsigned int,3>>>::ScopedScratchObject properties_local_scratch(properties_local_space);
+    std::vector<std::array<unsigned int, 3>> &properties_local = properties_local_scratch;
+    properties_local.resize(properties.size(), {{0,0,0}});
+    std::fill(properties_local.begin(),properties_local.end(), std::array<unsigned int,3>({{0u,0u,0u}}));
+
     const double gravity_norm = this->parameters.gravity_model->gravity_norm(point);
     size_t output_location_index = 0;
     for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)

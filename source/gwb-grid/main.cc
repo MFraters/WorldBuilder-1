@@ -1706,7 +1706,7 @@ int main(int argc, char **argv)
           std::vector<double> temp_shell_grid_y(shell_n_p);
           std::vector<double> temp_shell_grid_z(shell_n_p);
 
-          const size_t n_v = shell_n_v * 2;
+          //const size_t n_v = shell_n_v * 2;
           n_p = (n_cell_z + 1) * shell_n_p;
           n_cell = (n_cell_z) * shell_n_cell;
 

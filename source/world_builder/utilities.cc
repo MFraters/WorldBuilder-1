@@ -25,8 +25,6 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
-#include <list>
-#include <mutex>
 
 #ifdef WB_WITH_MPI
 // we don't need the c++ MPI wrappers
@@ -36,7 +34,6 @@
 #endif
 
 #include "world_builder/nan.h"
-#include "world_builder/utilities.h"
 #include <world_builder/coordinate_system.h>
 
 
@@ -45,63 +42,6 @@ namespace WorldBuilder
   namespace Utilities
   {
 
-    template <typename T>
-    class ScratchSpace
-    {
-      public:
-        class ScopedScratchObject
-        {
-          public:
-            ScopedScratchObject (ScratchSpace<T> &space_)
-              : space (space_),
-                t (space.get_object_from_pool())
-            {}
-
-            ~ScopedScratchObject()
-            {
-              space.return_object_to_pool(t);
-            }
-
-            operator T &()
-            {
-              return t;
-            }
-
-          private:
-            ScratchSpace &space;
-            T &t;
-        };
-
-        T &get_object_from_pool()
-        {
-          std::lock_guard<std::mutex> lock(mutex);
-          for (auto &pair : object_list)
-            if (pair.second == false)
-              {
-                pair.second = true;
-                return pair.first;
-              }
-
-          object_list.emplace_back (T(), true);
-          return object_list.back().first;
-        }
-
-        void return_object_to_pool (T &t)
-        {
-          std::lock_guard<std::mutex> lock(mutex);
-          for (auto &pair : object_list)
-            if (&pair.first == &t)
-              {
-                pair.second = false;
-                return;
-              }
-          // TODO: assert that we never get here
-        }
-
-      private:
-        std::mutex mutex;
-        std::list<std::pair<T,bool>> object_list;
-    };
 
     bool
     polygon_contains_point(const std::vector<Point<2> > &point_list,

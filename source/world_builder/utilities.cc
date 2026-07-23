@@ -34,6 +34,7 @@
 #endif
 
 #include "world_builder/nan.h"
+#include "world_builder/utilities.h"
 #include <world_builder/coordinate_system.h>
 
 

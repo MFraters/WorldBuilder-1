@@ -507,7 +507,7 @@ namespace WorldBuilder
                     const double depth,
                     const std::vector<std::array<unsigned int,3>> &properties) const
   {
-
+    //std::cout << "G: properties.size() = " << properties.size() << ", World::properties_output_size(properties) = "<< World::properties_output_size(properties) << std::endl;
     std::vector<double> output(World::properties_output_size(properties));
     this->properties(point_,depth,properties,output);
     return output;
@@ -535,10 +535,11 @@ namespace WorldBuilder
     const Objects::NaturalCoordinate natural_coordinate = Objects::NaturalCoordinate(point,*(this->parameters.coordinate_system));
 
     // create output vector
-    thread_local static std::vector<size_t> entry_in_output;
-    entry_in_output.reserve(properties.size());
-    thread_local static std::vector<std::array<unsigned int,3>> properties_local;
-    properties_local.reserve(properties.size());
+    //thread_local static std::vector<size_t> entry_in_output(properties.size(),0);
+    //thread_local static std::vector<std::array<unsigned int,3>> properties_local(properties.size(),{{0,0,0}});
+    std::vector<size_t> entry_in_output(properties.size(),0);
+    std::vector<std::array<unsigned int,3>> properties_local(properties.size(),{{0,0,0}});
+  //std::cout << "H: properties.size() << " << properties.size() << ", entry_in_output.size() = " << entry_in_output.size() << std::endl;
     const double gravity_norm = this->parameters.gravity_model->gravity_norm(point);
     size_t output_location_index = 0;
     for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
@@ -548,70 +549,70 @@ namespace WorldBuilder
             case 1: // Temperature
               if (std::fabs(depth) < 2.0 * std::numeric_limits<double>::epsilon() && force_surface_temperature)
                 {
-                  entry_in_output.emplace_back(output_location_index);
-                  output[output.size()]=this->surface_temperature;
+                  entry_in_output[i_property] = output_location_index;
+                  output[output_location_index]=this->surface_temperature;
                   output_location_index++;
                   if (properties.size() == 1)
                     return;
                 }
               else
                 {
-                  entry_in_output.emplace_back(output_location_index);
+                  entry_in_output[i_property] = output_location_index;
                   output[output_location_index] = potential_mantle_temperature * std::exp(((thermal_expansion_coefficient * gravity_norm) / specific_heat) * depth);
                   output_location_index++;
                 }
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             case 2: // composition
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] = output_location_index;
               output[output_location_index] = 0.;
               output_location_index++;
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             case 3: // grains (10 entries per grain)
             {
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] =output_location_index;
               output_location_index+=properties[i_property][2]*10;
               //const std::vector<double> tmp_vector(properties[i_property][2]*10,0.);
               //output.insert(output.end(), tmp_vector.begin(), tmp_vector.end());
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] =properties[i_property];
               break;
             }
             case 4: // tag
             {
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] = output_location_index;
               output[output_location_index] = -1;
               output_location_index++;
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             }
             case 5: // velocity
             {
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] = output_location_index;
               //output.emplace_back(0);
               //output.emplace_back(0);
               //output.emplace_back(0);
               output_location_index+=3;
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             }
             case 6: // topography
             {
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] = output_location_index;
               //output.emplace_back(0);
               output_location_index++;
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             }
             case 7: // density
             {
-              entry_in_output.emplace_back(output_location_index);
+              entry_in_output[i_property] = output_location_index;
 
               // TODO: If a mantle adiabatic temperature is used then the background
               // density should account for it.
               output[output_location_index] =background_density;
               output_location_index++;
-              properties_local.emplace_back(properties[i_property]);
+              properties_local[i_property] = properties[i_property];
               break;
             }
             default:
@@ -621,6 +622,7 @@ namespace WorldBuilder
                             "Provided property number was: " << properties[i_property][0]);
           }
       }
+  //std::cout << "entry_in_output.size() = " << entry_in_output.size() << ", output.size() = " << output.size() << std::endl;
     for (auto &&it : parameters.features)
       {
         it->properties(point, natural_coordinate, depth, properties_local, gravity_norm, entry_in_output, output);

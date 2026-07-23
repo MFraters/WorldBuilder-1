@@ -624,7 +624,7 @@ int main(int argc, char **argv)
       std::vector<double> grid_depth_wrt_reference(0);
 
       const size_t pow_2_dim = dim == 2 ? 4 : 8;
-      std::vector<vtu11::VtkIndexType> connectivity(n_cell*pow_2_dim);
+      std::vector<vtu11::VtkIndexType> connectivity(0);//n_cell*pow_2_dim);
       //std::vector<std::vector<size_t> > grid_connectivity(0);
 
 
@@ -868,6 +868,8 @@ int main(int argc, char **argv)
 
           // compute connectivity. Local to global mapping.
           //grid_connectivity.resize(n_cell,std::vector<size_t>((dim-1)*4));
+           connectivity.resize(n_cell*pow_2_dim);
+
 
           counter = 0;
           if (dim == 2)
@@ -985,6 +987,8 @@ int main(int argc, char **argv)
             }
 
           //grid_connectivity.resize(n_cell,std::vector<size_t>(4));
+                 connectivity.resize(n_cell*pow_2_dim);
+
           counter = 0;
           for (size_t j = 1; j <= n_cell_z; ++j)
             {
@@ -1348,6 +1352,7 @@ int main(int argc, char **argv)
           // compute connectivity. Local to global mapping.
           const std::vector<size_t> tmp_vector((dim-1)*4);
           //grid_connectivity.resize(n_cell,tmp_vector);
+                 connectivity.resize(n_cell*pow_2_dim);
 
           counter = 0;
           if (dim == 2)
@@ -1716,6 +1721,7 @@ int main(int argc, char **argv)
           grid_depth_wrt_surface.resize(n_p);
           grid_depth_wrt_reference.resize(n_p);
           //grid_connectivity.resize(n_cell,std::vector<size_t>(n_v));
+                 connectivity.resize(n_cell*pow_2_dim);
 
 
           for (size_t i = 0; i < n_cell_z + 1; ++i)

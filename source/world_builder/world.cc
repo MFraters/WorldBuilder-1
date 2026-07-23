@@ -538,8 +538,8 @@ namespace WorldBuilder
     //thread_local static std::vector<size_t> entry_in_output(properties.size(),0);
     //thread_local static std::vector<std::array<unsigned int,3>> properties_local(properties.size(),{{0,0,0}});
     std::vector<size_t> entry_in_output(properties.size(),0);
-    std::vector<std::array<unsigned int,3>> properties_local(properties.size(),{{0,0,0}});
-  //std::cout << "H: properties.size() << " << properties.size() << ", entry_in_output.size() = " << entry_in_output.size() << std::endl;
+    std::vector<std::array<unsigned int,3>> properties_local(properties.size(), {{0,0,0}});
+    //std::cout << "H: properties.size() << " << properties.size() << ", entry_in_output.size() = " << entry_in_output.size() << std::endl;
     const double gravity_norm = this->parameters.gravity_model->gravity_norm(point);
     size_t output_location_index = 0;
     for (unsigned int i_property = 0; i_property < properties.size(); ++i_property)
@@ -622,7 +622,7 @@ namespace WorldBuilder
                             "Provided property number was: " << properties[i_property][0]);
           }
       }
-  //std::cout << "entry_in_output.size() = " << entry_in_output.size() << ", output.size() = " << output.size() << std::endl;
+    //std::cout << "entry_in_output.size() = " << entry_in_output.size() << ", output.size() = " << output.size() << std::endl;
     for (auto &&it : parameters.features)
       {
         it->properties(point, natural_coordinate, depth, properties_local, gravity_norm, entry_in_output, output);

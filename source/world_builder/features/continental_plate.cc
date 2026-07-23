@@ -258,8 +258,8 @@ namespace WorldBuilder
                             {
                               for (const auto &temperature_model: temperature_models)
                                 {
-                    //std::cout << "C: i_property = " << i_property << ", entry_in_output.size() = " << entry_in_output.size() << ", output.size() = " << output.size() << std::endl;
-                    //std::cout << "D: entry_in_output[i_property] = " << entry_in_output[i_property] << std::endl;
+                                  //std::cout << "C: i_property = " << i_property << ", entry_in_output.size() = " << entry_in_output.size() << ", output.size() = " << output.size() << std::endl;
+                                  //std::cout << "D: entry_in_output[i_property] = " << entry_in_output[i_property] << std::endl;
                                   output[entry_in_output[i_property]] = temperature_model->get_temperature(position_in_cartesian_coordinates,
                                                                                                            position_in_natural_coordinates,
                                                                                                            depth,

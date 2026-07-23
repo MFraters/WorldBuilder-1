@@ -1749,7 +1749,8 @@ int main(int argc, char **argv)
                   grid_z[j] = temp_shell_grid_z[counter];
                   grid_depth_wrt_surface[j] = outer_radius - std::sqrt(grid_x[j] * grid_x[j] + grid_y[j] * grid_y[j] + grid_z[j] * grid_z[j]);
                   grid_depth_wrt_surface[j] = (std::fabs(grid_depth_wrt_surface[j]) < 1e-8 ? 0 : grid_depth_wrt_surface[j]);
-                  const double topography = world->properties({{grid_x[j],grid_y[j],grid_z[j]}}, grid_depth_wrt_surface[counter], topo_input)[0];
+                  world->properties({{grid_x[j],grid_y[j],grid_z[j]}}, grid_depth_wrt_surface[counter], topo_input, topo_output);
+                  const double topography = topo_output[0];
 
                   grid_x[j] = temp_shell_grid_x[counter]+topography*(double(i)/double(n_cell_z));
                   grid_y[j] = temp_shell_grid_y[counter]+topography*(double(i)/double(n_cell_z));
@@ -1922,7 +1923,7 @@ int main(int argc, char **argv)
           {
             //std::cout << "E: properties.size() = " << properties.size() << ", world->properties_output_size(properties) " << world->properties_output_size(properties) << std::endl;
             thread_local static  std::vector<double> output(world->properties_output_size(properties));
-            std::fill(topo_output.begin(), topo_output.end(), 0);
+            std::fill(output.begin(), output.end(), 0);
             //std::cout << "F: output.size() = " << output.size() << std::endl;
 
             const std::array<double,2> coords = {{grid_x[i], grid_z[i]}};
@@ -1948,7 +1949,7 @@ int main(int argc, char **argv)
           pool.parallel_for(0, n_p, [&] (size_t i)
           {
             thread_local static  std::vector<double> output(world->properties_output_size(properties));
-            std::fill(topo_output.begin(), topo_output.end(), 0);
+            std::fill(output.begin(), output.end(), 0);
             const std::array<double,3> coords = {{grid_x[i], grid_y[i], grid_z[i]}};
             world->properties(coords, grid_depth_wrt_surface[i],properties,output);
             data_set[2][i] = output[0];
@@ -1989,7 +1990,6 @@ int main(int argc, char **argv)
 
             vtu11::Vtu11UnstructuredMesh filtered_mesh {filtered_points, filtered_connectivity, filtered_offsets, filtered_types};
             std::vector<vtu11::DataSetData> filtered_data_set;
-            //std::cout << "flag 6: filtered_mesh.points.size() = " << filtered_mesh.points_.size() <<std::endl;
             filter_vtu_mesh(static_cast<int>(dim), include_tag, mesh, data_set, filtered_mesh, filtered_data_set);
             vtu11::writeVtu( file_without_extension + ".filtered.vtu", filtered_mesh, dataSetInfo, filtered_data_set, vtu_output_format );
           }

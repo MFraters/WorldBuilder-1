@@ -623,7 +623,9 @@ int main(int argc, char **argv)
       std::vector<double> grid_depth_wrt_surface(0);
       std::vector<double> grid_depth_wrt_reference(0);
 
-      std::vector<std::vector<size_t> > grid_connectivity(0);
+      const size_t pow_2_dim = dim == 2 ? 4 : 8;
+      std::vector<vtu11::VtkIndexType> connectivity(n_cell*pow_2_dim);
+      //std::vector<std::vector<size_t> > grid_connectivity(0);
 
 
       const bool compress_size = true;
@@ -865,7 +867,7 @@ int main(int argc, char **argv)
             }
 
           // compute connectivity. Local to global mapping.
-          grid_connectivity.resize(n_cell,std::vector<size_t>((dim-1)*4));
+          //grid_connectivity.resize(n_cell,std::vector<size_t>((dim-1)*4));
 
           counter = 0;
           if (dim == 2)
@@ -874,10 +876,10 @@ int main(int argc, char **argv)
                 {
                   for (size_t i = 1; i <= n_cell_x; ++i)
                     {
-                      grid_connectivity[counter][0] = i + (j - 1) * (n_cell_x + 1) - 1;
-                      grid_connectivity[counter][1] = i + 1 + (j - 1) * (n_cell_x + 1) - 1;
-                      grid_connectivity[counter][2] = i + 1  + j * (n_cell_x + 1) - 1;
-                      grid_connectivity[counter][3] = i + j * (n_cell_x + 1) - 1;
+                      connectivity[counter*pow_2_dim]   = static_cast<vtu11::VtkIndexType>(i + (j - 1) * (n_cell_x + 1) - 1);
+                      connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(i + 1 + (j - 1) * (n_cell_x + 1) - 1);
+                      connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(i + 1  + j * (n_cell_x + 1) - 1);
+                      connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(i + j * (n_cell_x + 1) - 1);
                       counter++;
                     }
                 }
@@ -892,14 +894,14 @@ int main(int argc, char **argv)
                         {
                           for (size_t k = 1; k <= n_cell_z; ++k)
                             {
-                              grid_connectivity[counter][0] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][1] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][2] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][3] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][4] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][5] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][6] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k;
-                              grid_connectivity[counter][7] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k;
+                              connectivity[counter*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1);
+                              connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1);
+                              connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1);
+                              connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1);
+                              connectivity[counter*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k);
+                              connectivity[counter*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k);
+                              connectivity[counter*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k);
+                              connectivity[counter*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k);
                               counter++;
                             }
                         }
@@ -909,14 +911,14 @@ int main(int argc, char **argv)
                 {
                   for (size_t i = 0; i < n_cell; ++i)
                     {
-                      grid_connectivity[i][0] = counter;
-                      grid_connectivity[i][1] = counter + 1;
-                      grid_connectivity[i][2] = counter + 2;
-                      grid_connectivity[i][3] = counter + 3;
-                      grid_connectivity[i][4] = counter + 4;
-                      grid_connectivity[i][5] = counter + 5;
-                      grid_connectivity[i][6] = counter + 6;
-                      grid_connectivity[i][7] = counter + 7;
+                      connectivity[counter*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>(counter);
+                      connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(counter + 1);
+                      connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(counter + 2);
+                      connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(counter + 3);
+                      connectivity[counter*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>(counter + 4);
+                      connectivity[counter*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>(counter + 5);
+                      connectivity[counter*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>(counter + 6);
+                      connectivity[counter*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>(counter + 7);
                       counter = counter + 8;
                     }
                 }
@@ -982,7 +984,7 @@ int main(int argc, char **argv)
                 }
             }
 
-          grid_connectivity.resize(n_cell,std::vector<size_t>(4));
+          //grid_connectivity.resize(n_cell,std::vector<size_t>(4));
           counter = 0;
           for (size_t j = 1; j <= n_cell_z; ++j)
             {
@@ -998,10 +1000,10 @@ int main(int argc, char **argv)
                       cell_connectivity[1] = cell_connectivity[1] - n_cell_circumference;
                       cell_connectivity[2] = cell_connectivity[2] - n_cell_circumference;
                     }
-                  grid_connectivity[counter][0] = cell_connectivity[1] - 1;
-                  grid_connectivity[counter][1] = cell_connectivity[0] - 1;
-                  grid_connectivity[counter][2] = cell_connectivity[3] - 1;
-                  grid_connectivity[counter][3] = cell_connectivity[2] - 1;
+                  connectivity[counter*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>(cell_connectivity[1] - 1);
+                  connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(cell_connectivity[0] - 1);
+                  connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(cell_connectivity[3] - 1);
+                  connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(cell_connectivity[2] - 1);
                   counter++;
                 }
             }
@@ -1345,7 +1347,7 @@ int main(int argc, char **argv)
           std::cout.flush();
           // compute connectivity. Local to global mapping.
           const std::vector<size_t> tmp_vector((dim-1)*4);
-          grid_connectivity.resize(n_cell,tmp_vector);
+          //grid_connectivity.resize(n_cell,tmp_vector);
 
           counter = 0;
           if (dim == 2)
@@ -1354,10 +1356,10 @@ int main(int argc, char **argv)
                 {
                   for (size_t j = 1; j <= n_cell_z; ++j)
                     {
-                      grid_connectivity[counter][0] = (n_cell_z + 1) * (i - 1) + j - 1;
-                      grid_connectivity[counter][1] = (n_cell_z + 1) * (i - 1) + j;
-                      grid_connectivity[counter][2] = (n_cell_z + 1) * (i    ) + j;
-                      grid_connectivity[counter][3] = (n_cell_z + 1) * (i    ) + j - 1;
+                      connectivity[counter*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>((n_cell_z + 1) * (i - 1) + j - 1);
+                      connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>((n_cell_z + 1) * (i - 1) + j);
+                      connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>((n_cell_z + 1) * (i    ) + j);
+                      connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>((n_cell_z + 1) * (i    ) + j - 1);
 
                       counter = counter+1;
                       std::cout << "[4/6] Building the grid: stage 3 of 3 [" << (static_cast<double>(i)/static_cast<double>(n_cell))*100.0 << "%]                       \r";
@@ -1375,14 +1377,14 @@ int main(int argc, char **argv)
                         {
                           for (size_t k = 1; k <= n_cell_z; ++k)
                             {
-                              grid_connectivity[counter][0] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][1] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1;
-                              grid_connectivity[counter][2] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][3] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1;
-                              grid_connectivity[counter][4] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][5] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k;
-                              grid_connectivity[counter][6] = (n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k;
-                              grid_connectivity[counter][7] = (n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k;
+                              connectivity[counter*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k - 1);
+                              connectivity[counter*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k - 1);
+                              connectivity[counter*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k - 1);
+                              connectivity[counter*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k - 1);
+                              connectivity[counter*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j - 1) + k);
+                              connectivity[counter*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j - 1) + k);
+                              connectivity[counter*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i    ) + (n_cell_z + 1) * (j    ) + k);
+                              connectivity[counter*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>((n_cell_y + 1) * (n_cell_z + 1) * (i - 1) + (n_cell_z + 1) * (j    ) + k);
                               counter++;
                             }
                         }
@@ -1392,14 +1394,14 @@ int main(int argc, char **argv)
                 {
                   for (size_t i = 0; i < n_cell; ++i)
                     {
-                      grid_connectivity[i][0] = counter;
-                      grid_connectivity[i][1] = counter + 1;
-                      grid_connectivity[i][2] = counter + 2;
-                      grid_connectivity[i][3] = counter + 3;
-                      grid_connectivity[i][4] = counter + 4;
-                      grid_connectivity[i][5] = counter + 5;
-                      grid_connectivity[i][6] = counter + 6;
-                      grid_connectivity[i][7] = counter + 7;
+                      connectivity[i*pow_2_dim+0] = static_cast<vtu11::VtkIndexType>(counter);
+                      connectivity[i*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(counter + 1);
+                      connectivity[i*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(counter + 2);
+                      connectivity[i*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(counter + 3);
+                      connectivity[i*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>(counter + 4);
+                      connectivity[i*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>(counter + 5);
+                      connectivity[i*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>(counter + 6);
+                      connectivity[i*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>(counter + 7);
                       counter = counter + 8;
                       std::cout << "[4/6] Building the grid: stage 3 of 3 [" << (static_cast<double>(i)/static_cast<double>(n_cell))*100.0 << "%]                       \r";
                       std::cout.flush();
@@ -1713,7 +1715,7 @@ int main(int argc, char **argv)
           grid_z.resize(n_p);
           grid_depth_wrt_surface.resize(n_p);
           grid_depth_wrt_reference.resize(n_p);
-          grid_connectivity.resize(n_cell,std::vector<size_t>(n_v));
+          //grid_connectivity.resize(n_cell,std::vector<size_t>(n_v));
 
 
           for (size_t i = 0; i < n_cell_z + 1; ++i)
@@ -1772,7 +1774,7 @@ int main(int argc, char **argv)
                 {
                   for (size_t k = 0; k < shell_n_v; ++k)
                     {
-                      grid_connectivity[j][k] = shell_grid_connectivity[counter][k] + i * shell_n_p;
+                      connectivity[j*pow_2_dim+k] = static_cast<vtu11::VtkIndexType>(shell_grid_connectivity[counter][k] + i * shell_n_p);
                     }
                   counter++;
                 }
@@ -1784,7 +1786,7 @@ int main(int argc, char **argv)
                   for (size_t k = shell_n_v ; k < 2 * shell_n_v; ++k)
                     {
                       WBAssert(k-shell_n_v < shell_grid_connectivity[counter].size(), "k - shell_n_v is larger then shell_grid_connectivity[counter]: k= " << k << ", shell_grid_connectivity[counter].size() = " << shell_grid_connectivity[counter].size());
-                      grid_connectivity[j][k] = shell_grid_connectivity[counter][k-shell_n_v] + (i+1) * shell_n_p;
+                      connectivity[j*pow_2_dim+k] = static_cast<vtu11::VtkIndexType>(shell_grid_connectivity[counter][k-shell_n_v] + (i+1) * shell_n_p);
                     }
                   counter++;
                 }
@@ -1829,29 +1831,29 @@ int main(int argc, char **argv)
         }
       std::cout << "[5/6] Preparing to write the paraview file: stage 2 of 6, converting the connectivity                              \r";
       std::cout.flush();
-      const size_t pow_2_dim = dim == 2 ? 4 : 8;
-      std::vector<vtu11::VtkIndexType> connectivity(n_cell*pow_2_dim);
-      if (dim == 2)
-        for (size_t i = 0; i < n_cell; ++i)
-          {
-            connectivity[i*pow_2_dim] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][0]);
-            connectivity[i*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][1]);
-            connectivity[i*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][2]);
-            connectivity[i*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][3]);
-          }
-      else
-        for (size_t i = 0; i < n_cell; ++i)
-          {
+      //const size_t pow_2_dim = dim == 2 ? 4 : 8;
+      //std::vector<vtu11::VtkIndexType> connectivity(n_cell*pow_2_dim);
+      //if (dim == 2)
+      //  for (size_t i = 0; i < n_cell; ++i)
+      //    {
+      //      connectivity[i*pow_2_dim] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][0]);
+      //      connectivity[i*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][1]);
+      //      connectivity[i*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][2]);
+      //      connectivity[i*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][3]);
+      //    }
+      //else
+      //  for (size_t i = 0; i < n_cell; ++i)
+      //    {
 
-            connectivity[i*pow_2_dim] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][0]);
-            connectivity[i*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][1]);
-            connectivity[i*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][2]);
-            connectivity[i*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][3]);
-            connectivity[i*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][4]);
-            connectivity[i*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][5]);
-            connectivity[i*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][6]);
-            connectivity[i*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][7]);
-          }
+      //      connectivity[i*pow_2_dim] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][0]);
+      //      connectivity[i*pow_2_dim+1] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][1]);
+      //      connectivity[i*pow_2_dim+2] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][2]);
+      //      connectivity[i*pow_2_dim+3] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][3]);
+      //      connectivity[i*pow_2_dim+4] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][4]);
+      //      connectivity[i*pow_2_dim+5] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][5]);
+      //      connectivity[i*pow_2_dim+6] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][6]);
+      //      connectivity[i*pow_2_dim+7] = static_cast<vtu11::VtkIndexType>(grid_connectivity[i][7]);
+      //    }
       std::cout << "[5/6] Preparing to write the paraview file: stage 3 of 6, creating the offsets                              \r";
       std::cout.flush();
       std::vector<vtu11::VtkIndexType> offsets(n_cell);
